@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Configuration;
  * @author lys
  */
 @Configuration
-@MapperScan("com.lys.mapper")
+@MapperScan("com.lys.*.mapper")
 public class MybatisPlusConfig {
 
   /**

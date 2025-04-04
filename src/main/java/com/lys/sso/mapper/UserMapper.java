@@ -1,4 +1,4 @@
-package com.lys.mapper;
+package com.lys.sso.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.lys.sso.pojo.entity.UserEntity;

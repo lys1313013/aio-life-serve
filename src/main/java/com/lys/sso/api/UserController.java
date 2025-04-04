@@ -2,7 +2,7 @@ package com.lys.sso.api;
 
 import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.lys.mapper.UserMapper;
+import com.lys.sso.mapper.UserMapper;
 import com.lys.core.resq.ApiResponse;
 import com.lys.sso.pojo.entity.UserEntity;
 import com.lys.sso.pojo.req.LoginReq;
