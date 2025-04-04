@@ -1,0 +1,32 @@
+server:
+  port: 45678
+  servlet:
+    context-path: /api # 固定前缀
+spring:
+  application:
+    name: aio-life-serve
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+  datasource:
+    username: aio-life
+    password: ${AIO_LIFE_DB_PASSWORD:root}
+    url: jdbc:mysql://${AIO_LIFE_DB_URL:127.0.0.1:3306}/aio-life?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    type: com.alibaba.druid.pool.DruidDataSource
+
+logging:
+  level:
+    com.lys.mapper: debug
+    org.springframework.jdbc: debug
+  pattern:
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n"
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n"
+  file:
+    name: ./admin.log
+
+sa-token:
+  token-name: Authorization
+  token-prefix: Bearer
+  timeout: 3000 # token有效期，单位分钟
+  jwt-secret-key: lys
+  salt: lys
