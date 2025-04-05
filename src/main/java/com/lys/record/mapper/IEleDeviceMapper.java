@@ -1,7 +1,7 @@
 package com.lys.record.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.lys.record.pojo.DeviceEntity;
+import com.lys.record.pojo.entity.DeviceEntity;
 
 /**
  * 类功能描述

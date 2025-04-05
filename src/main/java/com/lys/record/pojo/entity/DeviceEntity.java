@@ -1,4 +1,4 @@
-package com.lys.record.pojo;
+package com.lys.record.pojo.entity;
 
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Getter;
@@ -24,6 +24,13 @@ public class DeviceEntity {
 
     private String type;
 
+    /**
+     * 设备状态
+     * 1 使用中
+     * 2 已损坏
+     * 3 已送人
+     * 4 吃灰中
+     */
     private String status;
 
     private String remark;

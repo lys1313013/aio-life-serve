@@ -8,7 +8,7 @@ import com.lys.core.query.CommonQuery;
 import com.lys.core.resq.ApiResponse;
 import com.lys.core.resq.PageResp;
 import com.lys.record.mapper.IEleDeviceMapper;
-import com.lys.record.pojo.DeviceEntity;
+import com.lys.record.pojo.entity.DeviceEntity;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
