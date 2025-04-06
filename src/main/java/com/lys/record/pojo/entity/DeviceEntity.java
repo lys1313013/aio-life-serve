@@ -22,6 +22,9 @@ public class DeviceEntity {
 
     private String name;
 
+    /**
+     * 设备类型
+     */
     private String type;
 
     /**

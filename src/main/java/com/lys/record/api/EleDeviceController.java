@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.lys.core.query.CommonQuery;
 import com.lys.core.resq.ApiResponse;
 import com.lys.core.resq.PageResp;
+import com.lys.core.util.SysUtil;
 import com.lys.record.mapper.IEleDeviceMapper;
 import com.lys.record.pojo.entity.DeviceEntity;
 import lombok.AllArgsConstructor;
@@ -34,8 +35,12 @@ public class EleDeviceController {
     @PostMapping("/query")
     public ApiResponse<PageResp<DeviceEntity>> query(
             @RequestBody CommonQuery<DeviceEntity> query) {
+        int userId = StpUtil.getLoginIdAsInt();
         LambdaQueryWrapper<DeviceEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(DeviceEntity::getUserId, userId);
         DeviceEntity condition = query.getCondition();
+        lambdaQueryWrapper.eq(SysUtil.isNotEmpty(condition.getType()), DeviceEntity::getType,
+                condition.getType());
         lambdaQueryWrapper.orderByDesc(DeviceEntity::getPurchaseDate);        // 分页
         Page<DeviceEntity> page = new Page<>(query.getPage(), query.getPageSize());
         IPage<DeviceEntity> iPage = getBaseMapper().selectPage(page, lambdaQueryWrapper);
