@@ -92,7 +92,7 @@
     </dependencies>
 
     <build>
-        <finalName>admin-${project.version}</finalName>
+        <finalName>aio-life-serve-${project.version}</finalName>
         <plugins>
             <plugin>
                 <artifactId>spring-boot-maven-plugin</artifactId>
