@@ -44,7 +44,7 @@ public class SysDictTypeController {
         List<SysDictDataEntity> sysDictDataEntityList = sysDictDataMapper.selectList(typeQueryWrapper);
         SysDictTypeDetailVO sysDictTypeDetailVO = new SysDictTypeDetailVO();
         sysDictTypeDetailVO.setSysDictTypeEntity(sysDictTypeEntity);
-        sysDictTypeDetailVO.setSysDictDataEntityList(sysDictDataEntityList);
+        sysDictTypeDetailVO.setDictDetailList(sysDictDataEntityList);
 
         return ApiResponse.success(sysDictTypeDetailVO);
     }

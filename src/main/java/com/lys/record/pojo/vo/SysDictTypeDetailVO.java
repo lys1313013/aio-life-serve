@@ -8,7 +8,7 @@ import lombok.Setter;
 import java.util.List;
 
 /**
- * 类功能描述
+ * 通用字典返回值
  *
  * @author Lys
  * @date 2025/04/05 22:33
@@ -17,5 +17,9 @@ import java.util.List;
 @Setter
 public class SysDictTypeDetailVO {
     private SysDictTypeEntity sysDictTypeEntity;
-    private List<SysDictDataEntity> sysDictDataEntityList;
+
+    /**
+     * 明细数据
+     */
+    private List<SysDictDataEntity> dictDetailList;
 }
