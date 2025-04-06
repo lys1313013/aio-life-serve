@@ -16,12 +16,12 @@ public class CommonQuery<T> {
   /**
    * 当前页数
    */
-  private Integer page;
+  private Integer page = 1;
 
   /**
    * 页数
    */
-  private Integer pageSize;
+  private Integer pageSize = 50;
 
   T condition;
 }

@@ -1,5 +1,7 @@
 package com.lys.core.util;
 
+import java.util.List;
+
 /**
  * @author lys
  */
@@ -19,5 +21,9 @@ public class SysUtil {
 
   public static boolean isNotEmpty(Integer integer) {
     return !isEmpty(integer);
+  }
+
+  public static boolean isEmpty(List lis) {
+    return lis == null || lis.isEmpty();
   }
 }
