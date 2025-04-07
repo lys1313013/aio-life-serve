@@ -16,10 +16,19 @@ import java.math.BigDecimal;
 @Setter
 @TableName("device")
 public class DeviceEntity {
+    /**
+     * 唯一标识
+     */
     private Integer id;
 
+    /**
+     * 用户ID
+     */
     private Integer userId;
 
+    /**
+     * 设备的名称
+     */
     private String name;
 
     /**
@@ -29,23 +38,32 @@ public class DeviceEntity {
 
     /**
      * 设备状态
-     * 1 使用中
-     * 2 已损坏
-     * 3 已送人
-     * 4 吃灰中
      */
     private String status;
 
+    /**
+     * 备注
+     */
     private String remark;
 
+    /**
+     * 设备的购买日期
+     */
     private String purchaseDate;
 
+    /**
+     * 设备的购买价格
+     */
     private BigDecimal purchasePrice;
 
+    /**
+     * 设备的购买地点
+     */
     private String purchasePlace;
 
-    private String purchaseCompany;
-
+    /**
+     * 设备的图片链接或存储路径
+     */
     private String image;
 
     /**
