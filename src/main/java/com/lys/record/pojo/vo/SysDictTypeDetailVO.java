@@ -1,6 +1,5 @@
 package com.lys.record.pojo.vo;
 
-import com.lys.record.pojo.entity.SysDictDataEntity;
 import com.lys.record.pojo.entity.SysDictTypeEntity;
 import lombok.Getter;
 import lombok.Setter;
@@ -21,5 +20,5 @@ public class SysDictTypeDetailVO {
     /**
      * 明细数据
      */
-    private List<SysDictDataEntity> dictDetailList;
+    private List<SysDictDataVO> dictDetailList;
 }
