@@ -4,6 +4,7 @@ import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.lys.convertor.SysDictDataConvertor;
 import com.lys.core.query.CommonQuery;
 import com.lys.core.resq.ApiResponse;
 import com.lys.core.resq.PageResp;
@@ -12,6 +13,7 @@ import com.lys.record.mapper.ISysDictDataMapper;
 import com.lys.record.mapper.ISysDictTypeMapper;
 import com.lys.record.pojo.entity.SysDictDataEntity;
 import com.lys.record.pojo.entity.SysDictTypeEntity;
+import com.lys.record.pojo.vo.SysDictDataVO;
 import com.lys.record.pojo.vo.SysDictTypeDetailVO;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -52,7 +54,9 @@ public class SysDictTypeController {
         List<SysDictDataEntity> sysDictDataEntityList = sysDictDataMapper.selectList(typeQueryWrapper);
         SysDictTypeDetailVO sysDictTypeDetailVO = new SysDictTypeDetailVO();
         sysDictTypeDetailVO.setSysDictTypeEntity(sysDictTypeEntity);
-        sysDictTypeDetailVO.setDictDetailList(sysDictDataEntityList);
+
+        List<SysDictDataVO> detailVoList = sysDictDataEntityList.stream().map(SysDictDataConvertor.INSTANCE::Entity2VO).toList();
+        sysDictTypeDetailVO.setDictDetailList(detailVoList);
 
         return ApiResponse.success(sysDictTypeDetailVO);
     }
@@ -78,6 +82,7 @@ public class SysDictTypeController {
 
     @PostMapping("/insertOrUpdate")
     public ApiResponse<Boolean> insertOrUpdate(@RequestBody SysDictTypeEntity entity) {
+        entity.setCreateBy(StpUtil.getLoginIdAsString());
         entity.setUpdateBy(StpUtil.getLoginIdAsString());
         boolean b = getBaseMapper().insertOrUpdate(entity);
         return ApiResponse.success(b);

@@ -84,6 +84,7 @@ public class SysDictDataController {
 
     @PostMapping("/insertOrUpdate")
     public ApiResponse<Boolean> insertOrUpdate(@RequestBody SysDictDataEntity entity) {
+        entity.setCreateBy(StpUtil.getLoginIdAsString());
         entity.setUpdateBy(StpUtil.getLoginIdAsString());
         boolean b = getBaseMapper().insertOrUpdate(entity);
         return ApiResponse.success(b);
