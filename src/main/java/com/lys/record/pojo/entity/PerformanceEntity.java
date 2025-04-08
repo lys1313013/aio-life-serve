@@ -33,6 +33,11 @@ public class PerformanceEntity {
     private String performanceName;
 
     /**
+     * 主要演员/演出团体
+     */
+    private String performer;
+
+    /**
      * 演出类型(演唱会/话剧/音乐会等)
      */
     private String performanceType;
