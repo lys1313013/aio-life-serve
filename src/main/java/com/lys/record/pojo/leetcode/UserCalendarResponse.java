@@ -1,4 +1,4 @@
-package com.lys.record.pojo.entity.leetcode;
+package com.lys.record.pojo.leetcode;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -24,11 +24,11 @@ public class UserCalendarResponse {
     @Getter
     @Setter
     public static class UserCalendar {
-        private int streak;
-        private int totalActiveDays;
+        private Integer streak;
+        private Integer totalActiveDays;
         private String submissionCalendar;
         private List<Integer> activeYears;
         private Object monthlyMedals; // 根据实际情况可替换为具体类型
-        private int recentStreak;
+        private Integer recentStreak;
     }
 }
