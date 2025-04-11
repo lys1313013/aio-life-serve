@@ -14,6 +14,24 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     type: com.alibaba.druid.pool.DruidDataSource
 
+  mail:
+    username: ${AIO_LIFE_MAIL_USERNAME:test@qq.com}
+    password: ${AIO_LIFE_MAIL_PASSWORD:password}
+    host: smtp.qq.com
+    port: 465
+    properties:
+      mail:
+        transport:
+          protocol: smtp
+        smtp:
+          socketFactory:
+            class: javax.net.ssl.SSLSocketFactory
+          port: ${spring.mail.port}
+          auth: true
+          starttls:
+            enable: true
+            required: true
+
 logging:
   level:
     com.lys.record.mapper: debug
