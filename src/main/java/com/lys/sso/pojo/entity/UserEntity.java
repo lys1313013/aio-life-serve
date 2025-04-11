@@ -34,4 +34,14 @@ public class UserEntity {
      * 昵称
      */
     private String nickname;
+
+    /**
+     * 邮箱
+     */
+    private String email;
+
+    /**
+     * leetcode账号
+     */
+    private String leetcodeAcct;
 }
