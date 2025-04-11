@@ -46,3 +46,8 @@ sa-token:
   timeout: 3000 # token有效期，单位分钟
   jwt-secret-key: lys
   salt: lys
+
+aio:
+  life:
+    serve:
+      leetcode-corn: 0 30 23 * * ?

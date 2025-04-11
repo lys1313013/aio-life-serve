@@ -30,4 +30,12 @@ public interface ILeetcodeService {
      * @return 是否插入成功
      */
     boolean batchInsert(List<LeetcodeCalendarEntity> leetcodeList);
+
+    /**
+     * 检查当天是否有提交，没有提交就发邮件提醒
+     *
+     * @author Lys
+     * @date 2025/4/12 00:55
+     */
+    void check();
 }
