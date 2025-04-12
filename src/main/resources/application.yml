@@ -47,6 +47,13 @@ sa-token:
   jwt-secret-key: lys
   salt: lys
 
+mybatis-plus:
+  global-config:
+    db-config:
+      logic-delete-field: is_deleted # 全局逻辑删除字段名
+      logic-delete-value: 1 # 逻辑已删除值
+      logic-not-delete-value: 0 # 逻辑未删除值
+
 aio:
   life:
     serve:
