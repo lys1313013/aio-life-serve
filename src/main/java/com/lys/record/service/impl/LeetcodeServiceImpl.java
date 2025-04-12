@@ -59,7 +59,7 @@ public class LeetcodeServiceImpl extends ServiceImpl<LeetcodeCalendarMapper, Lee
 
     @Override
     public boolean batchInsert(List<LeetcodeCalendarEntity> leetcodeList) {
-        return this.saveOrUpdateBatch(leetcodeList);
+        return super.saveOrUpdateBatch(leetcodeList);
     }
 
     @Override

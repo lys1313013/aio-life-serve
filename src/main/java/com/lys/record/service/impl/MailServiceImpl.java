@@ -35,5 +35,6 @@ public class MailServiceImpl implements IMailService {
         message.setSubject(title);
         message.setText(content);
         mailSender.send(message);
+        log.info("邮件发送成功，收件人：{}， 标题：{}， 内容：{}", sendTo, title, content);
     }
 }
