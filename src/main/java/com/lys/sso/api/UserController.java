@@ -81,7 +81,9 @@ public class UserController {
         userInfoVO.setId(userEntity.getId());
         userInfoVO.setRealName(userEntity.getNickname());
         userInfoVO.setUsername(userEntity.getNickname());
-        userInfoVO.setRoles(List.of("super"));
+        userInfoVO.setAvatar(userEntity.getAvatar());
+        userInfoVO.setEmail(userEntity.getEmail());
+        userInfoVO.setRoles(List.of("super"))       ;
         return ApiResponse.success(userInfoVO);
     }
 

@@ -20,5 +20,15 @@ public class UserInfoVO {
 
     private String username;
 
+    /**
+     * 头像url
+     */
+    private String avatar;
+
+    /**
+     * 邮件
+     */
+    private String email;
+
     private List<String> roles;
 }
