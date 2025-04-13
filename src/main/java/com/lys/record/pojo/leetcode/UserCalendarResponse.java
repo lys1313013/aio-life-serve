@@ -24,11 +24,26 @@ public class UserCalendarResponse {
     @Getter
     @Setter
     public static class UserCalendar {
+        /**
+         * 最长连续打卡天数
+         */
         private Integer streak;
+        /**
+         * 总活跃天数
+         */
         private Integer totalActiveDays;
+        /**
+         * 每日提交的json数据
+         */
         private String submissionCalendar;
+        /**
+         * 有几个年度有数据
+         */
         private List<Integer> activeYears;
-        private Object monthlyMedals; // 根据实际情况可替换为具体类型
+        private Object monthlyMedals;
+        /**
+         * 当前连续打卡的天数
+         */
         private Integer recentStreak;
     }
 }
