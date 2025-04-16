@@ -8,7 +8,7 @@ import com.lys.sso.pojo.entity.UserEntity;
 import com.lys.sso.pojo.req.LoginReq;
 import com.lys.sso.pojo.vo.UserInfoVO;
 import com.lys.sso.pojo.vo.UserLoginVO;
-import com.lys.util.Md5Util;
+import com.lys.sso.util.PasswordUtil;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -50,7 +50,7 @@ public class UserController {
         lambdaQueryWrapper.eq(UserEntity::getUsername, loginReq.getUsername());
         // 密码加盐
         String password = loginReq.getPassword();
-        String encryptedPassword = Md5Util.encryptPassword(password, salt);
+        String encryptedPassword = PasswordUtil.encryptPassword(password, salt);
 
         lambdaQueryWrapper.eq(UserEntity::getPassword, encryptedPassword);
 

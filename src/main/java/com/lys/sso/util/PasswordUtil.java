@@ -1,4 +1,4 @@
-package com.lys.util;
+package com.lys.sso.util;
 
 import cn.hutool.crypto.SecureUtil;
 
@@ -8,7 +8,7 @@ import cn.hutool.crypto.SecureUtil;
  * @author Lys
  * @date 2025/3/15
  */
-public class Md5Util {
+public class PasswordUtil {
 
     public static String encryptPassword(String password, String salt) {
         // 使用hutool的SecureUtil进行MD5哈希，将密码和盐值拼接后哈希

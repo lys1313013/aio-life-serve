@@ -1,4 +1,4 @@
-package com.lys.convertor;
+package com.lys.record.convertor;
 
 import com.lys.record.pojo.entity.SysDictDataEntity;
 import com.lys.record.pojo.vo.SysDictDataVO;

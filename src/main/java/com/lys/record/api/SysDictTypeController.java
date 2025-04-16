@@ -4,7 +4,7 @@ import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.lys.convertor.SysDictDataConvertor;
+import com.lys.record.convertor.SysDictDataConvertor;
 import com.lys.core.query.CommonQuery;
 import com.lys.core.resq.ApiResponse;
 import com.lys.core.resq.PageResp;
