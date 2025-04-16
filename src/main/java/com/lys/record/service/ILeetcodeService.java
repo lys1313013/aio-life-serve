@@ -2,6 +2,7 @@ package com.lys.record.service;
 
 import com.lys.record.pojo.entity.LeetcodeCalendarEntity;
 import com.lys.record.pojo.vo.DashboardCardVO;
+import com.lys.sso.pojo.entity.UserEntity;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -41,7 +42,15 @@ public interface ILeetcodeService {
     void check();
 
     /**
+     * 同步leetcode信息
+     *
+     * @param userEntity
+     */
+    void syncLeetcodeInfo(UserEntity userEntity);
+
+    /**
      * 获取leetcode看板卡片数据
+     *
      * @param userId 用户ID
      */
     List<DashboardCardVO> getDashboardCard(int userId);

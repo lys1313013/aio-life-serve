@@ -71,77 +71,80 @@ public class LeetcodeServiceImpl extends ServiceImpl<LeetcodeCalendarMapper, Lee
         List<UserEntity> userEntityList = userMapper.selectList(queryWrapper);
 
         for (UserEntity userEntity : userEntityList) {
-            String leetcodeAcct = userEntity.getLeetcodeAcct();
-            LambdaQueryWrapper<LeetcodeCalendarEntity> queryWrapper1 = new LambdaQueryWrapper<>();
-            queryWrapper1.eq(LeetcodeCalendarEntity::getUserId, userEntity.getId());
-            List<LeetcodeCalendarEntity> leetcodeCalendarEntityList = leetcodeCalendarMapper.selectList(queryWrapper1);
-            if (SysUtil.isNotEmpty(leetcodeCalendarEntityList)) {
-                Integer userId = userEntity.getId();
-                // 查询leetcode信息
-                UserCalendarResponse body = fetchAndSaveUserCalendar(leetcodeAcct);
+            syncLeetcodeInfo(userEntity);
+        }
+    }
 
-                String submissionCalendar = body.getData().getUserCalendar().getSubmissionCalendar();
-                Map<String, Object> sumbissonMap = JSONUtil.parseObj(submissionCalendar).toBean(Map.class);
-                if (sumbissonMap == null) {
-                    log.info("用户{}的leetcode热力图为空", leetcodeAcct);
-                    return;
-                }
+    public void syncLeetcodeInfo(UserEntity userEntity) {
+        String leetcodeAcct = userEntity.getLeetcodeAcct();
+        LambdaQueryWrapper<LeetcodeCalendarEntity> queryWrapper1 = new LambdaQueryWrapper<>();
+        queryWrapper1.eq(LeetcodeCalendarEntity::getUserId, userEntity.getId());
+        List<LeetcodeCalendarEntity> leetcodeCalendarEntityList = leetcodeCalendarMapper.selectList(queryWrapper1);
+        if (SysUtil.isNotEmpty(leetcodeCalendarEntityList)) {
+            Integer userId = userEntity.getId();
+            // 查询leetcode信息
+            UserCalendarResponse body = fetchAndSaveUserCalendar(leetcodeAcct);
 
-                LeetcodeCalendarEntity leetcodeCalendarEntity;
-
-                // 最小的日期
-                LocalDate startDate = null;
-                // 最大的日期
-                LocalDate endDate = null;
-
-                List<LeetcodeCalendarEntity> leetcodeCalendarEntities = new ArrayList<>();
-                for (Map.Entry<String, Object> entry : sumbissonMap.entrySet()) {
-                    leetcodeCalendarEntity = new LeetcodeCalendarEntity();
-                    // 将时间戳字符串转换为 long
-                    long timestamp = Long.parseLong(entry.getKey());
-                    // 将时间戳转换为 Instant
-                    Instant instant = Instant.ofEpochSecond(timestamp);
-                    // 将 Instant 转换为 LocalDate
-                    LocalDate localDate = instant.atZone(ZoneId.systemDefault()).toLocalDate();
-
-                    if (endDate == null) {
-                        endDate = localDate;
-                        startDate = localDate;
-                    }
-                    // endDate 赋值最大
-                    if (localDate.isAfter(endDate)) {
-                        endDate = localDate;
-                    }
-                    if (localDate.isBefore(startDate)) {
-                        startDate = localDate;
-                    }
-
-                    leetcodeCalendarEntity.setUserId(userId);
-                    leetcodeCalendarEntity.setSubmitDate(localDate);
-                    leetcodeCalendarEntity.setSubmitCount((Integer) entry.getValue());
-                    leetcodeCalendarEntities.add(leetcodeCalendarEntity);
-                }
-
-                this.delete(userId, startDate, endDate);
-                this.batchInsert(leetcodeCalendarEntities);
-
-                // 保存统计信息
-                saveUserInfo(leetcodeCalendarEntities, body, userId);
-
-                // 如果当天未提交记录，则发邮件
-                boolean flag = false;
-                for (LeetcodeCalendarEntity item : leetcodeCalendarEntities) {
-                    LocalDate submitDate = item.getSubmitDate();
-                    if (submitDate.isEqual(LocalDate.now())) {
-                        flag = true;
-                        break;
-                    }
-                }
-                if (!flag) {
-                    mailService.sendSimpleEmail(userEntity.getEmail(), "leetcode咋还没刷", "leetcode咋还没刷");
-                }
+            String submissionCalendar = body.getData().getUserCalendar().getSubmissionCalendar();
+            Map<String, Object> sumbissonMap = JSONUtil.parseObj(submissionCalendar).toBean(Map.class);
+            if (sumbissonMap == null) {
+                log.info("用户{}的leetcode热力图为空", leetcodeAcct);
+                return;
             }
 
+            LeetcodeCalendarEntity leetcodeCalendarEntity;
+
+            // 最小的日期
+            LocalDate startDate = null;
+            // 最大的日期
+            LocalDate endDate = null;
+
+            List<LeetcodeCalendarEntity> leetcodeCalendarEntities = new ArrayList<>();
+            for (Map.Entry<String, Object> entry : sumbissonMap.entrySet()) {
+                leetcodeCalendarEntity = new LeetcodeCalendarEntity();
+                // 将时间戳字符串转换为 long
+                long timestamp = Long.parseLong(entry.getKey());
+                // 将时间戳转换为 Instant
+                Instant instant = Instant.ofEpochSecond(timestamp);
+                // 将 Instant 转换为 LocalDate
+                LocalDate localDate = instant.atZone(ZoneId.systemDefault()).toLocalDate();
+
+                if (endDate == null) {
+                    endDate = localDate;
+                    startDate = localDate;
+                }
+                // endDate 赋值最大
+                if (localDate.isAfter(endDate)) {
+                    endDate = localDate;
+                }
+                if (localDate.isBefore(startDate)) {
+                    startDate = localDate;
+                }
+
+                leetcodeCalendarEntity.setUserId(userId);
+                leetcodeCalendarEntity.setSubmitDate(localDate);
+                leetcodeCalendarEntity.setSubmitCount((Integer) entry.getValue());
+                leetcodeCalendarEntities.add(leetcodeCalendarEntity);
+            }
+
+            this.delete(userId, startDate, endDate);
+            this.batchInsert(leetcodeCalendarEntities);
+
+            // 保存统计信息
+            saveUserInfo(leetcodeCalendarEntities, body, userId);
+
+            // 如果当天未提交记录，则发邮件
+            boolean flag = false;
+            for (LeetcodeCalendarEntity item : leetcodeCalendarEntities) {
+                LocalDate submitDate = item.getSubmitDate();
+                if (submitDate.isEqual(LocalDate.now())) {
+                    flag = true;
+                    break;
+                }
+            }
+            if (!flag) {
+                mailService.sendSimpleEmail(userEntity.getEmail(), "leetcode咋还没刷", "leetcode咋还没刷");
+            }
         }
     }
 
