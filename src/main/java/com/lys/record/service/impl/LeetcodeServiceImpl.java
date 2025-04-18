@@ -14,6 +14,7 @@ import com.lys.record.service.ILeetcodeService;
 import com.lys.record.service.IMailService;
 import com.lys.sso.mapper.UserMapper;
 import com.lys.sso.pojo.entity.UserEntity;
+import com.lys.record.util.RedisUtil;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.ParameterizedTypeReference;
@@ -27,6 +28,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 类功能描述
@@ -48,6 +50,8 @@ public class LeetcodeServiceImpl extends ServiceImpl<LeetcodeCalendarMapper, Lee
     private RestTemplate restTemplate;
 
     private IMailService mailService;
+
+    private RedisUtil redisUtil;
 
     @Override
     public int delete(Integer userId, LocalDate startDate, LocalDate endDate) {
@@ -76,6 +80,12 @@ public class LeetcodeServiceImpl extends ServiceImpl<LeetcodeCalendarMapper, Lee
     }
 
     public void syncLeetcodeInfo(UserEntity userEntity) {
+        // 控制查询leetcode频率
+        String redisKey = "syncLeetcodeInfo:" + userEntity.getId();
+        if (redisUtil.hasKey(redisKey)) {
+            log.info("用户{}的leetcode信息已经同步过了", userEntity.getLeetcodeAcct());
+            return;
+        }
         String leetcodeAcct = userEntity.getLeetcodeAcct();
         LambdaQueryWrapper<LeetcodeCalendarEntity> queryWrapper1 = new LambdaQueryWrapper<>();
         queryWrapper1.eq(LeetcodeCalendarEntity::getUserId, userEntity.getId());
@@ -89,6 +99,7 @@ public class LeetcodeServiceImpl extends ServiceImpl<LeetcodeCalendarMapper, Lee
             Map<String, Object> sumbissonMap = JSONUtil.parseObj(submissionCalendar).toBean(Map.class);
             if (sumbissonMap == null) {
                 log.info("用户{}的leetcode热力图为空", leetcodeAcct);
+                redisUtil.set(redisKey, redisKey, 5, TimeUnit.MINUTES);
                 return;
             }
 
@@ -146,6 +157,7 @@ public class LeetcodeServiceImpl extends ServiceImpl<LeetcodeCalendarMapper, Lee
                 mailService.sendSimpleEmail(userEntity.getEmail(), "leetcode咋还没刷", "leetcode咋还没刷");
             }
         }
+        redisUtil.set(redisKey, redisKey, 5, TimeUnit.MINUTES);
     }
 
     private void saveUserInfo(List<LeetcodeCalendarEntity> leetcodeCalendarEntityList, UserCalendarResponse body, Integer userId) {
