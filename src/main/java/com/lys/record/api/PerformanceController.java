@@ -36,6 +36,7 @@ public class PerformanceController {
     public ApiResponse<PageResp<PerformanceEntity>> query(
             @RequestBody CommonQuery<PerformanceEntity> query) {
         LambdaQueryWrapper<PerformanceEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(PerformanceEntity::getCreateBy, StpUtil.getLoginIdAsInt());
 
         // 分页
         Page<PerformanceEntity> page = new Page<>(query.getPage(), query.getPageSize());
