@@ -34,6 +34,11 @@ public class TaskEntity {
     private String content;
 
     /**
+     * 任务明细
+     */
+    private String detail;
+
+    /**
      * 列ID
      */
     private Integer columnId;
