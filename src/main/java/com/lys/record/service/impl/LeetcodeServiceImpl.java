@@ -235,6 +235,9 @@ public class LeetcodeServiceImpl extends ServiceImpl<LeetcodeCalendarMapper, Lee
         queryWrapper.orderByDesc(LeetcodeUserInfoEntity::getCreateTime);
         queryWrapper.last("limit 1");
         LeetcodeUserInfoEntity leetcodeUserInfoEntity = leetcodeUserInfoMapper.selectOne(queryWrapper);
+        if (leetcodeUserInfoEntity == null) {
+            return new ArrayList<>();
+        }
 
         // 打卡信息
         DashboardCardVO dashboardCardVO1 = new DashboardCardVO();
