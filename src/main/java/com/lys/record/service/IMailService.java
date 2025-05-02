@@ -1,5 +1,7 @@
 package com.lys.record.service;
 
+import jakarta.mail.MessagingException;
+
 /**
  * 类功能描述
  *
@@ -19,4 +21,13 @@ public interface IMailService {
      * @date 2025/4/12 00:50
      */
     void sendSimpleEmail(String sendTo, String title, String content);
+
+    /**
+     * @param sendTo      收件人
+     * @param title       标题
+     * @param htmlContent html内容
+     * @author Lys
+     * @date 2025/5/2 20:22
+     */
+    void sendHtmlEmail(String sendTo, String title, String htmlContent) throws MessagingException;
 }

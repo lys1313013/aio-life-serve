@@ -3,6 +3,7 @@ package com.lys.record.service;
 import com.lys.record.pojo.entity.LeetcodeCalendarEntity;
 import com.lys.record.pojo.vo.DashboardCardVO;
 import com.lys.sso.pojo.entity.UserEntity;
+import jakarta.mail.MessagingException;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -54,4 +55,9 @@ public interface ILeetcodeService {
      * @param userId 用户ID
      */
     List<DashboardCardVO> getDashboardCard(int userId);
+
+    /**
+     * 邮件通知今天每日一题
+     */
+    void notifyTodayQuestion() throws MessagingException;
 }

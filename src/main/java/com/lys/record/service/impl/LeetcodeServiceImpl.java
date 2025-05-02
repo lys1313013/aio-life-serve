@@ -4,17 +4,21 @@ import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.lys.core.util.SysUtil;
+import com.lys.record.client.LeetcodeClient;
 import com.lys.record.mapper.ILeetcodeUserInfoMapper;
 import com.lys.record.mapper.LeetcodeCalendarMapper;
 import com.lys.record.pojo.entity.LeetcodeCalendarEntity;
 import com.lys.record.pojo.entity.LeetcodeUserInfoEntity;
+import com.lys.record.pojo.leetcode.QuestionDataResponse;
+import com.lys.record.pojo.leetcode.TodayRecordResponse;
 import com.lys.record.pojo.leetcode.UserCalendarResponse;
 import com.lys.record.pojo.vo.DashboardCardVO;
 import com.lys.record.service.ILeetcodeService;
 import com.lys.record.service.IMailService;
+import com.lys.record.util.RedisUtil;
 import com.lys.sso.mapper.UserMapper;
 import com.lys.sso.pojo.entity.UserEntity;
-import com.lys.record.util.RedisUtil;
+import jakarta.mail.MessagingException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.ParameterizedTypeReference;
@@ -52,6 +56,8 @@ public class LeetcodeServiceImpl extends ServiceImpl<LeetcodeCalendarMapper, Lee
     private IMailService mailService;
 
     private RedisUtil redisUtil;
+
+    private LeetcodeClient leetcodeClient;
 
     @Override
     public int delete(Integer userId, LocalDate startDate, LocalDate endDate) {
@@ -268,4 +274,30 @@ public class LeetcodeServiceImpl extends ServiceImpl<LeetcodeCalendarMapper, Lee
         return Arrays.asList(dashboardCardVO1, dashboardCardVO2);
     }
 
+    @Override
+    public void notifyTodayQuestion() throws MessagingException {
+        LambdaQueryWrapper<UserEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.isNotNull(UserEntity::getEmail);
+        queryWrapper.isNotNull(UserEntity::getLeetcodeAcct);
+        List<UserEntity> userEntityList = userMapper.selectList(queryWrapper);
+
+        TodayRecordResponse todayRecord = leetcodeClient.getTodayRecord();
+
+        QuestionDataResponse questionData = leetcodeClient.getQuestionData(todayRecord.getData().getTodayRecord().get(0).getQuestion().getTitleSlug());
+
+        String title = "力扣每日一题" +  todayRecord.getData().getTodayRecord().get(0).getDate() + " "  + questionData.getData().getQuestion().getTranslatedTitle();
+
+        String content = questionData.getData().getQuestion().getTranslatedContent();
+
+        // 邮件内容
+        String htmlContent = String.format("""
+                %s
+                <a href="https://leetcode.cn/problems/%s/"  target="_blank" >%s</a>
+                """, content, questionData.getData().getQuestion().getTitleSlug(), questionData.getData().getQuestion().getTranslatedTitle()
+        );
+
+        for (UserEntity userEntity : userEntityList) {
+            mailService.sendHtmlEmail(userEntity.getEmail(), title, htmlContent);
+        }
+    }
 }

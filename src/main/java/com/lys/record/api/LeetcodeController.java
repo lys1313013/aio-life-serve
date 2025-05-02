@@ -5,6 +5,7 @@ import com.lys.core.resq.ApiResponse;
 import com.lys.record.service.ILeetcodeService;
 import com.lys.sso.mapper.UserMapper;
 import com.lys.sso.pojo.entity.UserEntity;
+import jakarta.mail.MessagingException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,6 +27,13 @@ public class LeetcodeController {
         int userId = StpUtil.getLoginIdAsInt();
         UserEntity userEntity = userMapper.selectById(userId);
         leetcodeService.syncLeetcodeInfo(userEntity);
+        return ApiResponse.success();
+    }
+
+    @GetMapping("/notifyTodayQuestion")
+    public ApiResponse<Void> notifyTodayQuestion() throws MessagingException {
+        StpUtil.getLoginIdAsInt();
+        leetcodeService.notifyTodayQuestion();
         return ApiResponse.success();
     }
 }
