@@ -3,6 +3,7 @@ package com.lys.record.service.impl;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.lys.core.util.DateUtil;
 import com.lys.core.util.SysUtil;
 import com.lys.record.client.LeetcodeClient;
 import com.lys.record.mapper.ILeetcodeUserInfoMapper;
@@ -281,23 +282,26 @@ public class LeetcodeServiceImpl extends ServiceImpl<LeetcodeCalendarMapper, Lee
         queryWrapper.isNotNull(UserEntity::getLeetcodeAcct);
         List<UserEntity> userEntityList = userMapper.selectList(queryWrapper);
 
-        TodayRecordResponse todayRecord = leetcodeClient.getTodayRecord();
+        QuestionDataResponse questionData = this.getTodayQuestion();
 
-        QuestionDataResponse questionData = leetcodeClient.getQuestionData(todayRecord.getData().getTodayRecord().get(0).getQuestion().getTitleSlug());
+        String title = "力扣每日一题" + DateUtil.getNowFormatDate() + "：" + questionData.getData().getQuestion().getTranslatedTitle();
 
-        String title = "力扣每日一题" +  todayRecord.getData().getTodayRecord().get(0).getDate() + " "  + questionData.getData().getQuestion().getTranslatedTitle();
-
-        String content = questionData.getData().getQuestion().getTranslatedContent();
+        String question = questionData.getData().getQuestion().getTranslatedContent();
 
         // 邮件内容
         String htmlContent = String.format("""
                 %s
                 <a href="https://leetcode.cn/problems/%s/"  target="_blank" >%s</a>
-                """, content, questionData.getData().getQuestion().getTitleSlug(), questionData.getData().getQuestion().getTranslatedTitle()
+                """, question, questionData.getData().getQuestion().getTitleSlug(), questionData.getData().getQuestion().getTranslatedTitle()
         );
 
         for (UserEntity userEntity : userEntityList) {
             mailService.sendHtmlEmail(userEntity.getEmail(), title, htmlContent);
         }
+    }
+
+    public QuestionDataResponse getTodayQuestion() {
+        TodayRecordResponse todayRecord = leetcodeClient.getTodayRecord();
+        return leetcodeClient.getQuestionData(todayRecord.getData().getTodayRecord().get(0).getQuestion().getTitleSlug());
     }
 }
