@@ -58,3 +58,6 @@ aio:
   life:
     serve:
       leetcode-corn: 0 30 23 * * ?
+
+  api:
+    zhihu: ${AIO_LIFE_ZHIHU_COOKIE:test}

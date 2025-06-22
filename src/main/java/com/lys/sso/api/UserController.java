@@ -2,13 +2,16 @@ package com.lys.sso.api;
 
 import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.lys.sso.mapper.UserMapper;
 import com.lys.core.resq.ApiResponse;
+import com.lys.sso.mapper.LoginLogMapper;
+import com.lys.sso.mapper.UserMapper;
+import com.lys.sso.pojo.entity.LoginLogEntity;
 import com.lys.sso.pojo.entity.UserEntity;
 import com.lys.sso.pojo.req.LoginReq;
 import com.lys.sso.pojo.vo.UserInfoVO;
 import com.lys.sso.pojo.vo.UserLoginVO;
 import com.lys.sso.util.PasswordUtil;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,6 +35,8 @@ public class UserController {
 
     private final UserMapper userMapper;
 
+    private final LoginLogMapper loginLogMapper;
+
     /**
      * 盐值（待抽取）
      */
@@ -45,7 +50,7 @@ public class UserController {
      * @date 2025/4/4
      */
     @PostMapping("/auth/login")
-    public ApiResponse<UserLoginVO> login(@RequestBody LoginReq loginReq) {
+    public ApiResponse<UserLoginVO> login(@RequestBody LoginReq loginReq, HttpServletRequest request) {
         LambdaQueryWrapper<UserEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(UserEntity::getUsername, loginReq.getUsername());
         // 密码加盐
@@ -54,10 +59,21 @@ public class UserController {
 
         lambdaQueryWrapper.eq(UserEntity::getPassword, encryptedPassword);
 
+        // 记录登录日志
+        LoginLogEntity loginLogEntity = new LoginLogEntity();
+        loginLogEntity.setUsername(loginReq.getUsername());
+        String ip = getIp(request);
+        // 可以将ipAddress记录到loginLogEntity中
+        loginLogEntity.setIpAddress(ip);
+
         UserEntity userEntity = userMapper.selectOne(lambdaQueryWrapper);
         if (userEntity == null) {
+            loginLogEntity.setPassword(password);
+            loginLogMapper.insert(loginLogEntity);
             throw new RuntimeException("用户名或密码错误");
         }
+        loginLogEntity.setUserId(userEntity.getId());
+        loginLogMapper.insert(loginLogEntity);
         StpUtil.login(userEntity.getId());
         String token = StpUtil.getTokenValue();
 
@@ -101,5 +117,22 @@ public class UserController {
     public ApiResponse<Map<String, Object>> logout() {
         StpUtil.logout();
         return ApiResponse.success();
+    }
+
+    /**
+     * 从请求头中获取IP
+     */
+    public String getIp(HttpServletRequest request) {
+        String ipAddress = request.getHeader("X-Forwarded-For");
+        if (ipAddress == null || ipAddress.isEmpty() || "unknown".equalsIgnoreCase(ipAddress)) {
+            ipAddress = request.getHeader("Proxy-Client-IP");
+        }
+        if (ipAddress == null || ipAddress.isEmpty() || "unknown".equalsIgnoreCase(ipAddress)) {
+            ipAddress = request.getHeader("WL-Proxy-Client-IP");
+        }
+        if (ipAddress == null || ipAddress.isEmpty() || "unknown".equalsIgnoreCase(ipAddress)) {
+            ipAddress = request.getRemoteAddr();
+        }
+        return ipAddress;
     }
 }
