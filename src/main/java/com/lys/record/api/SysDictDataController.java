@@ -81,7 +81,6 @@ public class SysDictDataController {
         return ApiResponse.success(objectPageResp);
     }
 
-
     @PostMapping("/insertOrUpdate")
     public ApiResponse<Boolean> insertOrUpdate(@RequestBody SysDictDataEntity entity) {
         entity.setCreateBy(StpUtil.getLoginIdAsString());
