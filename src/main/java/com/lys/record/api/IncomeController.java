@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.lys.core.query.CommonQuery;
 import com.lys.core.resq.ApiResponse;
 import com.lys.core.resq.PageResp;
+import com.lys.core.util.SysUtil;
 import com.lys.record.mapper.IIncomeMapper;
 import com.lys.record.pojo.entity.IncomeEntity;
 import lombok.AllArgsConstructor;
@@ -39,9 +40,9 @@ public class IncomeController {
         LambdaQueryWrapper<IncomeEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(IncomeEntity::getUserId, userId);
         IncomeEntity condition = query.getCondition();
-//        lambdaQueryWrapper.eq(SysUtil.isNotEmpty(condition.getType()), IncomeEntity::getType,
-//                condition.getType());
-        lambdaQueryWrapper.orderByDesc(IncomeEntity::getIncDate);        // 分页
+        lambdaQueryWrapper.eq(SysUtil.isNotEmpty(condition.getIncTypeId()), IncomeEntity::getIncTypeId,
+                condition.getIncTypeId());
+        lambdaQueryWrapper.orderByDesc(IncomeEntity::getIncDate);
         Page<IncomeEntity> page = new Page<>(query.getPage(), query.getPageSize());
         IPage<IncomeEntity> iPage = incomeMapper.selectPage(page, lambdaQueryWrapper);
         PageResp<IncomeEntity> objectPageResp = PageResp.of(iPage.getRecords(), iPage.getTotal());
