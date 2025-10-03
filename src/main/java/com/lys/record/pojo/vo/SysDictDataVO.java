@@ -13,6 +13,15 @@ import lombok.Setter;
 @Setter
 public class SysDictDataVO {
 
-    private String label;
+    private Integer id;
+
+    /**
+     * 实际存储值
+     */
     private String value;
+
+    /**
+     * 显示的名称
+     */
+    private String label;
 }
