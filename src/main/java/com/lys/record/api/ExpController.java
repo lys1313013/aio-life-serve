@@ -1,0 +1,59 @@
+package com.lys.record.api;
+
+import cn.dev33.satoken.stp.StpUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.lys.core.constant.StatusConst;
+import com.lys.core.query.CommonQuery;
+import com.lys.core.resq.ApiResponse;
+import com.lys.core.resq.PageResp;
+import com.lys.core.util.SysUtil;
+import com.lys.record.mapper.IExpenseMapper;
+import com.lys.record.pojo.entity.ExpenseEntity;
+import lombok.AllArgsConstructor;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+/**
+ * 类功能描述
+ *
+ * @author Lys
+ * @date 2025/10/03 21:01
+ */
+@RestController
+@AllArgsConstructor
+@RequestMapping("/expense")
+public class ExpController {
+
+    private IExpenseMapper expenseMapper;
+
+    public IExpenseMapper getBaseMapper() {
+        return expenseMapper;
+    }
+
+    @PostMapping("/query")
+    public ApiResponse<PageResp<ExpenseEntity>> query(
+            @RequestBody CommonQuery<ExpenseEntity> query) {
+        int userId = StpUtil.getLoginIdAsInt();
+        LambdaQueryWrapper<ExpenseEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(ExpenseEntity::getUserId, userId);
+        lambdaQueryWrapper.eq(ExpenseEntity::getIsDeleted, StatusConst.NO_DELETE);
+        ExpenseEntity condition = query.getCondition();
+        lambdaQueryWrapper.eq(SysUtil.isNotEmpty(condition.getExpTypeId()), ExpenseEntity::getExpTypeId,
+                condition.getExpTypeId());
+        lambdaQueryWrapper.orderByDesc(ExpenseEntity::getExpDate);
+        Page<ExpenseEntity> page = new Page<>(query.getPage(), query.getPageSize());
+        IPage<ExpenseEntity> iPage = expenseMapper.selectPage(page, lambdaQueryWrapper);
+        PageResp<ExpenseEntity> objectPageResp = PageResp.of(iPage.getRecords(), iPage.getTotal());
+        return ApiResponse.success(objectPageResp);
+    }
+
+    @PostMapping("/insertOrUpdate")
+    public ApiResponse<Boolean> insertOrUpdate(@RequestBody ExpenseEntity entity) {
+        entity.setUserId(StpUtil.getLoginIdAsInt());
+        boolean b = getBaseMapper().insertOrUpdate(entity);
+        return ApiResponse.success(b);
+    }}

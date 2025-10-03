@@ -1,5 +1,6 @@
 package com.lys.record.pojo.entity;
 
+import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -22,7 +23,7 @@ public class SysDictTypeEntity {
     /**
      * 字典类型的唯一标识
      */
-    @TableId
+    @TableId(type = IdType.AUTO)
     private Integer dictId;
 
     /**
