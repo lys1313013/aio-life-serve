@@ -11,8 +11,12 @@ import com.lys.core.resq.PageResp;
 import com.lys.core.util.SysUtil;
 import com.lys.record.mapper.IExpenseMapper;
 import com.lys.record.pojo.entity.ExpenseEntity;
+import com.lys.record.pojo.entity.SysDictDataEntity;
 import com.lys.record.pojo.req.CommonReq;
+import com.lys.record.pojo.vo.ExpStaByYearVO;
+import com.lys.record.pojo.vo.ExpStaticByYearVO;
 import com.lys.record.service.IExpenseService;
+import com.lys.record.service.ISysDictService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,7 +24,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 类功能描述
@@ -34,6 +41,8 @@ import java.util.List;
 @RequestMapping("/expense")
 public class ExpController {
 
+    private ISysDictService sysDictService;
+    
     private IExpenseService expenseService;
 
     private IExpenseMapper expenseMapper;
@@ -52,6 +61,7 @@ public class ExpController {
         ExpenseEntity condition = query.getCondition();
         lambdaQueryWrapper.eq(SysUtil.isNotEmpty(condition.getExpTypeId()), ExpenseEntity::getExpTypeId,
                 condition.getExpTypeId());
+        lambdaQueryWrapper.like(SysUtil.isNotEmpty(condition.getRemark()), ExpenseEntity::getRemark, condition.getRemark());
         lambdaQueryWrapper.orderByDesc(ExpenseEntity::getExpTime);
         Page<ExpenseEntity> page = new Page<>(query.getPage(), query.getPageSize());
         IPage<ExpenseEntity> iPage = expenseMapper.selectPage(page, lambdaQueryWrapper);
@@ -81,6 +91,12 @@ public class ExpController {
         return ApiResponse.success();
     }
 
+    @PostMapping("/delete")
+    public ApiResponse<Boolean> delete(@RequestBody ExpenseEntity entity) {
+        boolean b = getBaseMapper().deleteById(entity) > 0;
+        return ApiResponse.success(b);
+    }
+
     // 批量删除
     @PostMapping("/deleteBatch")
     public ApiResponse<Boolean> deleteBatch(@RequestBody CommonReq commonReq) {
@@ -89,4 +105,30 @@ public class ExpController {
         return ApiResponse.success();
     }
 
+    @PostMapping("/statisticsByYear")
+    public ApiResponse<Object> statisticsByYear() {
+        int userId = StpUtil.getLoginIdAsInt();
+        List<ExpStaByYearVO> list = expenseMapper.statisticsByYear(userId);
+        List<ExpStaticByYearVO> ans = new ArrayList<>();
+
+        // 获取收入类型字典数据
+        List<SysDictDataEntity> dictDataList = sysDictService.getDictDataByDictType("exp_type");
+        Map<Integer, String> dictMap = dictDataList.stream()
+                .collect(Collectors.toMap(SysDictDataEntity::getDictCode, SysDictDataEntity::getDictLabel));
+
+        // 按照年度汇总
+        Map<Integer, List<ExpStaByYearVO>> collect = list.stream()
+                .collect(Collectors.groupingBy(ExpStaByYearVO::getYear));
+        for (Map.Entry<Integer, List<ExpStaByYearVO>> entry : collect.entrySet()) {
+            ExpStaticByYearVO expStaticByYearVO = new ExpStaticByYearVO();
+            expStaticByYearVO.setYear(entry.getKey());
+            List<ExpStaByYearVO> value = entry.getValue();
+            value.forEach(item -> {
+                item.setTypeName(dictMap.get(item.getTypeId()));
+            });
+            expStaticByYearVO.setDetail(value);
+            ans.add(expStaticByYearVO);
+        }
+        return ApiResponse.success(ans);
+    }
 }
