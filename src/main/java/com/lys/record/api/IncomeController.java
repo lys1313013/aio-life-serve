@@ -75,10 +75,10 @@ public class IncomeController {
         return ApiResponse.success(b);
     }
 
-    @PostMapping("/static")
-    public ApiResponse<Object> staticData() {
+    @PostMapping("/statisticsByYear")
+    public ApiResponse<Object> statisticsByYear() {
         int userId = StpUtil.getLoginIdAsInt();
-        List<IncStaByYearVO> list = incomeMapper.list(userId);
+        List<IncStaByYearVO> list = incomeMapper.statisticsByYear(userId);
         List<IncStaticByYearVO> ans = new ArrayList<>();
         
         // 获取收入类型字典数据
@@ -94,7 +94,36 @@ public class IncomeController {
             incStaticByYearVO.setYear(entry.getKey());
             List<IncStaByYearVO> value = entry.getValue();
             value.forEach(item -> {
-                item.setIncTypeName(dictMap.get(item.getIncTypeId()));
+                item.setTypeName(dictMap.get(item.getTypeId()));
+            });
+            incStaticByYearVO.setDetail(value);
+            ans.add(incStaticByYearVO);
+        }
+        return ApiResponse.success(ans);
+    }
+    
+    @PostMapping("/statisticsByMonth")
+    public ApiResponse<Object> statisticsByMonth() {
+        int userId = StpUtil.getLoginIdAsInt();
+        List<IncStaByYearVO> list = incomeMapper.statisticsByMonth(userId);
+        List<IncStaticByYearVO> ans = new ArrayList<>();
+
+        // 获取收入类型字典数据
+        List<SysDictDataEntity> dictDataList = sysDictService.getDictDataByDictType("income_type");
+        Map<Integer, String> dictMap = dictDataList.stream()
+                .collect(Collectors.toMap(SysDictDataEntity::getDictCode, SysDictDataEntity::getDictLabel));
+
+        // 按照年月汇总
+        Map<String, List<IncStaByYearVO>> collect = list.stream()
+                .collect(Collectors.groupingBy(item -> item.getYear() + "-" + String.format("%02d", item.getMonth())));
+        for (Map.Entry<String, List<IncStaByYearVO>> entry : collect.entrySet()) {
+            IncStaticByYearVO incStaticByYearVO = new IncStaticByYearVO();
+            String[] yearMonth = entry.getKey().split("-");
+            incStaticByYearVO.setYear(Integer.parseInt(yearMonth[0]));
+            incStaticByYearVO.setMonth(Integer.parseInt(yearMonth[1]));
+            List<IncStaByYearVO> value = entry.getValue();
+            value.forEach(item -> {
+                item.setTypeName(dictMap.get(item.getTypeId()));
             });
             incStaticByYearVO.setDetail(value);
             ans.add(incStaticByYearVO);

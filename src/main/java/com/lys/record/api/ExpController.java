@@ -131,4 +131,33 @@ public class ExpController {
         }
         return ApiResponse.success(ans);
     }
+
+    @PostMapping("/statisticsByMonth")
+    public ApiResponse<Object> statisticsByMonth() {
+        int userId = StpUtil.getLoginIdAsInt();
+        List<ExpStaByYearVO> list = expenseMapper.statisticsByMonth(userId);
+        List<ExpStaticByYearVO> ans = new ArrayList<>();
+
+        // 获取收入类型字典数据
+        List<SysDictDataEntity> dictDataList = sysDictService.getDictDataByDictType("exp_type");
+        Map<Integer, String> dictMap = dictDataList.stream()
+                .collect(Collectors.toMap(SysDictDataEntity::getDictCode, SysDictDataEntity::getDictLabel));
+
+        // 按照年月汇总
+        Map<String, List<ExpStaByYearVO>> collect = list.stream()
+                .collect(Collectors.groupingBy(item -> item.getYear() + "-" + String.format("%02d", item.getMonth())));
+        for (Map.Entry<String, List<ExpStaByYearVO>> entry : collect.entrySet()) {
+            ExpStaticByYearVO expStaticByYearVO = new ExpStaticByYearVO();
+            String[] yearMonth = entry.getKey().split("-");
+            expStaticByYearVO.setYear(Integer.parseInt(yearMonth[0]));
+            expStaticByYearVO.setMonth(Integer.parseInt(yearMonth[1]));
+            List<ExpStaByYearVO> value = entry.getValue();
+            value.forEach(item -> {
+                item.setTypeName(dictMap.get(item.getTypeId()));
+            });
+            expStaticByYearVO.setDetail(value);
+            ans.add(expStaticByYearVO);
+        }
+        return ApiResponse.success(ans);
+    }
 }

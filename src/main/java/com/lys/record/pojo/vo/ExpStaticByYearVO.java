@@ -13,5 +13,6 @@ import java.util.List;
 @Data
 public class ExpStaticByYearVO {
     private Integer year;
+    private Integer month;
     private List<ExpStaByYearVO> detail;
 }

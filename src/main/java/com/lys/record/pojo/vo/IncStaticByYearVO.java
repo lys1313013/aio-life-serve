@@ -13,6 +13,9 @@ import java.util.List;
 @Data
 public class IncStaticByYearVO {
     private Integer year;
+
+    private Integer month;
+
     private List<IncStaByYearVO> detail;
 
 }

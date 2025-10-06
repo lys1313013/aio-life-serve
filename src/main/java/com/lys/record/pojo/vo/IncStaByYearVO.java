@@ -9,9 +9,11 @@ public class IncStaByYearVO {
 
     private Integer year;
 
-    private BigDecimal incAmt;
+    private Integer month;
 
-    private Integer incTypeId;
+    private BigDecimal amt;
 
-    private String incTypeName;
+    private Integer typeId;
+
+    private String typeName;
 }

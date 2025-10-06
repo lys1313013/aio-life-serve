@@ -20,6 +20,13 @@ import java.time.LocalDateTime;
 public class ExpenseEntity {
     @TableId(type = IdType.AUTO)
     private Integer id;
+    /**
+     * 交易金额（支付软件上的支付金额）
+     */
+    private BigDecimal transactionAmt;
+    /**
+     * 记账金额
+     */
     private BigDecimal amt;
     private Integer expTypeId;
     private Integer payTypeId;
@@ -27,6 +34,8 @@ public class ExpenseEntity {
      * 交易对方
      */
     private String counterparty;
+
+    private String counterpartyAcct;
     private String remark;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime expTime;
