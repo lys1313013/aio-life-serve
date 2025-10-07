@@ -1,0 +1,67 @@
+package com.lys.record.api;
+
+import cn.dev33.satoken.stp.StpUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.lys.core.constant.StatusConst;
+import com.lys.core.query.CommonQuery;
+import com.lys.core.resq.ApiResponse;
+import com.lys.core.resq.PageResp;
+import com.lys.record.mapper.IBVideoMapper;
+import com.lys.record.pojo.entity.BVideoEntity;
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+/**
+ * 类功能描述
+ *
+ * @author Lys
+ * @date 2025/10/06 23:13
+ */
+@Slf4j
+@RestController
+@AllArgsConstructor
+@RequestMapping("/bilibili-video")
+public class BVideoController {
+
+    private IBVideoMapper bVideoMapper;
+
+    public IBVideoMapper getBaseMapper() {
+        return bVideoMapper;
+    }
+
+    @PostMapping("/query")
+    public ApiResponse<PageResp<BVideoEntity>> query(
+            @RequestBody CommonQuery<BVideoEntity> query) {
+        int userId = StpUtil.getLoginIdAsInt();
+        LambdaQueryWrapper<BVideoEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(BVideoEntity::getUserId, userId);
+        lambdaQueryWrapper.eq(BVideoEntity::getIsDeleted, StatusConst.NO_DELETE);
+        BVideoEntity condition = query.getCondition();
+
+        lambdaQueryWrapper.orderByDesc(BVideoEntity::getUpdateTime);
+        Page<BVideoEntity> page = new Page<>(query.getPage(), query.getPageSize());
+        IPage<BVideoEntity> iPage = bVideoMapper.selectPage(page, lambdaQueryWrapper);
+        PageResp<BVideoEntity> objectPageResp = PageResp.of(iPage.getRecords(), iPage.getTotal());
+        return ApiResponse.success(objectPageResp);
+    }
+
+    @PostMapping("/insertOrUpdate")
+    public ApiResponse<Boolean> insertOrUpdate(@RequestBody BVideoEntity entity) {
+        entity.setUserId(StpUtil.getLoginIdAsInt());
+        boolean b = getBaseMapper().insertOrUpdate(entity);
+        return ApiResponse.success(b);
+    }
+
+
+    @PostMapping("/delete")
+    public ApiResponse<Boolean> delete(@RequestBody BVideoEntity entity) {
+        boolean b = getBaseMapper().deleteById(entity) > 0;
+        return ApiResponse.success(b);
+    }
+}
