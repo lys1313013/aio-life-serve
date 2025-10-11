@@ -54,7 +54,7 @@ public class BVideoEntity extends BaseEntity{
     /**
      * 学习状态
      */
-    private String status;
+    private Integer status;
 
     /**
      * 学习笔记

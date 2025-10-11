@@ -8,14 +8,17 @@ import com.lys.core.constant.StatusConst;
 import com.lys.core.query.CommonQuery;
 import com.lys.core.resq.ApiResponse;
 import com.lys.core.resq.PageResp;
+import com.lys.core.util.SysUtil;
 import com.lys.record.mapper.IBVideoMapper;
 import com.lys.record.pojo.entity.BVideoEntity;
+import com.lys.record.pojo.vo.StatusCount;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 类功能描述
@@ -43,6 +46,13 @@ public class BVideoController {
         lambdaQueryWrapper.eq(BVideoEntity::getUserId, userId);
         lambdaQueryWrapper.eq(BVideoEntity::getIsDeleted, StatusConst.NO_DELETE);
         BVideoEntity condition = query.getCondition();
+        if (SysUtil.isNotEmpty(condition.getStatus())) {
+            // 0 为查询全部状态
+            if (0 != condition.getStatus()) {
+                lambdaQueryWrapper.eq(BVideoEntity::getStatus,
+                        condition.getStatus());
+            }
+        }
 
         lambdaQueryWrapper.orderByDesc(BVideoEntity::getUpdateTime);
         Page<BVideoEntity> page = new Page<>(query.getPage(), query.getPageSize());
@@ -64,4 +74,14 @@ public class BVideoController {
         boolean b = getBaseMapper().deleteById(entity) > 0;
         return ApiResponse.success(b);
     }
+
+    @GetMapping("/getStatusCount")
+    public ApiResponse<Map> getStatusCount() {
+        int userId = StpUtil.getLoginIdAsInt();
+        List<StatusCount> statusCount = getBaseMapper().getStatusCount(userId);
+        Map<Integer, Integer> map = statusCount.stream().collect(
+                Collectors.toMap(StatusCount::getStatus, StatusCount::getCount));
+        return ApiResponse.success(map);
+    }
+
 }
