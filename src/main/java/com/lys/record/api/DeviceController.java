@@ -8,7 +8,7 @@ import com.lys.core.query.CommonQuery;
 import com.lys.core.resq.ApiResponse;
 import com.lys.core.resq.PageResp;
 import com.lys.core.util.SysUtil;
-import com.lys.record.mapper.IEleDeviceMapper;
+import com.lys.record.mapper.IDeviceMapper;
 import com.lys.record.pojo.entity.DeviceEntity;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,10 +25,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @AllArgsConstructor
 @RequestMapping("/device")
-public class EleDeviceController {
-    private IEleDeviceMapper eleDeviceMapper;
+public class DeviceController {
+    private IDeviceMapper eleDeviceMapper;
 
-    public IEleDeviceMapper getBaseMapper() {
+    public IDeviceMapper getBaseMapper() {
         return eleDeviceMapper;
     }
 

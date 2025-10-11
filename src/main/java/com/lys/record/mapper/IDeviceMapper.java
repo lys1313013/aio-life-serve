@@ -9,5 +9,5 @@ import com.lys.record.pojo.entity.DeviceEntity;
  * @author Lys
  * @date 2025/04/04 19:21
  */
-public interface IEleDeviceMapper extends BaseMapper<DeviceEntity> {
+public interface IDeviceMapper extends BaseMapper<DeviceEntity> {
 }
