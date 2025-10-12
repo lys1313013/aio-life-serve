@@ -72,6 +72,10 @@ public class ExpController {
     @PostMapping("/insertOrUpdate")
     public ApiResponse<Boolean> insertOrUpdate(@RequestBody ExpenseEntity entity) {
         entity.setUserId(StpUtil.getLoginIdAsInt());
+        // 新增时，交易金额为空时，默认设置为记账金额
+        if (entity.getId() == null && entity.getTransactionAmt() == null) {
+            entity.setTransactionAmt(entity.getAmt());
+        }
         boolean b = getBaseMapper().insertOrUpdate(entity);
         return ApiResponse.success(b);
     }
