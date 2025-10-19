@@ -32,9 +32,14 @@ public class BVideoEntity extends BaseEntity{
     private String cover;
 
     /**
-     * 视频时长（格式：HH:MM:SS）
+     * 视频时长（单位秒）
      */
-    private String duration;
+    private Integer duration;
+
+    /**
+     * 观看时长
+     */
+    private String watchedDuration;
 
     /**
      * 总集数

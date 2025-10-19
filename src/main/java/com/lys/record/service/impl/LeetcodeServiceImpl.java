@@ -161,7 +161,11 @@ public class LeetcodeServiceImpl extends ServiceImpl<LeetcodeCalendarMapper, Lee
                 }
             }
             if (!flag) {
-                mailService.sendSimpleEmail(userEntity.getEmail(), "leetcode咋还没刷", "leetcode咋还没刷");
+                try {
+                    mailService.sendSimpleEmail(userEntity.getEmail(), "leetcode咋还没刷", "leetcode咋还没刷");
+                } catch (Exception e) {
+                    log.error("邮件发送失败", e);
+                }
             }
         }
         redisUtil.set(redisKey, redisKey, 5, TimeUnit.MINUTES);

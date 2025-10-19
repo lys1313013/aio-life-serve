@@ -11,11 +11,13 @@ import com.lys.core.resq.PageResp;
 import com.lys.core.util.SysUtil;
 import com.lys.record.mapper.IBVideoMapper;
 import com.lys.record.pojo.entity.BVideoEntity;
+import com.lys.record.pojo.vo.BVideoStatisticsVO;
 import com.lys.record.pojo.vo.StatusCount;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -54,6 +56,7 @@ public class BVideoController {
             }
         }
 
+        lambdaQueryWrapper.orderByAsc(BVideoEntity::getStatus);
         lambdaQueryWrapper.orderByDesc(BVideoEntity::getUpdateTime);
         Page<BVideoEntity> page = new Page<>(query.getPage(), query.getPageSize());
         IPage<BVideoEntity> iPage = bVideoMapper.selectPage(page, lambdaQueryWrapper);
@@ -64,6 +67,8 @@ public class BVideoController {
     @PostMapping("/insertOrUpdate")
     public ApiResponse<Boolean> insertOrUpdate(@RequestBody BVideoEntity entity) {
         entity.setUserId(StpUtil.getLoginIdAsInt());
+        entity.setUpdateUser(StpUtil.getLoginIdAsInt());
+        entity.setUpdateTime(LocalDateTime.now());
         boolean b = getBaseMapper().insertOrUpdate(entity);
         return ApiResponse.success(b);
     }
@@ -84,4 +89,20 @@ public class BVideoController {
         return ApiResponse.success(map);
     }
 
+    @GetMapping("/statistics")
+    public ApiResponse<BVideoStatisticsVO> statistics() {
+        int userId = StpUtil.getLoginIdAsInt();
+        BVideoStatisticsVO statisticsVO = new BVideoStatisticsVO();
+        Integer watchTime = bVideoMapper.getWatchTime(userId);
+        Integer totalTime = bVideoMapper.getTotalTime(userId);
+        if (watchTime != null) {
+            statisticsVO.setStudiedSeconds(watchTime);
+        }
+        if (totalTime != null) {
+            statisticsVO.setTotalSeconds(totalTime);
+        }
+        statisticsVO.setUnstudiedSeconds(totalTime - watchTime);
+
+        return ApiResponse.success(statisticsVO);
+    }
 }
