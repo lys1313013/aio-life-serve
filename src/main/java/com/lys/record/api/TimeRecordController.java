@@ -4,7 +4,6 @@ import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.lys.core.constant.StatusConst;
 import com.lys.core.query.CommonQuery;
 import com.lys.core.resq.ApiResponse;
 import com.lys.core.resq.PageResp;
@@ -44,8 +43,8 @@ public class TimeRecordController {
         int userId = StpUtil.getLoginIdAsInt();
         LambdaQueryWrapper<TimeRecordEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(TimeRecordEntity::getUserId, userId);
-        lambdaQueryWrapper.eq(TimeRecordEntity::getIsDeleted, StatusConst.NO_DELETE);
         TimeRecordEntity condition = query.getCondition();
+        lambdaQueryWrapper.eq(TimeRecordEntity::getDate, condition.getDate());
 
         lambdaQueryWrapper.orderByDesc(TimeRecordEntity::getUpdateTime);
         Page<TimeRecordEntity> page = new Page<>(query.getPage(), query.getPageSize());
@@ -54,6 +53,25 @@ public class TimeRecordController {
         return ApiResponse.success(objectPageResp);
     }
 
+    @PostMapping("/save")
+    public ApiResponse<Boolean> save(@RequestBody TimeRecordEntity entity) {
+        entity.setUserId(StpUtil.getLoginIdAsLong());
+        entity.setCreateUser(StpUtil.getLoginIdAsInt());
+        entity.setUpdateTime(LocalDateTime.now());
+        entity.setDuration(entity.getEndTime() - entity.getStartTime());
+
+        getBaseMapper().insert(entity);
+        return ApiResponse.success(true);
+    }
+
+    @PostMapping("/update")
+    public ApiResponse<Boolean> update(@RequestBody TimeRecordEntity entity) {
+        entity.setUserId(StpUtil.getLoginIdAsLong());
+        entity.setUpdateTime(LocalDateTime.now());
+        entity.setDuration(entity.getEndTime() - entity.getStartTime());
+        getBaseMapper().updateById(entity);
+        return ApiResponse.success(true);
+    }
 
     @PostMapping("/batchUpdate")
     public ApiResponse<Boolean> batchUpdate(@RequestBody List<TimeRecordEntity> entityList) {
@@ -74,4 +92,32 @@ public class TimeRecordController {
         return ApiResponse.success(true);
     }
 
+    /**
+     * 删除
+     * @param entity id
+     */
+    @PostMapping("/delete")
+    public ApiResponse<Void> delete(@RequestBody TimeRecordEntity entity) {
+        LambdaQueryWrapper<TimeRecordEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(TimeRecordEntity::getId, entity.getId());
+        queryWrapper.eq(TimeRecordEntity::getUserId, StpUtil.getLoginIdAsInt());
+
+        getBaseMapper().delete(queryWrapper);
+        getBaseMapper().deleteById(entity);
+        return ApiResponse.success();
+    }
+
+    /**
+     * 删除
+     * @param entity id
+     */
+    @PostMapping("/deleteByDate")
+    public ApiResponse<Void> deleteByDay(@RequestBody TimeRecordEntity entity) {
+        LambdaQueryWrapper<TimeRecordEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(TimeRecordEntity::getDate, entity.getDate());
+        queryWrapper.eq(TimeRecordEntity::getUserId, StpUtil.getLoginIdAsInt());
+
+        getBaseMapper().delete(queryWrapper);
+        return ApiResponse.success();
+    }
 }

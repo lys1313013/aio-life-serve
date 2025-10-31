@@ -39,6 +39,4 @@ public class TimeRecordEntity {
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime updateTime;
-
-    private Integer isDeleted;
 }
