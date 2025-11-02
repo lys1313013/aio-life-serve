@@ -9,6 +9,7 @@ import com.lys.core.resq.ApiResponse;
 import com.lys.core.resq.PageResp;
 import com.lys.record.mapper.ITimeRecordEntity;
 import com.lys.record.pojo.entity.TimeRecordEntity;
+import com.lys.record.pojo.query.TimeWeekQuery;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -51,6 +52,24 @@ public class TimeRecordController {
         IPage<TimeRecordEntity> iPage = timeRecordMapper.selectPage(page, lambdaQueryWrapper);
         PageResp<TimeRecordEntity> objectPageResp = PageResp.of(iPage.getRecords(), iPage.getTotal());
         return ApiResponse.success(objectPageResp);
+    }
+
+    /**
+     * 查询指定日期的记录
+     * @param query 查询参数
+     */
+    @PostMapping("/queryForWeek")
+    public ApiResponse<List<TimeRecordEntity>> queryForWeek(
+            @RequestBody CommonQuery<TimeWeekQuery> query) {
+        int userId = StpUtil.getLoginIdAsInt();
+        LambdaQueryWrapper<TimeRecordEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(TimeRecordEntity::getUserId, userId);
+        TimeWeekQuery condition = query.getCondition();
+        lambdaQueryWrapper.between(TimeRecordEntity::getDate, condition.getStartDate(), condition.getEndDate());
+
+        lambdaQueryWrapper.orderByDesc(TimeRecordEntity::getUpdateTime);
+        List<TimeRecordEntity> list = timeRecordMapper.selectList(lambdaQueryWrapper);
+        return ApiResponse.success(list);
     }
 
     @PostMapping("/save")
