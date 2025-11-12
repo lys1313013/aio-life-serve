@@ -161,10 +161,20 @@ public class LeetcodeServiceImpl extends ServiceImpl<LeetcodeCalendarMapper, Lee
                 }
             }
             if (!flag) {
-                try {
+                // 获取当前时间和星期几
+                LocalDate now = LocalDate.now();
+                java.time.DayOfWeek dayOfWeek = now.getDayOfWeek();
+                java.time.LocalTime currentTime = java.time.LocalTime.now();
+
+                // 判断是否为周一到周五且时间在19点前
+                boolean isWeekday = dayOfWeek.getValue() >= 1 && dayOfWeek.getValue() <= 5;
+                boolean isBefore7pm = currentTime.isBefore(java.time.LocalTime.of(19, 0));
+
+                // 只有在非工作日或者19点后才发送邮件
+                if (!isWeekday || !isBefore7pm) {
                     mailService.sendSimpleEmail(userEntity.getEmail(), "leetcode咋还没刷", "leetcode咋还没刷");
-                } catch (Exception e) {
-                    log.error("邮件发送失败", e);
+                } else {
+                    log.info("周一到周五19点前不发送邮件提醒，当前时间：{} {}", dayOfWeek, currentTime);
                 }
             }
         }
