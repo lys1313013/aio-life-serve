@@ -12,10 +12,7 @@ import com.lys.record.pojo.entity.TimeRecordEntity;
 import com.lys.record.pojo.query.TimeWeekQuery;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -138,5 +135,28 @@ public class TimeRecordController {
 
         getBaseMapper().delete(queryWrapper);
         return ApiResponse.success();
+    }
+
+    /**
+     * 推荐分类
+     * @param date 日期
+     * @param time 时间
+     * @return 分类id
+     */
+    @GetMapping("/recommendType")
+    public ApiResponse<String> recommendType(String date, int time) {
+        int userId = StpUtil.getLoginIdAsInt();
+        // 先实现个简单的，昨天这个时间在干啥
+
+        // date 转成昨天
+        LocalDate localDate = LocalDate.parse(date);
+        LocalDate yesterday = localDate.minusDays(1);
+        date = yesterday.toString();
+
+        TimeRecordEntity timeRecordEntity = timeRecordMapper.recommendType(userId, date, time);
+        if (timeRecordEntity == null) {
+            return ApiResponse.success("");
+        }
+        return ApiResponse.success(timeRecordEntity.getCategoryId());
     }
 }

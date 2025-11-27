@@ -14,6 +14,10 @@ import java.time.LocalDateTime;
 public class TimeRecordEntity {
 
     private Long userId;
+
+    /**
+     * 分类id
+     */
     private String categoryId;
 
     @JsonFormat(pattern = "yyyy-MM-dd")
