@@ -4,6 +4,7 @@ package com.lys.record.pojo.entity;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -11,6 +12,7 @@ import java.time.LocalDateTime;
 
 @Data
 @TableName("time_record")
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class TimeRecordEntity {
 
     private Long userId;
@@ -26,11 +28,18 @@ public class TimeRecordEntity {
     /**
      * 开始时间
      */
-    private Long startTime;
-    private Long endTime;
+    private Integer startTime;
+    /**
+     * 结束时间
+     */
+    private Integer endTime;
     private String title;
     private String description;
-    private Long duration;
+    private Integer duration;
+
+    /**
+     * 是否手动添加
+     */
     private Long isManual;
 
     @TableId
