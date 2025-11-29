@@ -72,8 +72,8 @@ public class ExerciseRecordController {
      */
     @PostMapping("/update")
     public ApiResponse<Boolean> update(@RequestBody ExerciseRecordEntity exerciseRecord) {
-        Long userId = StpUtil.getLoginIdAsLong();
-        exerciseRecord.setUpdateUser(userId.intValue());
+        long userId = StpUtil.getLoginIdAsLong();
+        exerciseRecord.setUpdateUser((int) userId);
         return ApiResponse.success(getBaseMapper().updateById(exerciseRecord) > 0);
     }
 
