@@ -154,12 +154,15 @@ public class TimeRecordController {
     @GetMapping("/recommendType")
     public ApiResponse<String> recommendType(String date, int time) {
         int userId = StpUtil.getLoginIdAsInt();
-        // 先实现个简单的，昨天这个时间在干啥
-
-        // date 转成昨天
-        LocalDate localDate = LocalDate.parse(date);
-        LocalDate yesterday = localDate.minusDays(1);
-        date = yesterday.toString();
+        // 判断 如果是周末的话 date 变为减7天
+        if (LocalDate.parse(date).getDayOfWeek().getValue() >= 6) {
+            date = LocalDate.parse(date).minusDays(7).toString();
+        } else  {
+            // date 转成昨天
+            LocalDate localDate = LocalDate.parse(date);
+            LocalDate yesterday = localDate.minusDays(1);
+            date = yesterday.toString();
+        }
 
         TimeRecordEntity timeRecordEntity = timeRecordMapper.recommendType(userId, date, time);
         if (timeRecordEntity == null) {
