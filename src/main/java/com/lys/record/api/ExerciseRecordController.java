@@ -80,8 +80,10 @@ public class ExerciseRecordController {
     // 批量删除
     @PostMapping("/deleteBatch")
     public ApiResponse<Boolean> deleteBatch(@RequestBody CommonReq commonReq) {
-        // todo 加权限删除
-        exerciseRecordService.removeBatchByIds(commonReq.getIdList());
+        LambdaQueryWrapper<ExerciseRecordEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(ExerciseRecordEntity::getUserId, StpUtil.getLoginIdAsLong());
+        lambdaQueryWrapper.in(ExerciseRecordEntity::getId, commonReq.getIdList());
+        exerciseRecordService.remove(lambdaQueryWrapper);
         return ApiResponse.success();
     }
 
@@ -90,6 +92,9 @@ public class ExerciseRecordController {
      */
     @GetMapping("/get/{id}")
     public ApiResponse<ExerciseRecordEntity> get(@PathVariable Long id) {
-        return ApiResponse.success(getBaseMapper().selectById(id));
+        LambdaQueryWrapper<ExerciseRecordEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(ExerciseRecordEntity::getUserId, StpUtil.getLoginIdAsLong());
+        lambdaQueryWrapper.eq(ExerciseRecordEntity::getId, id);
+        return ApiResponse.success(getBaseMapper().selectOne(lambdaQueryWrapper));
     }
 }
