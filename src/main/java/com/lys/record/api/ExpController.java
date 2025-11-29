@@ -12,6 +12,7 @@ import com.lys.core.util.SysUtil;
 import com.lys.record.mapper.IExpenseMapper;
 import com.lys.record.pojo.entity.ExpenseEntity;
 import com.lys.record.pojo.entity.SysDictDataEntity;
+import com.lys.record.pojo.query.ExpenseQuery;
 import com.lys.record.pojo.req.CommonReq;
 import com.lys.record.pojo.vo.ExpStaByYearVO;
 import com.lys.record.pojo.vo.ExpStaticByYearVO;
@@ -53,14 +54,16 @@ public class ExpController {
 
     @PostMapping("/query")
     public ApiResponse<PageResp<ExpenseEntity>> query(
-            @RequestBody CommonQuery<ExpenseEntity> query) {
+            @RequestBody CommonQuery<ExpenseQuery> query) {
         int userId = StpUtil.getLoginIdAsInt();
         LambdaQueryWrapper<ExpenseEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(ExpenseEntity::getUserId, userId);
         lambdaQueryWrapper.eq(ExpenseEntity::getIsDeleted, StatusConst.NO_DELETE);
-        ExpenseEntity condition = query.getCondition();
+        ExpenseQuery condition = query.getCondition();
         lambdaQueryWrapper.eq(SysUtil.isNotEmpty(condition.getExpTypeId()), ExpenseEntity::getExpTypeId,
                 condition.getExpTypeId());
+        lambdaQueryWrapper.ge(condition.getStartTime() != null, ExpenseEntity::getExpTime, condition.getStartTime());
+        lambdaQueryWrapper.le(condition.getEndTime() != null, ExpenseEntity::getExpTime, condition.getEndTime());
         lambdaQueryWrapper.like(SysUtil.isNotEmpty(condition.getRemark()), ExpenseEntity::getRemark, condition.getRemark());
         lambdaQueryWrapper.orderByDesc(ExpenseEntity::getExpTime);
         Page<ExpenseEntity> page = new Page<>(query.getPage(), query.getPageSize());
