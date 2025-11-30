@@ -62,9 +62,15 @@ public class ExpController {
         ExpenseQuery condition = query.getCondition();
         lambdaQueryWrapper.eq(SysUtil.isNotEmpty(condition.getExpTypeId()), ExpenseEntity::getExpTypeId,
                 condition.getExpTypeId());
+        lambdaQueryWrapper.eq(SysUtil.isNotEmpty(condition.getPayTypeId()), ExpenseEntity::getPayTypeId,
+                condition.getPayTypeId());
+        lambdaQueryWrapper.likeRight(SysUtil.isNotEmpty(condition.getYear()), ExpenseEntity::getExpTime,
+                condition.getYear());
         lambdaQueryWrapper.ge(condition.getStartTime() != null, ExpenseEntity::getExpTime, condition.getStartTime());
         lambdaQueryWrapper.le(condition.getEndTime() != null, ExpenseEntity::getExpTime, condition.getEndTime());
         lambdaQueryWrapper.like(SysUtil.isNotEmpty(condition.getRemark()), ExpenseEntity::getRemark, condition.getRemark());
+        lambdaQueryWrapper.like(SysUtil.isNotEmpty(condition.getCounterparty()), ExpenseEntity::getCounterparty, condition.getCounterparty());
+        lambdaQueryWrapper.like(SysUtil.isNotEmpty(condition.getExpDesc()), ExpenseEntity::getExpDesc, condition.getExpDesc());
         lambdaQueryWrapper.orderByDesc(ExpenseEntity::getExpTime);
         Page<ExpenseEntity> page = new Page<>(query.getPage(), query.getPageSize());
         IPage<ExpenseEntity> iPage = expenseMapper.selectPage(page, lambdaQueryWrapper);
@@ -112,6 +118,9 @@ public class ExpController {
         return ApiResponse.success();
     }
 
+    /**
+     * 按年度统计支出
+     */
     @PostMapping("/statisticsByYear")
     public ApiResponse<Object> statisticsByYear() {
         int userId = StpUtil.getLoginIdAsInt();
@@ -139,6 +148,9 @@ public class ExpController {
         return ApiResponse.success(ans);
     }
 
+    /**
+     * 按月度统计支出
+     */
     @PostMapping("/statisticsByMonth")
     public ApiResponse<Object> statisticsByMonth() {
         int userId = StpUtil.getLoginIdAsInt();

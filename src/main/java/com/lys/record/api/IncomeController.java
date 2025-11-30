@@ -11,6 +11,7 @@ import com.lys.core.util.SysUtil;
 import com.lys.record.mapper.IIncomeMapper;
 import com.lys.record.pojo.entity.IncomeEntity;
 import com.lys.record.pojo.entity.SysDictDataEntity;
+import com.lys.record.pojo.query.IncomeQuery;
 import com.lys.record.pojo.vo.IncStaByYearVO;
 import com.lys.record.pojo.vo.IncStaticByYearVO;
 import com.lys.record.service.ISysDictService;
@@ -47,13 +48,14 @@ public class IncomeController {
 
     @PostMapping("/query")
     public ApiResponse<PageResp<IncomeEntity>> query(
-            @RequestBody CommonQuery<IncomeEntity> query) {
+            @RequestBody CommonQuery<IncomeQuery> query) {
         int userId = StpUtil.getLoginIdAsInt();
         LambdaQueryWrapper<IncomeEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(IncomeEntity::getUserId, userId);
-        IncomeEntity condition = query.getCondition();
+        IncomeQuery condition = query.getCondition();
         lambdaQueryWrapper.eq(SysUtil.isNotEmpty(condition.getIncTypeId()), IncomeEntity::getIncTypeId,
                 condition.getIncTypeId());
+        lambdaQueryWrapper.likeRight(SysUtil.isNotEmpty(condition.getYear()), IncomeEntity::getIncDate, condition.getYear());
         lambdaQueryWrapper.orderByDesc(IncomeEntity::getIncDate);
         Page<IncomeEntity> page = new Page<>(query.getPage(), query.getPageSize());
         IPage<IncomeEntity> iPage = incomeMapper.selectPage(page, lambdaQueryWrapper);

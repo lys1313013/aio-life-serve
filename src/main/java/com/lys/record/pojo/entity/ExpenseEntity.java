@@ -31,6 +31,10 @@ public class ExpenseEntity {
      */
     private BigDecimal amt;
     private Integer expTypeId;
+
+    /**
+     * 支付方式
+     */
     private Integer payTypeId;
     /**
      * 交易对方

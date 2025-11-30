@@ -40,7 +40,7 @@ public class SysDictTypeController {
 
     @GetMapping("/getByDictType")
     public ApiResponse<SysDictTypeDetailVO> queryById(String dictType) {
-//        // 根据类型英文名称查询类型id
+        // 根据类型英文名称查询类型id
         LambdaQueryWrapper<SysDictTypeEntity> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(SysDictTypeEntity::getDictType, dictType);
         SysDictTypeEntity sysDictTypeEntity = sysDictTypeMapper.selectOne(queryWrapper);

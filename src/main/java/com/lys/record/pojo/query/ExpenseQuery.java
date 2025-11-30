@@ -20,9 +20,29 @@ public class ExpenseQuery {
     private String expTypeId;
 
     /**
+     * 支付方式id
+     */
+    private String payTypeId;
+
+     /**
+     * 年份
+     */
+    private String year;
+
+    /**
      * 备注
      */
     private String remark;
+
+     /**
+     * 交易对方
+     */
+    private String counterparty;
+
+    /**
+     * 交易描述
+     */
+    private String expDesc;
 
      /**
      * 支出开始时间
