@@ -8,6 +8,7 @@ import com.lys.record.service.ILeetcodeService;
 import com.lys.sso.mapper.UserMapper;
 import com.lys.sso.pojo.entity.UserEntity;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -23,6 +24,7 @@ import java.util.List;
  * @author Lys
  * @date 2025/04/13 13:56
  */
+@Slf4j
 @RestController
 @AllArgsConstructor
 @RequestMapping("/dashboard")
@@ -39,11 +41,26 @@ public class DashboardController {
     public ApiResponse<List<DashboardCardVO>> card() {
         int userId = StpUtil.getLoginIdAsInt();
 
-        // 同步leetcode信息
-        UserEntity userEntity = userMapper.selectById(userId);
-        leetcodeService.syncLeetcodeInfo(userEntity);
-
-        List<DashboardCardVO> dashboardCard = leetcodeService.getDashboardCard(userId);
+        List<DashboardCardVO> dashboardCard = new ArrayList<>();
+        try {
+            // 同步leetcode信息
+            UserEntity userEntity = userMapper.selectById(userId);
+            leetcodeService.syncLeetcodeInfo(userEntity);
+            dashboardCard.addAll(leetcodeService.getDashboardCard(userId));
+        } catch (Exception e) {
+            log.error("获取看板卡片失败", e);
+        }
+        // 今年已过
+        // 计算今年已过的天数
+        LocalDate today = LocalDate.now();
+        LocalDate firstDayOfYear = LocalDate.of(today.getYear(), 1, 1);
+        long daysPassed = ChronoUnit.DAYS.between(firstDayOfYear, today) + 1;
+        DashboardCardVO dashboardCardVO = new DashboardCardVO();
+        dashboardCardVO.setTitle("今年已过");
+        dashboardCardVO.setValue((int) daysPassed);
+        dashboardCardVO.setTotalTitle("剩余天数");
+        dashboardCardVO.setTotalValue(today.lengthOfYear() - (int) daysPassed);
+        dashboardCard.add(dashboardCardVO);
         return ApiResponse.success(dashboardCard);
     }
 
