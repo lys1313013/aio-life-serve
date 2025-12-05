@@ -1,26 +1,19 @@
 package com.lys.sso.api;
 
 import cn.dev33.satoken.stp.StpUtil;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.lys.core.resq.ApiResponse;
-import com.lys.sso.mapper.LoginLogMapper;
-import com.lys.sso.mapper.UserMapper;
-import com.lys.sso.pojo.entity.LoginLogEntity;
-import com.lys.sso.pojo.entity.UserEntity;
 import com.lys.sso.pojo.req.LoginReq;
 import com.lys.sso.pojo.vo.UserInfoVO;
 import com.lys.sso.pojo.vo.UserLoginVO;
-import com.lys.sso.util.PasswordUtil;
+import com.lys.sso.service.IUserService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -33,15 +26,7 @@ import java.util.Map;
 @AllArgsConstructor
 public class UserController {
 
-    private final UserMapper userMapper;
-
-    private final LoginLogMapper loginLogMapper;
-
-    /**
-     * 盐值（待抽取）
-     */
-    @Value("${sa-token.salt}")
-    public static String salt = "test";
+    private final IUserService userService;
 
     /**
      * 登录
@@ -51,39 +36,8 @@ public class UserController {
      */
     @PostMapping("/auth/login")
     public ApiResponse<UserLoginVO> login(@RequestBody LoginReq loginReq, HttpServletRequest request) {
-        LambdaQueryWrapper<UserEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.eq(UserEntity::getUsername, loginReq.getUsername());
-        // 密码加盐
-        String password = loginReq.getPassword();
-        String encryptedPassword = PasswordUtil.encryptPassword(password, salt);
-
-        lambdaQueryWrapper.eq(UserEntity::getPassword, encryptedPassword);
-
-        // 记录登录日志
-        LoginLogEntity loginLogEntity = new LoginLogEntity();
-        loginLogEntity.setUsername(loginReq.getUsername());
         String ip = getIp(request);
-        // 可以将ipAddress记录到loginLogEntity中
-        loginLogEntity.setIpAddress(ip);
-
-        UserEntity userEntity = userMapper.selectOne(lambdaQueryWrapper);
-        if (userEntity == null) {
-            loginLogEntity.setPassword(password);
-            loginLogMapper.insert(loginLogEntity);
-            throw new RuntimeException("用户名或密码错误");
-        }
-        loginLogEntity.setUserId(userEntity.getId());
-        loginLogMapper.insert(loginLogEntity);
-        StpUtil.login(userEntity.getId());
-        String token = StpUtil.getTokenValue();
-
-        UserLoginVO userLoginVO = new UserLoginVO();
-        userLoginVO.setId(userEntity.getId());
-        userLoginVO.setRealName(userEntity.getNickname());
-        userLoginVO.setUsername(userEntity.getNickname());
-        userLoginVO.setRoles(List.of("super"));
-        userLoginVO.setAccessToken(token);
-        return ApiResponse.success(userLoginVO);
+        return ApiResponse.success(userService.login(loginReq, ip));
     }
 
     /**
@@ -92,15 +46,7 @@ public class UserController {
     @GetMapping("/user/info")
     public ApiResponse<UserInfoVO> info() {
         int id = StpUtil.getLoginIdAsInt();
-        UserEntity userEntity = userMapper.selectById(id);
-        UserInfoVO userInfoVO = new UserInfoVO();
-        userInfoVO.setId(userEntity.getId());
-        userInfoVO.setRealName(userEntity.getNickname());
-        userInfoVO.setUsername(userEntity.getNickname());
-        userInfoVO.setAvatar(userEntity.getAvatar());
-        userInfoVO.setEmail(userEntity.getEmail());
-        userInfoVO.setRoles(List.of("super"))       ;
-        return ApiResponse.success(userInfoVO);
+        return ApiResponse.success(userService.getUserInfo(id));
     }
 
     @GetMapping("/auth/codes")
