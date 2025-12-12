@@ -2,6 +2,7 @@ package com.lys.record.api;
 
 import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.lys.core.query.CommonQuery;
@@ -11,6 +12,7 @@ import com.lys.record.mapper.IRelaEventMapper;
 import com.lys.record.mapper.IThoughtMapper;
 import com.lys.record.pojo.entity.RelaEventEntity;
 import com.lys.record.pojo.entity.ThoughtEntity;
+import com.lys.record.pojo.req.CommonReq;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -92,6 +94,18 @@ public class ThoughtController {
             eventEntity.setThoughtId(entity.getId());
             relaEventMapper.insertOrUpdate(eventEntity);
         });
+        return ApiResponse.success(true);
+    }
+
+    /**
+     * 批量删除
+     */
+    @PostMapping("/batchDelete")
+    public ApiResponse<Boolean> delete(@RequestBody CommonReq CommonReq) {
+        LambdaUpdateWrapper<ThoughtEntity> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+        lambdaUpdateWrapper.eq(ThoughtEntity::getUserId, StpUtil.getLoginIdAsLong());
+        lambdaUpdateWrapper.in(ThoughtEntity::getId, CommonReq.getIdList());
+        getBaseMapper().delete(lambdaUpdateWrapper);
         return ApiResponse.success(true);
     }
 
