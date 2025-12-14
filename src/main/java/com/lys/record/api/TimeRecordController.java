@@ -40,6 +40,13 @@ public class TimeRecordController {
             @RequestBody CommonQuery<TimeRecordEntity> query) {
         int userId = StpUtil.getLoginIdAsInt();
         LambdaQueryWrapper<TimeRecordEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.select(
+                TimeRecordEntity::getId,
+                TimeRecordEntity::getDate,
+                TimeRecordEntity::getCategoryId,
+                TimeRecordEntity::getStartTime,
+                TimeRecordEntity::getEndTime,
+                TimeRecordEntity::getTitle);
         lambdaQueryWrapper.eq(TimeRecordEntity::getUserId, userId);
         TimeRecordEntity condition = query.getCondition();
         lambdaQueryWrapper.eq(TimeRecordEntity::getDate, condition.getDate());
@@ -65,9 +72,7 @@ public class TimeRecordController {
                 TimeRecordEntity::getDate,
                 TimeRecordEntity::getStartTime,
                 TimeRecordEntity::getEndTime,
-                TimeRecordEntity::getTitle,
-                TimeRecordEntity::getDescription,
-                TimeRecordEntity::getIsManual);
+                TimeRecordEntity::getTitle);
         lambdaQueryWrapper.eq(TimeRecordEntity::getUserId, userId);
         TimeWeekQuery condition = query.getCondition();
         lambdaQueryWrapper.between(TimeRecordEntity::getDate, condition.getStartDate(), condition.getEndDate());
