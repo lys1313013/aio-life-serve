@@ -19,6 +19,6 @@ public class TaskServiceImpl extends ServiceImpl<ITaskMapper, TaskEntity> implem
 
     @Override
     public void updateBatchById(List<TaskEntity> list) {
-        super.saveBatch(list);
+        super.updateBatchById(list);
     }
 }
