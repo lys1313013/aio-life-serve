@@ -2,6 +2,7 @@ package com.lys.record.api;
 
 import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.lys.core.constant.StatusConst;
@@ -104,5 +105,28 @@ public class BVideoController {
         statisticsVO.setUnstudiedSeconds(totalTime - watchTime);
 
         return ApiResponse.success(statisticsVO);
+    }
+
+    @PostMapping("/tagVideo")
+    public ApiResponse<Boolean> tagVideo(@RequestBody BVideoEntity entity) {
+        log.info("tagVideo: {}", entity);
+        entity.setUserId(StpUtil.getLoginIdAsInt());
+        getBaseMapper().insert(entity);
+        return ApiResponse.success();
+    }
+
+    @PostMapping("/syncProgress")
+    public ApiResponse<Boolean> syncProgress(@RequestBody BVideoEntity entity) {
+        entity.setUserId(StpUtil.getLoginIdAsInt());
+        log.info("bvid: {}", entity.getBvid());
+        log.info("currentEpisode: {}", entity.getCurrentEpisode());
+        LambdaUpdateWrapper<BVideoEntity> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+        lambdaUpdateWrapper.set(BVideoEntity::getCurrentEpisode, entity.getCurrentEpisode());
+        lambdaUpdateWrapper.set(BVideoEntity::getWatchedDuration, entity.getWatchedDuration());
+        lambdaUpdateWrapper.eq(BVideoEntity::getUserId, entity.getUserId());
+        lambdaUpdateWrapper.eq(BVideoEntity::getBvid, entity.getBvid());
+        int update = getBaseMapper().update(null, lambdaUpdateWrapper);
+        log.info("syncProgress: {}", update);
+        return ApiResponse.success();
     }
 }
