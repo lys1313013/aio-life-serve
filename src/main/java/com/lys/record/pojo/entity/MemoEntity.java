@@ -21,6 +21,11 @@ public class MemoEntity extends BaseEntity {
     private Long userId;
 
     /**
+     * 标题
+     */
+    private String title;
+
+    /**
      * 内容
      */
     private String content;
