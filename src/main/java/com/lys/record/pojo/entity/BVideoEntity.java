@@ -52,11 +52,6 @@ public class BVideoEntity extends BaseEntity{
     private Integer currentEpisode = 1;
 
     /**
-     * 观看进度（百分比）
-     */
-    private Double progress = 0.0;
-
-    /**
      * 学习状态
      */
     private Integer status;
