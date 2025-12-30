@@ -48,7 +48,7 @@ public class ExerciseRecordController {
                 condition.getExerciseTypeId());
 //        lambdaQueryWrapper.eq(SysUtil.isNotEmpty(condition.getExerciseDate()), ExerciseRecordEntity::getExerciseDate,
 //                condition.getExerciseDate());
-        lambdaQueryWrapper.orderByDesc(ExerciseRecordEntity::getExerciseDate);
+        lambdaQueryWrapper.orderByDesc(ExerciseRecordEntity::getExerciseDate, ExerciseRecordEntity::getCreateTime);
         // 分页
         Page<ExerciseRecordEntity> page = new Page<>(query.getPage(), query.getPageSize());
         IPage<ExerciseRecordEntity> iPage = getBaseMapper().selectPage(page, lambdaQueryWrapper);
