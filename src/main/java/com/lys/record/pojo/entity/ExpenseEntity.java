@@ -2,6 +2,7 @@ package com.lys.record.pojo.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -32,6 +33,8 @@ public class ExpenseEntity {
     private BigDecimal amt;
     private Integer expTypeId;
 
+    private Integer userId;
+
     /**
      * 支付方式
      */
@@ -41,11 +44,21 @@ public class ExpenseEntity {
      */
     private String counterparty;
 
+    /**
+     * 对方账号
+     */
     private String counterpartyAcct;
+
+    /**
+     * 备注
+     */
     private String remark;
+
+    /**
+     * 支出时间
+     */
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime expTime;
-    private Integer userId;
 
     /**
      * 交易号
@@ -57,6 +70,17 @@ public class ExpenseEntity {
      */
     private String expDesc;
 
+    /**
+     * 商家订单号
+     */
+    private String merchantOrderNo;
+
+    /**
+     * 交易状态
+     */
+    private String transactionStatus;
+
+    @TableLogic
     private Integer isDeleted;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createTime;
