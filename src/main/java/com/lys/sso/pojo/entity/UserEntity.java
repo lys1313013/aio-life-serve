@@ -46,6 +46,11 @@ public class UserEntity {
     private String email;
 
     /**
+     * github 用户名
+     */
+    private String githubUsername;
+
+    /**
      * leetcode账号
      */
     private String leetcodeAcct;

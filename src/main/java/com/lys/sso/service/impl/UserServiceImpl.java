@@ -83,6 +83,7 @@ public class UserServiceImpl implements IUserService {
         userInfoVO.setAvatar(userEntity.getAvatar());
         userInfoVO.setEmail(userEntity.getEmail());
         userInfoVO.setRoles(List.of("super"));
+        userInfoVO.setGithubUsername(userEntity.getGithubUsername());
         return userInfoVO;
     }
 }
