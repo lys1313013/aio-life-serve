@@ -26,6 +26,11 @@ public class UserInfoVO {
     private String githubUsername;
 
     /**
+     * github token
+     */
+    private String githubToken;
+
+    /**
      * 头像url
      */
     private String avatar;

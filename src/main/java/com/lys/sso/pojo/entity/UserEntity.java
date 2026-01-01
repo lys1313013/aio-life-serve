@@ -51,6 +51,11 @@ public class UserEntity {
     private String githubUsername;
 
     /**
+     * github token(只需要有Access public repositories权限）
+     */
+    private String githubToken;
+
+    /**
      * leetcode账号
      */
     private String leetcodeAcct;
