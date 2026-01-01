@@ -12,5 +12,8 @@ import lombok.Setter;
 @Getter
 @Setter
 public class SysDictTypeQuery {
-    private String dictName;
+
+    private String dictId;
+
+    private String dictLabel;
 }

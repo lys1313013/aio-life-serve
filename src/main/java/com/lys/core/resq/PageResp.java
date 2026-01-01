@@ -29,6 +29,10 @@ public class PageResp<T> {
    */
   private Long total;
 
+  public static <T> PageResp<T> of() {
+      return new PageResp<>();
+  }
+
   /**
    * 创建分页数据返回对象
    *

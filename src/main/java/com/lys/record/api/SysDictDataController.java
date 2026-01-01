@@ -47,12 +47,15 @@ public class SysDictDataController {
         lambdaQueryWrapper.orderByAsc(SysDictDataEntity::getDictId, SysDictDataEntity::getDictSort);
 
         SysDictTypeQuery condition = query.getCondition();
+        if (condition != null && SysUtil.isNotEmpty(condition.getDictLabel())) {
+            lambdaQueryWrapper.like(SysDictDataEntity::getDictLabel, condition.getDictLabel());
+        }
 
         // 字典名称使用字典类型表过滤查询
-        if (SysUtil.isNotEmpty(condition.getDictName())) {
-            LambdaQueryWrapper<SysDictTypeEntity> lambdaQueryWrapper1 = new LambdaQueryWrapper<>();
-            lambdaQueryWrapper1.like(SysDictTypeEntity::getDictName, condition.getDictName());
-            List<SysDictTypeEntity> sysDictTypeEntities = sysDictTypeMapper.selectList(lambdaQueryWrapper1);
+        if (condition != null && SysUtil.isNotEmpty(condition.getDictId())) {
+            LambdaQueryWrapper<SysDictTypeEntity> typeQueryWrapper = new LambdaQueryWrapper<>();
+            typeQueryWrapper.eq(SysDictTypeEntity::getDictId, condition.getDictId());
+            List<SysDictTypeEntity> sysDictTypeEntities = sysDictTypeMapper.selectList(typeQueryWrapper);
             if (SysUtil.isEmpty(sysDictTypeEntities)) {
                 return ApiResponse.success();
             } else {
@@ -64,8 +67,12 @@ public class SysDictDataController {
         // 分页
         Page<SysDictDataEntity> page = new Page<>(query.getPage(), query.getPageSize());
         IPage<SysDictDataEntity> iPage = getBaseMapper().selectPage(page, lambdaQueryWrapper);
+        if (iPage.getTotal() == 0) {
+            return ApiResponse.success(PageResp.of());
+        }
 
         List<SysDictDataEntity> records = iPage.getRecords();
+
         // 补充dictName
         Collection<Integer> dictIdList = records.stream().map(SysDictDataEntity::getDictId).distinct().toList();
         List<SysDictTypeEntity> sysDictTypeEntities = sysDictTypeMapper.selectByIds(dictIdList);
