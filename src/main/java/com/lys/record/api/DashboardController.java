@@ -3,7 +3,6 @@ package com.lys.record.api;
 import cn.dev33.satoken.stp.StpUtil;
 import com.lys.core.resq.ApiResponse;
 import com.lys.record.pojo.vo.DashboardCardVO;
-import com.lys.record.pojo.vo.StaticVO;
 import com.lys.record.service.ILeetcodeService;
 import com.lys.sso.mapper.UserMapper;
 import com.lys.sso.pojo.entity.UserEntity;
@@ -43,6 +42,9 @@ public class DashboardController {
         int userId = StpUtil.getLoginIdAsInt();
 
         List<DashboardCardVO> dashboardCardList = new ArrayList<>();
+        // 获取今年已过
+        dashboardCardList.add(getYearPassedCard());
+
         try {
             // 同步leetcode信息
             UserEntity userEntity = userMapper.selectById(userId);
@@ -79,39 +81,30 @@ public class DashboardController {
         } catch (Exception e) {
             log.error("获取看板卡片失败", e);
         }
-        // 今年已过
-        // 计算今年已过的天数
-        LocalDate today = LocalDate.now();
-        LocalDate firstDayOfYear = LocalDate.of(today.getYear(), 1, 1);
-        long daysPassed = ChronoUnit.DAYS.between(firstDayOfYear, today) + 1;
-        DashboardCardVO dashboardCardVO = new DashboardCardVO();
-        dashboardCardVO.setTitle("今年已过");
-        dashboardCardVO.setIcon("tdesign:time");
-        dashboardCardVO.setValue(""+(int) daysPassed);
-        dashboardCardVO.setTotalTitle("剩余天数");
-        dashboardCardVO.setTotalValue("" + (today.lengthOfYear() - (int) daysPassed));
-        dashboardCardList.add(dashboardCardVO);
+
         return ApiResponse.success(dashboardCardList);
     }
 
     /**
-     * 统计信息
+     * 获取今年已过的天数
      */
-    @PostMapping("/static")
-    public ApiResponse<StaticVO> staticInfo() {
-        int userId = StpUtil.getLoginIdAsInt();
-
-        List<StaticVO> voList = new ArrayList<>();
-        StaticVO staticVO = new StaticVO();
-        staticVO.setName("今年已过");
-
-        // 计算今年已过的天数
+    private int getDaysPassed() {
         LocalDate today = LocalDate.now();
         LocalDate firstDayOfYear = LocalDate.of(today.getYear(), 1, 1);
-        long daysPassed = ChronoUnit.DAYS.between(firstDayOfYear, today) + 1;
-        staticVO.setValue((int) daysPassed);
+        return (int) ChronoUnit.DAYS.between(firstDayOfYear, today) + 1;
+    }
 
-        voList.add(staticVO);
-        return ApiResponse.success(staticVO);
+    /**
+     * 获取今年已过卡片
+     */
+    private DashboardCardVO getYearPassedCard() {
+        int daysPassed = getDaysPassed();
+        DashboardCardVO dashboardCardVO = new DashboardCardVO();
+        dashboardCardVO.setTitle("今年已过");
+        dashboardCardVO.setIcon("tdesign:time");
+        dashboardCardVO.setValue("" + daysPassed);
+        dashboardCardVO.setTotalTitle("剩余天数");
+        dashboardCardVO.setTotalValue("" + (LocalDate.now().lengthOfYear() - daysPassed));
+        return dashboardCardVO;
     }
 }
