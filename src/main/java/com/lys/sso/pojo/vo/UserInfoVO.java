@@ -31,6 +31,11 @@ public class UserInfoVO {
     private String githubToken;
 
     /**
+     * leetcode 账号
+     */
+    private String leetcodeAcct;
+
+    /**
      * 头像url
      */
     private String avatar;

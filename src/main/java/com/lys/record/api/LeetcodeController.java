@@ -3,8 +3,6 @@ package com.lys.record.api;
 import cn.dev33.satoken.stp.StpUtil;
 import com.lys.core.resq.ApiResponse;
 import com.lys.record.service.ILeetcodeService;
-import com.lys.sso.mapper.UserMapper;
-import com.lys.sso.pojo.entity.UserEntity;
 import jakarta.mail.MessagingException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,16 +18,9 @@ public class LeetcodeController {
 
     private ILeetcodeService leetcodeService;
 
-    private UserMapper userMapper;
-
-    @GetMapping("/heatmap")
-    public ApiResponse<Void> fetchAndSaveUserCalendar() {
-        int userId = StpUtil.getLoginIdAsInt();
-        UserEntity userEntity = userMapper.selectById(userId);
-        leetcodeService.syncLeetcodeInfo(userEntity);
-        return ApiResponse.success();
-    }
-
+    /**
+     * 没啥地方使用，只是用来手动触发
+     */
     @GetMapping("/notifyTodayQuestion")
     public ApiResponse<Void> notifyTodayQuestion() throws MessagingException {
         StpUtil.getLoginIdAsInt();

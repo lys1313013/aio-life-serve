@@ -18,11 +18,18 @@ public class AutoTask {
     @Resource
     private ILeetcodeService leetcodeService;
 
+    /**
+     * 检查 leetcode是否打卡
+     */
     @Scheduled(cron = "${aio.life.serve.corn.leetcodeCheck:0 30 23 * * ?}")
     public void leetcodeCheck() {
         leetcodeService.check();
     }
 
+
+    /**
+     * 邮件通知每日一题
+     */
     @Scheduled(cron = "${aio.life.serve.corn.notifyTodayQuestion:0 0 7 * * ?}")
     public void notifyTodayQuestion() throws MessagingException {
         leetcodeService.notifyTodayQuestion();

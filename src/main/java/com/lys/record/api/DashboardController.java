@@ -33,7 +33,6 @@ public class DashboardController {
 
     private UserMapper userMapper;
 
-
     /**
      * 看板卡片
      */
@@ -41,12 +40,23 @@ public class DashboardController {
     public ApiResponse<List<DashboardCardVO>> card() {
         int userId = StpUtil.getLoginIdAsInt();
 
-        List<DashboardCardVO> dashboardCard = new ArrayList<>();
+        List<DashboardCardVO> dashboardCardList = new ArrayList<>();
         try {
             // 同步leetcode信息
             UserEntity userEntity = userMapper.selectById(userId);
-            leetcodeService.syncLeetcodeInfo(userEntity);
-            dashboardCard.addAll(leetcodeService.getDashboardCard(userId));
+            boolean finish = leetcodeService.checkToday(userEntity, false);
+            DashboardCardVO dashboardCardVO = new DashboardCardVO();
+            dashboardCardVO.setIcon("devicon:leetcode");
+            dashboardCardVO.setTitle("每日一题");
+            dashboardCardVO.setTotalTitle("");
+            dashboardCardVO.setTotalValue("");
+            if (finish) {
+                dashboardCardVO.setValue("已完成");
+            } else {
+                dashboardCardVO.setValue("未完成");
+                dashboardCardVO.setValueColor("red");
+            }
+            dashboardCardList.add(dashboardCardVO);
         } catch (Exception e) {
             log.error("获取看板卡片失败", e);
         }
@@ -57,11 +67,12 @@ public class DashboardController {
         long daysPassed = ChronoUnit.DAYS.between(firstDayOfYear, today) + 1;
         DashboardCardVO dashboardCardVO = new DashboardCardVO();
         dashboardCardVO.setTitle("今年已过");
-        dashboardCardVO.setValue((int) daysPassed);
+        dashboardCardVO.setIcon("tdesign:time");
+        dashboardCardVO.setValue(""+(int) daysPassed);
         dashboardCardVO.setTotalTitle("剩余天数");
-        dashboardCardVO.setTotalValue(today.lengthOfYear() - (int) daysPassed);
-        dashboardCard.add(dashboardCardVO);
-        return ApiResponse.success(dashboardCard);
+        dashboardCardVO.setTotalValue("" + (today.lengthOfYear() - (int) daysPassed));
+        dashboardCardList.add(dashboardCardVO);
+        return ApiResponse.success(dashboardCardList);
     }
 
     /**

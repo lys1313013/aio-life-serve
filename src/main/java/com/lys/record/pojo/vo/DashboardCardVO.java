@@ -23,7 +23,12 @@ public class DashboardCardVO {
     /**
      * 当前值
      */
-    private Integer value;
+    private String value;
+
+    /**
+     * 值颜色
+     */
+    private String valueColor;
 
     /**
      * 总量标题
@@ -32,5 +37,5 @@ public class DashboardCardVO {
     /**
      * 总量值
      */
-    private Integer totalValue;
+    private String totalValue;
 }
