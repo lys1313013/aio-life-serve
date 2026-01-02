@@ -20,6 +20,8 @@ public class UserInfoVO {
 
     private String username;
 
+    private String nickname;
+
     /**
      * github 用户名
      */

@@ -2,16 +2,14 @@ package com.lys.sso.api;
 
 import cn.dev33.satoken.stp.StpUtil;
 import com.lys.core.resq.ApiResponse;
+import com.lys.sso.pojo.entity.UserEntity;
 import com.lys.sso.pojo.req.LoginReq;
 import com.lys.sso.pojo.vo.UserInfoVO;
 import com.lys.sso.pojo.vo.UserLoginVO;
 import com.lys.sso.service.IUserService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -80,5 +78,17 @@ public class UserController {
             ipAddress = request.getRemoteAddr();
         }
         return ipAddress;
+    }
+
+    /**
+     * 普通更新用户信息
+     */
+    @PutMapping("/users")
+    public ApiResponse<Void> modify(UserEntity userEntity) {
+        int id = StpUtil.getLoginIdAsInt();
+        userEntity.setId(id);
+        userEntity.setPassword(null);
+        userService.updateUser(userEntity);
+        return ApiResponse.success();
     }
 }

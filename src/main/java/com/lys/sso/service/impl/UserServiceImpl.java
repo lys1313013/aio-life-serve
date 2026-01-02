@@ -80,6 +80,7 @@ public class UserServiceImpl implements IUserService {
         userInfoVO.setId(userEntity.getId());
         userInfoVO.setRealName(userEntity.getNickname());
         userInfoVO.setUsername(userEntity.getNickname());
+        userInfoVO.setNickname(userEntity.getNickname());
         userInfoVO.setAvatar(userEntity.getAvatar());
         userInfoVO.setEmail(userEntity.getEmail());
         userInfoVO.setRoles(List.of("super"));
@@ -87,5 +88,10 @@ public class UserServiceImpl implements IUserService {
         userInfoVO.setGithubToken(userEntity.getGithubToken());
         userInfoVO.setLeetcodeAcct(userEntity.getLeetcodeAcct());
         return userInfoVO;
+    }
+
+    @Override
+    public void updateUser(UserEntity userEntity) {
+        userMapper.updateById(userEntity);
     }
 }

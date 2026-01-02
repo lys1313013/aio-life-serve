@@ -1,9 +1,9 @@
 package com.lys.sso.service;
 
+import com.lys.sso.pojo.entity.UserEntity;
 import com.lys.sso.pojo.req.LoginReq;
 import com.lys.sso.pojo.vo.UserInfoVO;
 import com.lys.sso.pojo.vo.UserLoginVO;
-import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * 用户服务接口
@@ -29,4 +29,6 @@ public interface IUserService {
      * @return 用户信息
      */
     UserInfoVO getUserInfo(int userId);
+
+    void updateUser(UserEntity userEntity);
 }
