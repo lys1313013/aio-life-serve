@@ -3,6 +3,7 @@ package com.lys.record.api;
 import cn.dev33.satoken.stp.StpUtil;
 import com.lys.core.resq.ApiResponse;
 import com.lys.record.pojo.vo.DashboardCardVO;
+import com.lys.record.service.IExerciseRecordService;
 import com.lys.record.service.ILeetcodeService;
 import com.lys.sso.mapper.UserMapper;
 import com.lys.sso.pojo.entity.UserEntity;
@@ -30,9 +31,11 @@ import java.util.concurrent.TimeUnit;
 @AllArgsConstructor
 @RequestMapping("/dashboard")
 public class DashboardController {
-    private ILeetcodeService leetcodeService;
+    private final ILeetcodeService leetcodeService;
 
-    private UserMapper userMapper;
+    private final IExerciseRecordService exerciseRecordService;
+
+    private final UserMapper userMapper;
 
     /**
      * 看板卡片
@@ -44,6 +47,11 @@ public class DashboardController {
         List<DashboardCardVO> dashboardCardList = new ArrayList<>();
         // 获取今年已过
         dashboardCardList.add(getYearPassedCard());
+
+        // 异步获取运动卡片
+        CompletableFuture<DashboardCardVO> exerciseCardFuture = CompletableFuture.supplyAsync(() ->
+                getExerciseCard(userId)
+        );
 
         try {
             // 同步leetcode信息
@@ -67,7 +75,7 @@ public class DashboardController {
 
             dashboardCardVO.setTotalTitle("今日提交");
 
-            // 获取异步结果，超时时间设置为5秒
+            // 获取异步结果，超时时间设置为3秒
             Integer submissionCount = 0;
             try {
                 submissionCount = submissionCountFuture.get(3, TimeUnit.SECONDS);
@@ -77,12 +85,44 @@ public class DashboardController {
                 log.error("异步获取 LeetCode 今日提交次数失败", e);
             }
 
+            // 获取运动卡片结果
+            try {
+                DashboardCardVO exerciseCard = exerciseCardFuture.get(3, TimeUnit.SECONDS);
+                dashboardCardList.add(exerciseCard);
+            } catch (Exception e) {
+                log.error("异步获取运动卡片失败", e);
+                // 如果异步获取失败，可以添加一个默认的错误卡片或直接忽略
+            }
+
             dashboardCardList.add(dashboardCardVO);
         } catch (Exception e) {
             log.error("获取看板卡片失败", e);
         }
 
         return ApiResponse.success(dashboardCardList);
+    }
+
+    /**
+     * 获取运动卡片
+     */
+    private DashboardCardVO getExerciseCard(int userId) {
+        DashboardCardVO exerciseCard = new DashboardCardVO();
+        exerciseCard.setIcon("mdi:run");
+        exerciseCard.setTitle("今日运动");
+        try {
+            int todayExerciseTypes = exerciseRecordService.countTodayExerciseTypes((long) userId);
+            exerciseCard.setValue(String.valueOf(todayExerciseTypes));
+            if (todayExerciseTypes == 0) {
+                exerciseCard.setValueColor("red");
+            }
+            exerciseCard.setTotalTitle("连续运动");
+            exerciseCard.setTotalValue(String.valueOf(exerciseRecordService.getConsecutiveExerciseDays((long) userId)));
+        } catch (Exception e) {
+            log.error("获取运动数据失败", e);
+            exerciseCard.setValue("获取失败");
+            exerciseCard.setTotalValue("获取失败");
+        }
+        return exerciseCard;
     }
 
     /**
