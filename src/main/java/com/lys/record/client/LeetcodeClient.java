@@ -2,6 +2,7 @@ package com.lys.record.client;
 
 import com.lys.record.pojo.leetcode.QuestionDataResponse;
 import com.lys.record.pojo.leetcode.TodayRecordResponse;
+import com.lys.record.pojo.leetcode.UserCalendarResponse;
 import lombok.AllArgsConstructor;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
@@ -78,6 +79,36 @@ public class LeetcodeClient {
         HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(requestBody, null);
 
         ResponseEntity<TodayRecordResponse> responseEntity = restTemplate.exchange(url, HttpMethod.POST, requestEntity, new ParameterizedTypeReference<TodayRecordResponse>() {
+        });
+        return responseEntity.getBody();
+    }
+
+    /**
+     * 获取用户日历数据
+     */
+    public UserCalendarResponse getUserCalendar(String userSlug) {
+        // 构建请求体
+        Map<String, Object> requestBody = new HashMap<>();
+
+        requestBody.put("query", """
+                query userProfileCalendar($userSlug: String!, $year: Int) {
+                  userCalendar(userSlug: $userSlug, year: $year) {
+                    streak
+                    totalActiveDays
+                    submissionCalendar
+                    activeYears
+                    recentStreak
+                  }
+                }
+                """);
+        Map<String, Object> variables = new HashMap<>();
+        variables.put("userSlug", userSlug);
+
+        requestBody.put("variables", variables);
+
+        // 发送请求并获取响应
+        HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(requestBody, null);
+        ResponseEntity<UserCalendarResponse> responseEntity = restTemplate.exchange(url + "noj-go/", HttpMethod.POST, requestEntity, new ParameterizedTypeReference<UserCalendarResponse>() {
         });
         return responseEntity.getBody();
     }

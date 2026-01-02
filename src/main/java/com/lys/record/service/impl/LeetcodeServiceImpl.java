@@ -2,10 +2,10 @@ package com.lys.record.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.lys.core.util.DateUtil;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lys.record.client.LeetcodeClient;
-import com.lys.record.pojo.leetcode.QuestionDataResponse;
-import com.lys.record.pojo.leetcode.RecentACSubmissionsResponse;
-import com.lys.record.pojo.leetcode.TodayRecordResponse;
+import com.lys.record.pojo.leetcode.*;
 import com.lys.record.pojo.vo.DashboardCardVO;
 import com.lys.record.service.ILeetcodeService;
 import com.lys.record.service.IMailService;
@@ -23,10 +23,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 类功能描述
@@ -49,6 +51,8 @@ public class LeetcodeServiceImpl implements ILeetcodeService {
 
     private LeetcodeClient leetcodeClient;
 
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
     @Override
     public void check() {
         LambdaQueryWrapper<UserEntity> queryWrapper = new LambdaQueryWrapper<>();
@@ -62,8 +66,13 @@ public class LeetcodeServiceImpl implements ILeetcodeService {
 
     @Override
     public boolean checkToday(UserEntity userEntity, boolean sendEmail) {
-        String leetcodeAcct = userEntity.getLeetcodeAcct();
+        // 0. Redis 缓存逻辑
+        String redisKey = "leetcode:checkin:" + DateUtil.getNowFormatDate() + ":" + userEntity.getId();
+        if (redisUtil.hasKey(redisKey)) {
+            return true;
+        }
 
+        String leetcodeAcct = userEntity.getLeetcodeAcct();
         // 1. 查询每日一题
         QuestionDataResponse todayQuestion = this.getTodayQuestion();
         String todayTitleSlug = todayQuestion.getData().getQuestion().getTitleSlug();
@@ -78,6 +87,8 @@ public class LeetcodeServiceImpl implements ILeetcodeService {
             for (RecentACSubmissionsResponse.RecentACSubmission submission : submissions) {
                 if (todayTitleSlug.equals(submission.getQuestion().getTitleSlug())) {
                     finishedToday = true;
+                    // 如果今天已经打卡过了，则增加一个由当天时间 + 用户 ID 的锁，过期时间为24小时
+                    redisUtil.set(redisKey, "1", 24, TimeUnit.HOURS);
                     break;
                 }
             }
@@ -105,6 +116,34 @@ public class LeetcodeServiceImpl implements ILeetcodeService {
             }
         }
         return finishedToday;
+    }
+
+    @Override
+    public Integer getTodaySubmissionCount(String leetcodeAcct) {
+        if (leetcodeAcct == null || leetcodeAcct.isEmpty()) {
+            return 0;
+        }
+        UserCalendarResponse userCalendar = leetcodeClient.getUserCalendar(leetcodeAcct);
+        if (userCalendar == null || userCalendar.getData() == null || userCalendar.getData().getUserCalendar() == null) {
+            return 0;
+        }
+        String submissionCalendar = userCalendar.getData().getUserCalendar().getSubmissionCalendar();
+        if (submissionCalendar == null || submissionCalendar.isEmpty()) {
+            return 0;
+        }
+
+        try {
+            Map<String, Integer> calendarMap = objectMapper.readValue(submissionCalendar, new TypeReference<Map<String, Integer>>() {
+            });
+
+            // 获取今天的 0 点时间戳（秒），LeetCode 使用的是 UTC 时间戳
+            long todayStartTimestamp = LocalDate.now().atStartOfDay(ZoneOffset.UTC).toEpochSecond();
+
+            return calendarMap.getOrDefault(String.valueOf(todayStartTimestamp), 0);
+        } catch (Exception e) {
+            log.error("解析 LeetCode 提交日历失败", e);
+            return 0;
+        }
     }
 
     public RecentACSubmissionsResponse fetchRecentAcSubmissions(String userSlug) {

@@ -26,4 +26,11 @@ class LeetcodeClientTest {
         QuestionDataResponse questionData = leetcodeClient.getQuestionData("two-sum");
         System.out.println(questionData);
     }
+
+    @Test
+    void getUserCalendar() {
+        LeetcodeClient leetcodeClient = new LeetcodeClient(new RestTemplate());
+        var userCalendar = leetcodeClient.getUserCalendar("lys1313013");
+        System.out.println(userCalendar);
+    }
 }

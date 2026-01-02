@@ -17,6 +17,8 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 看板
@@ -44,18 +46,35 @@ public class DashboardController {
         try {
             // 同步leetcode信息
             UserEntity userEntity = userMapper.selectById(userId);
+
+            // 异步获取今日提交次数
+            CompletableFuture<Integer> submissionCountFuture = CompletableFuture.supplyAsync(() ->
+                    leetcodeService.getTodaySubmissionCount(userEntity.getLeetcodeAcct())
+            );
+
             boolean finish = leetcodeService.checkToday(userEntity, false);
             DashboardCardVO dashboardCardVO = new DashboardCardVO();
             dashboardCardVO.setIcon("devicon:leetcode");
             dashboardCardVO.setTitle("每日一题");
-            dashboardCardVO.setTotalTitle("");
-            dashboardCardVO.setTotalValue("");
             if (finish) {
                 dashboardCardVO.setValue("已完成");
             } else {
                 dashboardCardVO.setValue("未完成");
                 dashboardCardVO.setValueColor("red");
             }
+
+            dashboardCardVO.setTotalTitle("今日提交");
+
+            // 获取异步结果，超时时间设置为5秒
+            Integer submissionCount = 0;
+            try {
+                submissionCount = submissionCountFuture.get(3, TimeUnit.SECONDS);
+                dashboardCardVO.setTotalValue(String.valueOf(submissionCount));
+            } catch (Exception e) {
+                dashboardCardVO.setTotalValue("获取失败");
+                log.error("异步获取 LeetCode 今日提交次数失败", e);
+            }
+
             dashboardCardList.add(dashboardCardVO);
         } catch (Exception e) {
             log.error("获取看板卡片失败", e);

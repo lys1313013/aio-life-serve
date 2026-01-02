@@ -1,5 +1,6 @@
 package com.lys.record.pojo.leetcode;
 
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import java.util.List;
@@ -10,8 +11,7 @@ import java.util.List;
  * @author Lys
  * @date 2025/04/09 23:45
  */
-@Getter
-@Setter
+@Data
 public class UserCalendarResponse {
     private Data data;
 

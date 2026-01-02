@@ -37,6 +37,14 @@ public interface ILeetcodeService {
     List<DashboardCardVO> getDashboardCard(int userId);
 
     /**
+     * 获取今天提交次数
+     *
+     * @param leetcodeAcct leetcode账号
+     * @return 今日提交次数
+     */
+    Integer getTodaySubmissionCount(String leetcodeAcct);
+
+    /**
      * 邮件通知今天每日一题
      */
     void notifyTodayQuestion() throws MessagingException;
