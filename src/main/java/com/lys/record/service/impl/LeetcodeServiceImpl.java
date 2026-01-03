@@ -16,6 +16,7 @@ import jakarta.mail.MessagingException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.data.util.Pair;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
@@ -65,17 +66,19 @@ public class LeetcodeServiceImpl implements ILeetcodeService {
     }
 
     @Override
-    public boolean checkToday(UserEntity userEntity, boolean sendEmail) {
-        // 0. Redis 缓存逻辑
+    public Pair<Boolean, String> checkToday(UserEntity userEntity, boolean sendEmail) {
+        // 0. 查询每日一题
+        QuestionDataResponse todayQuestion = this.getTodayQuestion();
+        String todayTitleSlug = todayQuestion.getData().getQuestion().getTitleSlug();
+        String todayUrl = "https://leetcode.cn/problems/" + todayTitleSlug + "/";
+
+        // 1. Redis 缓存逻辑
         String redisKey = "leetcode:checkin:" + DateUtil.getNowFormatDate() + ":" + userEntity.getId();
         if (redisUtil.hasKey(redisKey)) {
-            return true;
+            return Pair.of(true, todayUrl);
         }
 
         String leetcodeAcct = userEntity.getLeetcodeAcct();
-        // 1. 查询每日一题
-        QuestionDataResponse todayQuestion = this.getTodayQuestion();
-        String todayTitleSlug = todayQuestion.getData().getQuestion().getTitleSlug();
 
         // 2. 查询最近提交
         RecentACSubmissionsResponse recentACSubmissions = this.fetchRecentAcSubmissions(leetcodeAcct);
@@ -115,7 +118,7 @@ public class LeetcodeServiceImpl implements ILeetcodeService {
                 log.info("周一到周五19点前不发送邮件提醒，当前时间：{} {}", dayOfWeek, currentTime);
             }
         }
-        return finishedToday;
+        return Pair.of(finishedToday, todayUrl);
     }
 
     @Override

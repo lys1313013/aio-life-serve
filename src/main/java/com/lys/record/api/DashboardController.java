@@ -9,6 +9,7 @@ import com.lys.sso.mapper.UserMapper;
 import com.lys.sso.pojo.entity.UserEntity;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.util.Pair;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -62,11 +63,13 @@ public class DashboardController {
                     leetcodeService.getTodaySubmissionCount(userEntity.getLeetcodeAcct())
             );
 
-            boolean finish = leetcodeService.checkToday(userEntity, false);
+            Pair<Boolean, String> leetcodeResult = leetcodeService.checkToday(userEntity, false);
             DashboardCardVO dashboardCardVO = new DashboardCardVO();
             dashboardCardVO.setIcon("devicon:leetcode");
+            dashboardCardVO.setIconClickUrl("https://leetcode.cn/u/" + userEntity.getLeetcodeAcct());
             dashboardCardVO.setTitle("每日一题");
-            if (finish) {
+            dashboardCardVO.setTitleClickUrl(leetcodeResult.getSecond());
+            if (leetcodeResult.getFirst()) {
                 dashboardCardVO.setValue("已完成");
             } else {
                 dashboardCardVO.setValue("未完成");

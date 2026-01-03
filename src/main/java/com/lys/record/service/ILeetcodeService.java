@@ -3,6 +3,7 @@ package com.lys.record.service;
 import com.lys.record.pojo.vo.DashboardCardVO;
 import com.lys.sso.pojo.entity.UserEntity;
 import jakarta.mail.MessagingException;
+import org.springframework.data.util.Pair;
 
 import java.util.List;
 
@@ -27,7 +28,7 @@ public interface ILeetcodeService {
      *
      * @param userEntity
      */
-    boolean checkToday(UserEntity userEntity, boolean sendEmail);
+    Pair<Boolean, String> checkToday(UserEntity userEntity, boolean sendEmail);
 
     /**
      * 获取leetcode看板卡片数据

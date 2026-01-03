@@ -11,14 +11,25 @@ import lombok.Data;
 @Data
 public class DashboardCardVO {
     /**
-     * 卡片图标 (待优化）
-     * packages\icons\src\svg
+     * 卡片图标
+     * <a href="https://icon-sets.iconify.design/"></a> 这个网站找
      */
     private String icon = "svg:card";
+
+    /**
+     * 点击图标跳转链接
+     */
+    private String iconClickUrl;
+
     /**
      * 卡片标题
      */
     private String title;
+
+    /**
+     * 点击标题跳转链接
+     */
+    private String titleClickUrl;
 
     /**
      * 当前值
