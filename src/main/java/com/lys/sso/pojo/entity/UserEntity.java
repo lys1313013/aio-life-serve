@@ -59,4 +59,9 @@ public class UserEntity {
      * leetcode账号
      */
     private String leetcodeAcct;
+
+    /**
+     * 扇贝账号
+     */
+    private String shanbayAcct;
 }

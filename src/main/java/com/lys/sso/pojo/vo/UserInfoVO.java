@@ -38,6 +38,11 @@ public class UserInfoVO {
     private String leetcodeAcct;
 
     /**
+     * 扇贝账号
+     */
+    private String shanbayAcct;
+
+    /**
      * 头像url
      */
     private String avatar;

@@ -87,6 +87,7 @@ public class UserServiceImpl implements IUserService {
         userInfoVO.setGithubUsername(userEntity.getGithubUsername());
         userInfoVO.setGithubToken(userEntity.getGithubToken());
         userInfoVO.setLeetcodeAcct(userEntity.getLeetcodeAcct());
+        userInfoVO.setShanbayAcct(userEntity.getShanbayAcct());
         return userInfoVO;
     }
 
