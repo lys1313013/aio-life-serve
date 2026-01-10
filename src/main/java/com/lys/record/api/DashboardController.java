@@ -5,6 +5,7 @@ import com.lys.core.resq.ApiResponse;
 import com.lys.record.pojo.vo.DashboardCardVO;
 import com.lys.record.service.IExerciseRecordService;
 import com.lys.record.service.ILeetcodeService;
+import com.lys.record.service.ITimeRecordService;
 import com.lys.sso.mapper.UserMapper;
 import com.lys.sso.pojo.entity.UserEntity;
 import lombok.AllArgsConstructor;
@@ -36,6 +37,8 @@ public class DashboardController {
 
     private final IExerciseRecordService exerciseRecordService;
 
+    private final ITimeRecordService timeRecordService;
+
     private final UserMapper userMapper;
 
     /**
@@ -47,7 +50,7 @@ public class DashboardController {
 
         List<DashboardCardVO> dashboardCardList = new ArrayList<>();
         // 获取今年已过
-        dashboardCardList.add(getYearPassedCard());
+        dashboardCardList.add(getYearPassedCard((long) userId));
 
         // 异步获取运动卡片
         CompletableFuture<DashboardCardVO> exerciseCardFuture = CompletableFuture.supplyAsync(() ->
@@ -119,7 +122,7 @@ public class DashboardController {
                 exerciseCard.setValueColor("red");
             }
             exerciseCard.setTotalTitle("连续运动");
-            exerciseCard.setTotalValue(String.valueOf(exerciseRecordService.getConsecutiveExerciseDays((long) userId)));
+            exerciseCard.setTotalValue(exerciseRecordService.getConsecutiveExerciseDays((long) userId) + " 天");
         } catch (Exception e) {
             log.error("获取运动数据失败", e);
             exerciseCard.setValue("获取失败");
@@ -140,14 +143,14 @@ public class DashboardController {
     /**
      * 获取今年已过卡片
      */
-    private DashboardCardVO getYearPassedCard() {
+    private DashboardCardVO getYearPassedCard(Long userId) {
         int daysPassed = getDaysPassed();
         DashboardCardVO dashboardCardVO = new DashboardCardVO();
-        dashboardCardVO.setTitle("今年已过");
+        dashboardCardVO.setTitle("当前状态");
         dashboardCardVO.setIcon("tdesign:time");
-        dashboardCardVO.setValue("" + daysPassed);
-        dashboardCardVO.setTotalTitle("剩余天数");
-        dashboardCardVO.setTotalValue("" + (LocalDate.now().lengthOfYear() - daysPassed));
+        dashboardCardVO.setValue(timeRecordService.getLastRecordTimeDiff(userId));
+        dashboardCardVO.setTotalTitle("当年已过");
+        dashboardCardVO.setTotalValue(daysPassed + " / " + (LocalDate.now().lengthOfYear()) +" 天");
         return dashboardCardVO;
     }
 }

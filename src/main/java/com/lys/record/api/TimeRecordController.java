@@ -10,6 +10,7 @@ import com.lys.core.resq.PageResp;
 import com.lys.record.mapper.ITimeRecordEntity;
 import com.lys.record.pojo.entity.TimeRecordEntity;
 import com.lys.record.pojo.query.TimeWeekQuery;
+import com.lys.record.service.ITimeRecordService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -29,10 +30,10 @@ import java.util.List;
 @AllArgsConstructor
 @RequestMapping("/timeRecord")
 public class TimeRecordController {
-    private ITimeRecordEntity timeRecordMapper;
+    private final ITimeRecordService timeRecordService;
 
-    public ITimeRecordEntity getBaseMapper() {
-        return timeRecordMapper;
+    public ITimeRecordService getBaseMapper() {
+        return timeRecordService;
     }
 
     @PostMapping("/query")
@@ -53,7 +54,7 @@ public class TimeRecordController {
 
         lambdaQueryWrapper.orderByDesc(TimeRecordEntity::getUpdateTime);
         Page<TimeRecordEntity> page = new Page<>(query.getPage(), query.getPageSize());
-        IPage<TimeRecordEntity> iPage = timeRecordMapper.selectPage(page, lambdaQueryWrapper);
+        IPage<TimeRecordEntity> iPage = timeRecordService.page(page, lambdaQueryWrapper);
         PageResp<TimeRecordEntity> objectPageResp = PageResp.of(iPage.getRecords(), iPage.getTotal());
         return ApiResponse.success(objectPageResp);
     }
@@ -78,7 +79,7 @@ public class TimeRecordController {
         lambdaQueryWrapper.between(TimeRecordEntity::getDate, condition.getStartDate(), condition.getEndDate());
 
         lambdaQueryWrapper.orderByDesc(TimeRecordEntity::getUpdateTime);
-        List<TimeRecordEntity> list = timeRecordMapper.selectList(lambdaQueryWrapper);
+        List<TimeRecordEntity> list = timeRecordService.list(lambdaQueryWrapper);
         return ApiResponse.success(list);
     }
 
@@ -89,7 +90,7 @@ public class TimeRecordController {
         entity.setUpdateTime(LocalDateTime.now());
         entity.setDuration(entity.getEndTime() - entity.getStartTime());
 
-        getBaseMapper().insert(entity);
+        timeRecordService.save(entity);
         return ApiResponse.success(true);
     }
 
@@ -98,7 +99,7 @@ public class TimeRecordController {
         entity.setUserId(StpUtil.getLoginIdAsLong());
         entity.setUpdateTime(LocalDateTime.now());
         entity.setDuration(entity.getEndTime() - entity.getStartTime());
-        getBaseMapper().updateById(entity);
+        timeRecordService.updateById(entity);
         return ApiResponse.success(true);
     }
 
@@ -109,7 +110,7 @@ public class TimeRecordController {
         LambdaQueryWrapper<TimeRecordEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(TimeRecordEntity::getUserId, StpUtil.getLoginIdAsLong());
         lambdaQueryWrapper.eq(TimeRecordEntity::getDate, date);
-        getBaseMapper().delete(lambdaQueryWrapper);
+        timeRecordService.remove(lambdaQueryWrapper);
 
         entityList.forEach(entity -> {
             entity.setUserId(StpUtil.getLoginIdAsLong());
@@ -117,7 +118,7 @@ public class TimeRecordController {
             entity.setUpdateTime(LocalDateTime.now());
             entity.setDuration(entity.getEndTime() - entity.getStartTime());
         });
-        getBaseMapper().insert(entityList);
+        timeRecordService.saveBatch(entityList);
         return ApiResponse.success(true);
     }
 
@@ -131,8 +132,7 @@ public class TimeRecordController {
         queryWrapper.eq(TimeRecordEntity::getId, entity.getId());
         queryWrapper.eq(TimeRecordEntity::getUserId, StpUtil.getLoginIdAsInt());
 
-        getBaseMapper().delete(queryWrapper);
-        getBaseMapper().deleteById(entity);
+        timeRecordService.remove(queryWrapper);
         return ApiResponse.success();
     }
 
@@ -146,7 +146,7 @@ public class TimeRecordController {
         queryWrapper.eq(TimeRecordEntity::getDate, entity.getDate());
         queryWrapper.eq(TimeRecordEntity::getUserId, StpUtil.getLoginIdAsInt());
 
-        getBaseMapper().delete(queryWrapper);
+        timeRecordService.remove(queryWrapper);
         return ApiResponse.success();
     }
 
@@ -169,7 +169,7 @@ public class TimeRecordController {
             date = yesterday.toString();
         }
 
-        TimeRecordEntity timeRecordEntity = timeRecordMapper.recommendType(userId, date, time);
+        TimeRecordEntity timeRecordEntity = timeRecordService.recommendType(userId, date, time);
         if (timeRecordEntity == null) {
             return ApiResponse.success("");
         }
