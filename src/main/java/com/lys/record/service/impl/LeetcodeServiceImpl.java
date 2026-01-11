@@ -126,7 +126,7 @@ public class LeetcodeServiceImpl implements ILeetcodeService {
         log.info("查询每日一题耗时: {} ms", end - start);
         String todayUrl = "https://leetcode.cn/problems/" + todayTitleSlug + "/";
 
-        // 1. Redis 缓存逻辑
+        // Redis 缓存逻辑
         String redisKey = "leetcode:checkin:" + DateUtil.getNowFormatDate() + ":" + userEntity.getId();
         if (redisUtil.hasKey(redisKey)) {
             return Pair.of(true, todayUrl);
@@ -134,11 +134,11 @@ public class LeetcodeServiceImpl implements ILeetcodeService {
 
         String leetcodeAcct = userEntity.getLeetcodeAcct();
 
-        // 2. 查询最近提交
+        // 查询最近提交
         RecentACSubmissionsResponse recentACSubmissions = this.fetchRecentAcSubmissions(leetcodeAcct);
         List<RecentACSubmissionsResponse.RecentACSubmission> submissions = recentACSubmissions.getData().getRecentACSubmissions();
 
-        // 3. 比对是否完成每日一题
+        // 比对是否完成每日一题
         boolean finishedToday = false;
         if (submissions != null) {
             for (RecentACSubmissionsResponse.RecentACSubmission submission : submissions) {
@@ -164,6 +164,7 @@ public class LeetcodeServiceImpl implements ILeetcodeService {
             // 只有在非工作日或者19点后才发送邮件
             if (!isWeekday || !isBefore7pm) {
                 try {
+                    log.info("给 userId: {} 发送邮件提醒", userEntity.getId());
                     mailService.sendSimpleEmail(userEntity.getEmail(), "leetcode咋还没刷", "leetcode咋还没刷");
                 } catch (Exception e) {
                     log.error("发送邮件失败", e);
