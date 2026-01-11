@@ -12,9 +12,12 @@ import com.lys.record.service.IMailService;
 import com.lys.record.util.RedisUtil;
 import com.lys.sso.mapper.UserMapper;
 import com.lys.sso.pojo.entity.UserEntity;
+import jakarta.annotation.PostConstruct;
 import jakarta.mail.MessagingException;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.util.Pair;
 import org.springframework.http.HttpEntity;
@@ -30,6 +33,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 /**
  * 类功能描述
@@ -39,20 +43,68 @@ import java.util.concurrent.TimeUnit;
  */
 @Slf4j
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class LeetcodeServiceImpl implements ILeetcodeService {
 
-    private UserMapper userMapper;
+    private final UserMapper userMapper;
 
-    private RestTemplate restTemplate;
+    private final RestTemplate restTemplate;
 
-    private IMailService mailService;
+    private final IMailService mailService;
 
-    private RedisUtil redisUtil;
+    private final RedisUtil redisUtil;
 
-    private LeetcodeClient leetcodeClient;
+    private final LeetcodeClient leetcodeClient;
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final CacheManager cacheManager;
+
+    private final ObjectMapper objectMapper;
+
+    private Cache localCache;
+
+    @PostConstruct
+    public void init() {
+        this.localCache = cacheManager.getCache("leetcode");
+    }
+
+    /**
+     * 多级缓存通用获取方法
+     *
+     * @param cacheKey 缓存键
+     * @param clazz    返回类型
+     * @param supplier 真正获取数据的方法
+     * @param <T>      泛型
+     * @return 数据
+     */
+    private <T> T getWithCache(String cacheKey, Class<T> clazz, Supplier<T> supplier) {
+        // 1. 查询本地缓存
+        T cached = localCache.get(cacheKey, clazz);
+        if (cached != null) {
+            log.info("多级缓存：命中本地缓存 key={}", cacheKey);
+            return cached;
+        }
+
+        // 2. 查询 Redis 缓存
+        String redisKey = "leetcode:cache:" + cacheKey;
+        cached = redisUtil.getObject(redisKey, clazz);
+        if (cached != null) {
+            log.info("多级缓存：命中 Redis 缓存 key={}", redisKey);
+            // 回写本地缓存
+            localCache.put(cacheKey, cached);
+            return cached;
+        }
+
+        // 3. 查询接口/数据库
+        T result = supplier.get();
+        if (result != null) {
+            log.info("多级缓存：查询原始数据并回写缓存 key={}", cacheKey);
+            // 回写 Redis 缓存（24小时过期）
+            redisUtil.setObject(redisKey, result, 24, TimeUnit.HOURS);
+            // 回写本地缓存
+            localCache.put(cacheKey, result);
+        }
+        return result;
+    }
 
     @Override
     public void check() {
@@ -67,9 +119,11 @@ public class LeetcodeServiceImpl implements ILeetcodeService {
 
     @Override
     public Pair<Boolean, String> checkToday(UserEntity userEntity, boolean sendEmail) {
-        // 0. 查询每日一题
-        QuestionDataResponse todayQuestion = this.getTodayQuestion();
-        String todayTitleSlug = todayQuestion.getData().getQuestion().getTitleSlug();
+        // 查询每日一题
+        long start = System.currentTimeMillis();
+        String todayTitleSlug = getTodayQuestionTitleSlug();
+        long end = System.currentTimeMillis();
+        log.info("查询每日一题耗时: {} ms", end - start);
         String todayUrl = "https://leetcode.cn/problems/" + todayTitleSlug + "/";
 
         // 1. Redis 缓存逻辑
@@ -212,7 +266,19 @@ public class LeetcodeServiceImpl implements ILeetcodeService {
     }
 
     public QuestionDataResponse getTodayQuestion() {
-        TodayRecordResponse todayRecord = leetcodeClient.getTodayRecord();
-        return leetcodeClient.getQuestionData(todayRecord.getData().getTodayRecord().get(0).getQuestion().getTitleSlug());
+        String todayTitleSlug = getTodayQuestionTitleSlug();
+        String cacheKey = "leetcode:question:" + todayTitleSlug;
+        return getWithCache(cacheKey, QuestionDataResponse.class, () -> leetcodeClient.getQuestionData(todayTitleSlug));
+    }
+
+    /**
+     * 获取每日一题的题目 slug
+     */
+    public String getTodayQuestionTitleSlug() {
+        String cacheKey = "leetcode:today_title_slug:" + DateUtil.getNowFormatDate();
+        return getWithCache(cacheKey, String.class, () -> {
+            TodayRecordResponse todayRecord = leetcodeClient.getTodayRecord();
+            return todayRecord.getData().getTodayRecord().get(0).getQuestion().getTitleSlug();
+        });
     }
 }

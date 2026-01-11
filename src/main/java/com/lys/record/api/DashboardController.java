@@ -46,27 +46,39 @@ public class DashboardController {
      */
     @PostMapping("/card")
     public ApiResponse<List<DashboardCardVO>> card() {
+        long totalStart = System.currentTimeMillis();
         int userId = StpUtil.getLoginIdAsInt();
 
         List<DashboardCardVO> dashboardCardList = new ArrayList<>();
         // 获取今年已过
+        long yearStart = System.currentTimeMillis();
         dashboardCardList.add(getYearPassedCard((long) userId));
+        log.info("获取今年已过卡片耗时: {}ms", System.currentTimeMillis() - yearStart);
 
         // 异步获取运动卡片
-        CompletableFuture<DashboardCardVO> exerciseCardFuture = CompletableFuture.supplyAsync(() ->
-                getExerciseCard(userId)
-        );
+        CompletableFuture<DashboardCardVO> exerciseCardFuture = CompletableFuture.supplyAsync(() -> {
+            long exerciseStart = System.currentTimeMillis();
+            DashboardCardVO card = getExerciseCard(userId);
+            log.info("异步获取运动卡片任务耗时: {}ms", System.currentTimeMillis() - exerciseStart);
+            return card;
+        });
 
         try {
             // 同步leetcode信息
             UserEntity userEntity = userMapper.selectById(userId);
 
             // 异步获取今日提交次数
-            CompletableFuture<Integer> submissionCountFuture = CompletableFuture.supplyAsync(() ->
-                    leetcodeService.getTodaySubmissionCount(userEntity.getLeetcodeAcct())
-            );
+            CompletableFuture<Integer> submissionCountFuture = CompletableFuture.supplyAsync(() -> {
+                long submissionStart = System.currentTimeMillis();
+                Integer count = leetcodeService.getTodaySubmissionCount(userEntity.getLeetcodeAcct());
+                log.info("异步获取 LeetCode 今日提交次数任务耗时: {}ms", System.currentTimeMillis() - submissionStart);
+                return count;
+            });
 
+            long leetcodeCheckStart = System.currentTimeMillis();
             Pair<Boolean, String> leetcodeResult = leetcodeService.checkToday(userEntity, false);
+            log.info("同步获取 LeetCode 今日状态耗时: {}ms", System.currentTimeMillis() - leetcodeCheckStart);
+
             DashboardCardVO dashboardCardVO = new DashboardCardVO();
             dashboardCardVO.setIcon("devicon:leetcode");
             dashboardCardVO.setIconClickUrl("https://leetcode.cn/u/" + userEntity.getLeetcodeAcct());
@@ -84,7 +96,9 @@ public class DashboardController {
             // 获取异步结果，超时时间设置为3秒
             Integer submissionCount = 0;
             try {
+                long waitSubmissionStart = System.currentTimeMillis();
                 submissionCount = submissionCountFuture.get(3, TimeUnit.SECONDS);
+                log.info("等待 LeetCode 提交次数异步结果耗时: {}ms", System.currentTimeMillis() - waitSubmissionStart);
                 dashboardCardVO.setTotalValue(String.valueOf(submissionCount));
             } catch (Exception e) {
                 dashboardCardVO.setTotalValue("获取失败");
@@ -93,11 +107,13 @@ public class DashboardController {
 
             // 获取运动卡片结果
             try {
+                long waitExerciseStart = System.currentTimeMillis();
                 DashboardCardVO exerciseCard = exerciseCardFuture.get(3, TimeUnit.SECONDS);
+                log.info("等待运动卡片异步结果耗时: {}ms", System.currentTimeMillis() - waitExerciseStart);
                 dashboardCardList.add(exerciseCard);
             } catch (Exception e) {
                 log.error("异步获取运动卡片失败", e);
-                // 如果异步获取失败，可以添加一个默认的错误卡片或直接忽略
+                // 如果异步获取失败，可以添加一个默认的错误卡片 or 直接忽略
             }
 
             dashboardCardList.add(dashboardCardVO);
@@ -105,6 +121,7 @@ public class DashboardController {
             log.error("获取看板卡片失败", e);
         }
 
+        log.info("看板卡片接口总耗时: {}ms", System.currentTimeMillis() - totalStart);
         return ApiResponse.success(dashboardCardList);
     }
 
@@ -116,13 +133,19 @@ public class DashboardController {
         exerciseCard.setIcon("mdi:run");
         exerciseCard.setTitle("今日运动");
         try {
+            long countStart = System.currentTimeMillis();
             int todayExerciseTypes = exerciseRecordService.countTodayExerciseTypes((long) userId);
+            log.info("获取今日运动类型计数耗时: {}ms", System.currentTimeMillis() - countStart);
+
             exerciseCard.setValue(String.valueOf(todayExerciseTypes));
             if (todayExerciseTypes == 0) {
                 exerciseCard.setValueColor("red");
             }
             exerciseCard.setTotalTitle("连续运动");
+
+            long consecutiveStart = System.currentTimeMillis();
             exerciseCard.setTotalValue(exerciseRecordService.getConsecutiveExerciseDays((long) userId) + " 天");
+            log.info("获取连续运动天数耗时: {}ms", System.currentTimeMillis() - consecutiveStart);
         } catch (Exception e) {
             log.error("获取运动数据失败", e);
             exerciseCard.setValue("获取失败");
@@ -148,7 +171,10 @@ public class DashboardController {
         DashboardCardVO dashboardCardVO = new DashboardCardVO();
         dashboardCardVO.setTitle("当前状态");
         dashboardCardVO.setIcon("tdesign:time");
+        long lastRecordStart = System.currentTimeMillis();
         dashboardCardVO.setValue(timeRecordService.getLastRecordTimeDiff(userId));
+        log.info("获取最后一条记录时间差耗时: {}ms", System.currentTimeMillis() - lastRecordStart);
+
         dashboardCardVO.setTotalTitle("当年已过");
         dashboardCardVO.setTotalValue(daysPassed + " / " + (LocalDate.now().lengthOfYear()) +" 天");
         return dashboardCardVO;
