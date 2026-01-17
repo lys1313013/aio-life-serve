@@ -86,6 +86,7 @@ public class DashboardController {
             dashboardCardVO.setTitleClickUrl(leetcodeResult.getSecond());
             if (leetcodeResult.getFirst()) {
                 dashboardCardVO.setValue("已完成");
+                dashboardCardVO.setValueColor("#3FB27F");
             } else {
                 dashboardCardVO.setValue("未完成");
                 dashboardCardVO.setValueColor("red");
@@ -132,6 +133,8 @@ public class DashboardController {
         DashboardCardVO exerciseCard = new DashboardCardVO();
         exerciseCard.setIcon("mdi:run");
         exerciseCard.setTitle("今日运动");
+        exerciseCard.setIconClickUrl("/my-hub/exercise");
+        exerciseCard.setTitleClickUrl("/my-hub/exercise");
         try {
             long countStart = System.currentTimeMillis();
             int todayExerciseTypes = exerciseRecordService.countTodayExerciseTypes((long) userId);
@@ -140,6 +143,8 @@ public class DashboardController {
             exerciseCard.setValue(String.valueOf(todayExerciseTypes));
             if (todayExerciseTypes == 0) {
                 exerciseCard.setValueColor("red");
+            } else {
+                exerciseCard.setValueColor("#3FB27F");
             }
             exerciseCard.setTotalTitle("连续运动");
 
