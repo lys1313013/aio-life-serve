@@ -7,7 +7,6 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.lys.core.query.CommonQuery;
 import com.lys.core.resq.ApiResponse;
 import com.lys.core.resq.PageResp;
-import com.lys.record.mapper.ITimeRecordEntity;
 import com.lys.record.pojo.entity.TimeRecordEntity;
 import com.lys.record.pojo.query.TimeWeekQuery;
 import com.lys.record.service.ITimeRecordService;
@@ -159,9 +158,13 @@ public class TimeRecordController {
     @GetMapping("/recommendType")
     public ApiResponse<String> recommendType(String date, int time) {
         int userId = StpUtil.getLoginIdAsInt();
-        // 判断 如果是周末的话 date 变为减7天
-        if (LocalDate.parse(date).getDayOfWeek().getValue() >= 6) {
-            date = LocalDate.parse(date).minusDays(7).toString();
+        // 周一取上周五，周六取上周日
+        // todo 按照工作日计算
+        int dayOfWeek = LocalDate.parse(date).getDayOfWeek().getValue();
+        if (dayOfWeek == 6) {
+            date = LocalDate.parse(date).minusDays(6).toString();
+        } else if (dayOfWeek == 1) {
+            date = LocalDate.parse(date).minusDays(3).toString();
         } else  {
             // date 转成昨天
             LocalDate localDate = LocalDate.parse(date);
