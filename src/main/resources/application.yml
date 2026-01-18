@@ -31,21 +31,42 @@ spring:
           starttls:
             enable: true
             required: true
+  data:
+    redis:
+      host: 127.0.0.1
+      port: 6379
 
 logging:
   level:
     com.lys.record.mapper: debug
     org.springframework.jdbc: debug
   pattern:
-    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n"
-    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%replace{%X{traceId}}{^(.{16}).*}{$1},%X{spanId}] [%thread] %-5level %logger{50} - %msg%n"
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%replace{%X{traceId}}{^(.{16}).*}{$1},%X{spanId}] [%thread] %-5level %logger{50} - %msg%n"
+
+management:
+  tracing:
+    enabled: true
+    sampling:
+      probability: 1.0
+  endpoints:
+    enabled-by-default: false
+    web:
+      exposure:
+        include: "health,info"
+  endpoint:
+    health:
+      enabled: true
+      show-details: never
+    info:
+      enabled: true
 
 sa-token:
   token-name: Authorization
   token-prefix: Bearer
 #  timeout: 3000 # token有效期，单位秒
   jwt-secret-key: lys
-  salt: lys
+  salt: aiolife
 
 mybatis-plus:
   global-config:
@@ -58,6 +79,3 @@ aio:
   life:
     serve:
       leetcode-corn: 0 30 23 * * ?
-
-  api:
-    zhihu: ${AIO_LIFE_ZHIHU_COOKIE:test}
