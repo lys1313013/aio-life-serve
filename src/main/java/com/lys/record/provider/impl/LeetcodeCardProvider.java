@@ -57,6 +57,7 @@ public class LeetcodeCardProvider implements DashboardCardProvider {
         }
 
         DashboardCardVO card = new DashboardCardVO();
+        card.setType(getType());
         card.setIcon(getIcon());
         card.setIconClickUrl("https://leetcode.cn/u/" + user.getLeetcodeAcct());
         card.setTitle(getTitle());

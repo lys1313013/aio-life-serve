@@ -48,6 +48,7 @@ public class ExerciseCardProvider implements DashboardCardProvider {
     @Override
     public DashboardCardVO getCard(int userId) {
         DashboardCardVO card = new DashboardCardVO();
+        card.setType(getType());
         card.setIcon(getIcon());
         card.setTitle(getTitle());
         card.setIconClickUrl("/my-hub/exercise");

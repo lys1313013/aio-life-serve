@@ -51,6 +51,7 @@ public class YearPassedCardProvider implements DashboardCardProvider {
     @Override
     public DashboardCardVO getCard(int userId) {
         DashboardCardVO card = new DashboardCardVO();
+        card.setType(getType());
         card.setTitle(getTitle());
         card.setIcon(getIcon());
         try {
