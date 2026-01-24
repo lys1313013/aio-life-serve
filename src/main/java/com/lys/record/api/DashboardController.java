@@ -36,12 +36,20 @@ public class DashboardController {
     /**
      * 1. 获取任务列表
      * 前端拿到后，可以立即渲染占位图（Skeleton Screen）
+     * 只返回静态配置信息（标题、图标等），不查询实时数据
      */
     @GetMapping("/tasks")
-    public ApiResponse<List<String>> getTasks() {
-        List<String> tasks = providerMap.values().stream()
+    public ApiResponse<List<DashboardCardVO>> getTasks() {
+        List<DashboardCardVO> tasks = providerMap.values().stream()
                 .sorted(Comparator.comparingInt(DashboardCardProvider::getOrder))
-                .map(DashboardCardProvider::getType)
+                .map(provider -> {
+                    DashboardCardVO card = new DashboardCardVO();
+                    card.setType(provider.getType());
+                    card.setTitle(provider.getTitle());
+                    card.setTotalTitle(provider.getTotalTitle());
+                    card.setIcon(provider.getIcon());
+                    return card;
+                })
                 .collect(Collectors.toList());
         return ApiResponse.success(tasks);
     }

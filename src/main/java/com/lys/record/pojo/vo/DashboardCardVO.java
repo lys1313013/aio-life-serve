@@ -11,6 +11,11 @@ import lombok.Data;
 @Data
 public class DashboardCardVO {
     /**
+     * 卡片类型
+     */
+    private String type;
+
+    /**
      * 卡片图标
      * <a href="https://icon-sets.iconify.design/"></a> 这个网站找
      */
@@ -49,4 +54,9 @@ public class DashboardCardVO {
      * 总量值
      */
     private String totalValue;
+
+    /**
+     * 刷新间隔，单位秒
+     */
+    private Integer refreshInterval = 60;
 }

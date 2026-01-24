@@ -29,6 +29,21 @@ public class YearPassedCardProvider implements DashboardCardProvider {
     }
 
     @Override
+    public String getTitle() {
+        return "当前状态";
+    }
+
+    @Override
+    public String getTotalTitle() {
+        return "当年已过";
+    }
+
+    @Override
+    public String getIcon() {
+        return "tdesign:time";
+    }
+
+    @Override
     public int getOrder() {
         return 10;
     }
@@ -36,16 +51,17 @@ public class YearPassedCardProvider implements DashboardCardProvider {
     @Override
     public DashboardCardVO getCard(int userId) {
         DashboardCardVO card = new DashboardCardVO();
-        card.setTitle("当前状态");
-        card.setIcon("tdesign:time");
+        card.setTitle(getTitle());
+        card.setIcon(getIcon());
         try {
             card.setValue(timeRecordService.getLastRecordTimeDiff((long) userId));
         } catch (Exception e) {
             log.error("获取最后一条记录时间差失败", e);
             card.setValue("获取失败");
         }
-        card.setTotalTitle("当年已过");
+        card.setTotalTitle(getTotalTitle());
         card.setTotalValue(getDaysPassed() + " / " + LocalDate.now().lengthOfYear() + " 天");
+        card.setRefreshInterval(60);
         return card;
     }
 

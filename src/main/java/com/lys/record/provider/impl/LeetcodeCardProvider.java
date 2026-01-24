@@ -30,6 +30,21 @@ public class LeetcodeCardProvider implements DashboardCardProvider {
     }
 
     @Override
+    public String getTitle() {
+        return "每日一题";
+    }
+
+    @Override
+    public String getTotalTitle() {
+        return "今日提交";
+    }
+
+    @Override
+    public String getIcon() {
+        return "devicon:leetcode";
+    }
+
+    @Override
     public int getOrder() {
         return 30;
     }
@@ -42,16 +57,17 @@ public class LeetcodeCardProvider implements DashboardCardProvider {
         }
 
         DashboardCardVO card = new DashboardCardVO();
-        card.setIcon("devicon:leetcode");
+        card.setIcon(getIcon());
         card.setIconClickUrl("https://leetcode.cn/u/" + user.getLeetcodeAcct());
-        card.setTitle("每日一题");
+        card.setTitle(getTitle());
         try {
             Pair<Boolean, String> result = leetcodeService.checkToday(user, false);
             card.setTitleClickUrl(result.getSecond());
             card.setValue(result.getFirst() ? "已完成" : "未完成");
             card.setValueColor(result.getFirst() ? "#3FB27F" : "red");
-            card.setTotalTitle("今日提交");
+            card.setTotalTitle(getTotalTitle());
             card.setTotalValue(String.valueOf(leetcodeService.getTodaySubmissionCount(user.getLeetcodeAcct())));
+            card.setRefreshInterval(600);
         } catch (Exception e) {
             log.error("获取 LeetCode 数据失败", e);
             card.setValue("获取失败");

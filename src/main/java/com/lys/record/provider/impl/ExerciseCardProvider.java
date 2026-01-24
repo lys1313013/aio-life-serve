@@ -26,6 +26,21 @@ public class ExerciseCardProvider implements DashboardCardProvider {
     }
 
     @Override
+    public String getTitle() {
+        return "今日运动";
+    }
+
+    @Override
+    public String getTotalTitle() {
+        return "连续运动";
+    }
+
+    @Override
+    public String getIcon() {
+        return "mdi:run";
+    }
+
+    @Override
     public int getOrder() {
         return 20;
     }
@@ -33,16 +48,17 @@ public class ExerciseCardProvider implements DashboardCardProvider {
     @Override
     public DashboardCardVO getCard(int userId) {
         DashboardCardVO card = new DashboardCardVO();
-        card.setIcon("mdi:run");
-        card.setTitle("今日运动");
+        card.setIcon(getIcon());
+        card.setTitle(getTitle());
         card.setIconClickUrl("/my-hub/exercise");
         card.setTitleClickUrl("/my-hub/exercise");
         try {
             int count = exerciseRecordService.countTodayExerciseTypes((long) userId);
             card.setValue(String.valueOf(count));
             card.setValueColor(count == 0 ? "red" : "#3FB27F");
-            card.setTotalTitle("连续运动");
+            card.setTotalTitle(getTotalTitle());
             card.setTotalValue(exerciseRecordService.getConsecutiveExerciseDays((long) userId) + " 天");
+            card.setRefreshInterval(600);
         } catch (Exception e) {
             log.error("获取运动数据失败", e);
             card.setValue("获取失败");
