@@ -58,5 +58,5 @@ public class DashboardCardVO {
     /**
      * 刷新间隔，单位秒
      */
-    private Integer refreshInterval = 60;
+    private Integer refreshInterval = 600;
 }
