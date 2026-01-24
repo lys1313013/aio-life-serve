@@ -15,6 +15,21 @@ public interface DashboardCardProvider {
     String getType();
 
     /**
+     * 卡片标题
+     */
+    String getTitle();
+
+    /**
+     * 总量标题
+     */
+    String getTotalTitle();
+
+    /**
+     * 图标
+     */
+    String getIcon();
+
+    /**
      * 获取卡片数据
      */
     DashboardCardVO getCard(int userId);
