@@ -1,5 +1,6 @@
 package top.aiolife.record.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import top.aiolife.record.mapper.ITimeRecordEntity;
 import top.aiolife.record.pojo.entity.TimeRecordEntity;
@@ -7,8 +8,10 @@ import top.aiolife.record.service.ITimeRecordService;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Comparator;
+import java.util.List;
 
 /**
  * 时间记录Service实现类
@@ -62,5 +65,62 @@ public class TimeRecordServiceImpl extends ServiceImpl<ITimeRecordEntity, TimeRe
     @Override
     public TimeRecordEntity recommendType(int userId, String date, int time) {
         return this.baseMapper.recommendType(userId, date, time);
+    }
+
+    @Override
+    public TimeRecordEntity recommendNext(int userId, String date) {
+        LocalDate targetDate = LocalDate.parse(date);
+        LambdaQueryWrapper<TimeRecordEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.select(TimeRecordEntity::getStartTime, TimeRecordEntity::getEndTime)
+                .eq(TimeRecordEntity::getUserId, userId)
+                .eq(TimeRecordEntity::getDate, targetDate);
+        List<TimeRecordEntity> records = this.list(queryWrapper);
+        
+        return calculateRecommendNext(records, targetDate);
+    }
+
+    /**
+     * 计算推荐的下一个时间块
+     */
+    public TimeRecordEntity calculateRecommendNext(List<TimeRecordEntity> records, LocalDate targetDate) {
+        records.sort(Comparator.comparingInt(TimeRecordEntity::getStartTime));
+
+        boolean isToday = LocalDate.now().equals(targetDate);
+        int lastEndTime = -1;
+        int startTime = 0;
+        int endTime = 0;
+        boolean foundGap = false;
+
+        for (TimeRecordEntity record : records) {
+            if (record.getStartTime() > lastEndTime + 1) {
+                startTime = lastEndTime + 1;
+                endTime = record.getStartTime() - 1;
+                foundGap = true;
+                break;
+            }
+            lastEndTime = Math.max(lastEndTime, record.getEndTime());
+        }
+
+        if (!foundGap) {
+            startTime = lastEndTime + 1;
+            if (isToday) {
+                LocalDateTime now = LocalDateTime.now();
+                endTime = now.getHour() * 60 + now.getMinute();
+            } else {
+                endTime = startTime + 30;
+            }
+        }
+
+        if (endTime < startTime) {
+            endTime = startTime;
+        }
+
+        TimeRecordEntity result = new TimeRecordEntity();
+        result.setStartTime(startTime);
+        result.setEndTime(endTime);
+        result.setDate(targetDate);
+        result.setDuration(endTime - startTime);
+
+        return result;
     }
 }

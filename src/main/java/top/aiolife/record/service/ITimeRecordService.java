@@ -28,4 +28,12 @@ public interface ITimeRecordService extends IService<TimeRecordEntity> {
      * @return 分类id
      */
     TimeRecordEntity recommendType(int userId, String date, int time);
+
+    /**
+     * 推荐下一个时间块
+     * @param userId 用户ID
+     * @param date 日期 yyyy-MM-dd
+     * @return 推荐的时间块实体
+     */
+    TimeRecordEntity recommendNext(int userId, String date);
 }

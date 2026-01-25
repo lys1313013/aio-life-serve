@@ -178,4 +178,22 @@ public class TimeRecordController {
         }
         return ApiResponse.success(timeRecordEntity.getCategoryId());
     }
+
+    /**
+     * 推荐下一个时间块
+     * @param date 日期 yyyy-MM-dd
+     */
+    @GetMapping("/recommendNext")
+    public ApiResponse<TimeRecordEntity> recommendNext(String date) {
+        int userId = StpUtil.getLoginIdAsInt();
+        TimeRecordEntity result = timeRecordService.recommendNext(userId, date);
+        
+        // 获取推荐分类
+        String categoryId = recommendType(date, result.getStartTime()).getData();
+        result.setCategoryId(categoryId);
+
+        return ApiResponse.success(result);
+    }
+
+    
 }
