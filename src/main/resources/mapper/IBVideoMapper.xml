@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.lys.record.mapper.IBVideoMapper">
+<mapper namespace="top.life.record.mapper.IBVideoMapper">
 
-    <select id="getStatusCount" resultType="com.lys.record.pojo.vo.StatusCount">
+    <select id="getStatusCount" resultType="top.aiolife.record.pojo.vo.StatusCount">
         SELECT status, count(*) AS count
         FROM bilibili_video
         WHERE is_deleted = 0 and user_id = #{userId}

@@ -38,7 +38,7 @@ spring:
 
 logging:
   level:
-    com.lys.record.mapper: debug
+    top.aiolife.record.mapper: debug
     org.springframework.jdbc: debug
   pattern:
     file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%replace{%X{traceId}}{^(.{16}).*}{$1},%X{spanId}] [%thread] %-5level %logger{50} - %msg%n"
