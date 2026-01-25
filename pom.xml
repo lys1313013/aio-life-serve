@@ -11,7 +11,7 @@
         <relativePath/>
     </parent>
 
-    <groupId>com.lys</groupId>
+    <groupId>top.aiolife</groupId>
     <artifactId>aio-life-serve</artifactId>
     <version>1.0.0</version>
 
