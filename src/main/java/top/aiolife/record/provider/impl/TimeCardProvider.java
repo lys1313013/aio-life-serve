@@ -54,6 +54,8 @@ public class TimeCardProvider implements DashboardCardProvider {
         card.setType(getType());
         card.setTitle(getTitle());
         card.setIcon(getIcon());
+        // 配合前端代码，实现点击标题打开时间记录弹窗
+        card.setTitleClickUrl("action:open-time-tracker-modal");
         try {
             card.setValue(timeRecordService.getLastRecordTimeDiff((long) userId));
         } catch (Exception e) {

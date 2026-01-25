@@ -8,6 +8,7 @@ import top.aiolife.core.query.CommonQuery;
 import top.aiolife.core.resq.ApiResponse;
 import top.aiolife.core.resq.PageResp;
 import top.aiolife.record.pojo.entity.TimeRecordEntity;
+import top.aiolife.record.pojo.vo.RecommendNextVO;
 import top.aiolife.record.pojo.query.TimeWeekQuery;
 import top.aiolife.record.service.ITimeRecordService;
 import lombok.AllArgsConstructor;
@@ -184,16 +185,15 @@ public class TimeRecordController {
      * @param date 日期 yyyy-MM-dd
      */
     @GetMapping("/recommendNext")
-    public ApiResponse<TimeRecordEntity> recommendNext(String date) {
+    public ApiResponse<RecommendNextVO> recommendNext(String date) {
         int userId = StpUtil.getLoginIdAsInt();
-        TimeRecordEntity result = timeRecordService.recommendNext(userId, date);
+        RecommendNextVO result = timeRecordService.recommendNext(userId, date);
         
         // 获取推荐分类
-        String categoryId = recommendType(date, result.getStartTime()).getData();
-        result.setCategoryId(categoryId);
+        TimeRecordEntity recommend = result.getRecommend();
+        String categoryId = recommendType(date, recommend.getStartTime()).getData();
+        recommend.setCategoryId(categoryId);
 
         return ApiResponse.success(result);
     }
-
-    
 }

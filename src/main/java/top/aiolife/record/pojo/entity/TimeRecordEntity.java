@@ -26,11 +26,11 @@ public class TimeRecordEntity {
     private LocalDate date;
 
     /**
-     * 开始时间
+     * 开始时间 （分钟）包含开始时间
      */
     private Integer startTime;
     /**
-     * 结束时间
+     * 结束时间 （分钟） 包含结束时间
      */
     private Integer endTime;
     private String title;

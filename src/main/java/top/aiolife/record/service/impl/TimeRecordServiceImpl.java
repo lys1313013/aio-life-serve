@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import top.aiolife.record.mapper.ITimeRecordEntity;
 import top.aiolife.record.pojo.entity.TimeRecordEntity;
+import top.aiolife.record.pojo.vo.RecommendNextVO;
 import top.aiolife.record.service.ITimeRecordService;
 import org.springframework.stereotype.Service;
 
@@ -68,7 +69,7 @@ public class TimeRecordServiceImpl extends ServiceImpl<ITimeRecordEntity, TimeRe
     }
 
     @Override
-    public TimeRecordEntity recommendNext(int userId, String date) {
+    public RecommendNextVO recommendNext(int userId, String date) {
         LocalDate targetDate = LocalDate.parse(date);
         LambdaQueryWrapper<TimeRecordEntity> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.select(TimeRecordEntity::getStartTime, TimeRecordEntity::getEndTime)
@@ -76,7 +77,11 @@ public class TimeRecordServiceImpl extends ServiceImpl<ITimeRecordEntity, TimeRe
                 .eq(TimeRecordEntity::getDate, targetDate);
         List<TimeRecordEntity> records = this.list(queryWrapper);
         
-        return calculateRecommendNext(records, targetDate);
+        TimeRecordEntity recommend = calculateRecommendNext(records, targetDate);
+        return RecommendNextVO.builder()
+                .recommend(recommend)
+                .records(records)
+                .build();
     }
 
     /**
@@ -119,7 +124,7 @@ public class TimeRecordServiceImpl extends ServiceImpl<ITimeRecordEntity, TimeRe
         result.setStartTime(startTime);
         result.setEndTime(endTime);
         result.setDate(targetDate);
-        result.setDuration(endTime - startTime);
+        result.setDuration(endTime - startTime + 1);
 
         return result;
     }

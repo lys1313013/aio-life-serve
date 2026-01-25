@@ -2,6 +2,7 @@ package top.aiolife.record.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import top.aiolife.record.pojo.entity.TimeRecordEntity;
+import top.aiolife.record.pojo.vo.RecommendNextVO;
 
 /**
  * 时间记录Service接口
@@ -33,7 +34,7 @@ public interface ITimeRecordService extends IService<TimeRecordEntity> {
      * 推荐下一个时间块
      * @param userId 用户ID
      * @param date 日期 yyyy-MM-dd
-     * @return 推荐的时间块实体
+     * @return 推荐结果及当日记录
      */
-    TimeRecordEntity recommendNext(int userId, String date);
+    RecommendNextVO recommendNext(int userId, String date);
 }

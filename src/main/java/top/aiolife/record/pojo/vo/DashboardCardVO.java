@@ -1,5 +1,6 @@
 package top.aiolife.record.pojo.vo;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 
 /**
@@ -9,6 +10,7 @@ import lombok.Data;
  * @date 2025/04/13 14:26
  */
 @Data
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class DashboardCardVO {
     /**
      * 卡片类型
