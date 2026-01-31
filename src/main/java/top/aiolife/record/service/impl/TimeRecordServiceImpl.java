@@ -120,6 +120,14 @@ public class TimeRecordServiceImpl extends ServiceImpl<ITimeRecordEntity, TimeRe
             endTime = startTime;
         }
 
+        // 限制最大值为 1439 (23:59)
+        if (startTime > 1439) {
+            startTime = 1439;
+        }
+        if (endTime > 1439) {
+            endTime = 1439;
+        }
+
         TimeRecordEntity result = new TimeRecordEntity();
         result.setStartTime(startTime);
         result.setEndTime(endTime);

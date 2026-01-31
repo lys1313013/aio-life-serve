@@ -88,7 +88,12 @@ public class TimeRecordController {
         entity.setUserId(StpUtil.getLoginIdAsLong());
         entity.setCreateUser(StpUtil.getLoginIdAsInt());
         entity.setUpdateTime(LocalDateTime.now());
-        entity.setDuration(entity.getEndTime() - entity.getStartTime());
+        
+        // 限制时间最大值为 1439 (23:59)
+        if (entity.getStartTime() != null && entity.getStartTime() > 1439) entity.setStartTime(1439);
+        if (entity.getEndTime() != null && entity.getEndTime() > 1439) entity.setEndTime(1439);
+        
+        entity.setDuration(entity.getEndTime() - entity.getStartTime() + 1);
 
         timeRecordService.save(entity);
         return ApiResponse.success(true);
@@ -98,7 +103,12 @@ public class TimeRecordController {
     public ApiResponse<Boolean> update(@RequestBody TimeRecordEntity entity) {
         entity.setUserId(StpUtil.getLoginIdAsLong());
         entity.setUpdateTime(LocalDateTime.now());
-        entity.setDuration(entity.getEndTime() - entity.getStartTime());
+        
+        // 限制时间最大值为 1439 (23:59)
+        if (entity.getStartTime() != null && entity.getStartTime() > 1439) entity.setStartTime(1439);
+        if (entity.getEndTime() != null && entity.getEndTime() > 1439) entity.setEndTime(1439);
+
+        entity.setDuration(entity.getEndTime() - entity.getStartTime() + 1);
         timeRecordService.updateById(entity);
         return ApiResponse.success(true);
     }
@@ -116,7 +126,12 @@ public class TimeRecordController {
             entity.setUserId(StpUtil.getLoginIdAsLong());
             entity.setCreateUser(StpUtil.getLoginIdAsInt());
             entity.setUpdateTime(LocalDateTime.now());
-            entity.setDuration(entity.getEndTime() - entity.getStartTime());
+            
+            // 限制时间最大值为 1439 (23:59)
+            if (entity.getStartTime() != null && entity.getStartTime() > 1439) entity.setStartTime(1439);
+            if (entity.getEndTime() != null && entity.getEndTime() > 1439) entity.setEndTime(1439);
+
+            entity.setDuration(entity.getEndTime() - entity.getStartTime() + 1);
         });
         timeRecordService.saveBatch(entityList);
         return ApiResponse.success(true);
