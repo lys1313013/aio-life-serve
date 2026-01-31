@@ -45,6 +45,14 @@ logging:
     console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%replace{%X{traceId}}{^(.{16}).*}{$1},%X{spanId}] [%thread] %-5level %logger{50} - %msg%n"
 
 management:
+  server:
+    port: 45679 # 监控端点运行在独立端口，增强安全性
+  metrics:
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true # 开启直方图，用于计算 P95/P99
+      percentiles:
+        http.server.requests: 0.5, 0.9, 0.95, 0.99 # 自动生成 50%, 90%, 95%, 99% 分位数指标
   tracing:
     enabled: true
     sampling:
@@ -53,8 +61,10 @@ management:
     enabled-by-default: false
     web:
       exposure:
-        include: "health,info"
+        include: "health,info,prometheus" # 暴露 Prometheus 端点
   endpoint:
+    prometheus:
+      enabled: true
     health:
       enabled: true
       show-details: never

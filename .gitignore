@@ -29,3 +29,6 @@ replay_pid*
 *.iws
 *.iml
 *.ipr
+
+# Docker volumes
+docker/volumes/*/data/
