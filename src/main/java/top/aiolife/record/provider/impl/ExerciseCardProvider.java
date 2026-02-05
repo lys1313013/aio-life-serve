@@ -52,7 +52,7 @@ public class ExerciseCardProvider implements DashboardCardProvider {
         card.setIcon(getIcon());
         card.setTitle(getTitle());
         card.setIconClickUrl("/my-hub/exercise");
-        card.setTitleClickUrl("/my-hub/exercise");
+        card.setTitleClickUrl("action:open-exercise-modal");
         try {
             int count = exerciseRecordService.countTodayExerciseTypes((long) userId);
             card.setValue(String.valueOf(count));
