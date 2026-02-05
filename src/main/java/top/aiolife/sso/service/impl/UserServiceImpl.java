@@ -12,7 +12,6 @@ import top.aiolife.sso.pojo.vo.UserLoginVO;
 import top.aiolife.sso.service.IUserService;
 import top.aiolife.sso.util.PasswordUtil;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
@@ -31,30 +30,32 @@ public class UserServiceImpl implements IUserService {
     private final UserMapper userMapper;
     private final LoginLogMapper loginLogMapper;
 
-    @Value("${sa-token.salt}")
-    private String salt;
-
     @Override
     public UserLoginVO login(LoginReq loginReq, String ip) {
         LambdaQueryWrapper<UserEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(UserEntity::getUsername, loginReq.getUsername());
-        // 密码加盐
-        String password = loginReq.getPassword();
-        String encryptedPassword = PasswordUtil.encryptPassword(password, salt);
 
-        lambdaQueryWrapper.eq(UserEntity::getPassword, encryptedPassword);
+        UserEntity userEntity = userMapper.selectOne(lambdaQueryWrapper);
 
         // 记录登录日志
         LoginLogEntity loginLogEntity = new LoginLogEntity();
         loginLogEntity.setUsername(loginReq.getUsername());
         loginLogEntity.setIpAddress(ip);
 
-        UserEntity userEntity = userMapper.selectOne(lambdaQueryWrapper);
         if (userEntity == null) {
-            loginLogEntity.setPassword(password);
+            loginLogEntity.setPassword(loginReq.getPassword());
             loginLogMapper.insert(loginLogEntity);
             throw new RuntimeException("用户名或密码错误");
         }
+
+        // 校验密码
+        String encryptedPassword = PasswordUtil.encryptPassword(loginReq.getPassword(), userEntity.getPasswordSalt());
+        if (!userEntity.getPassword().equals(encryptedPassword)) {
+            loginLogEntity.setPassword(loginReq.getPassword());
+            loginLogMapper.insert(loginLogEntity);
+            throw new RuntimeException("用户名或密码错误");
+        }
+
         loginLogEntity.setUserId(userEntity.getId());
         loginLogMapper.insert(loginLogEntity);
         StpUtil.login(userEntity.getId());

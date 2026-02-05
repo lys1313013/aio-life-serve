@@ -76,7 +76,6 @@ sa-token:
   token-prefix: Bearer
 #  timeout: 3000 # token有效期，单位秒
   jwt-secret-key: lys
-  salt: aiolife
 
 mybatis-plus:
   global-config:

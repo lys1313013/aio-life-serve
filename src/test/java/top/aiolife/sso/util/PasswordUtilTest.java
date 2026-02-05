@@ -13,8 +13,9 @@ class PasswordUtilTest {
     @Test
     void encryptPassword() {
         String password = "123456";
-        String salt = "test";
+        String salt = PasswordUtil.getSalt();
+        System.out.println("salt: " + salt);
         String encryptPassword = PasswordUtil.encryptPassword(password, salt);
-        System.out.println(encryptPassword);
+        System.out.println("encryptPassword: " + encryptPassword);
     }
 }

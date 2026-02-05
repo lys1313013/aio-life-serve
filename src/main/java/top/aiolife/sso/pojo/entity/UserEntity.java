@@ -31,6 +31,11 @@ public class UserEntity {
     private String password;
 
     /**
+     * 密码盐
+     */
+    private String passwordSalt;
+
+    /**
      * 昵称
      */
     private String nickname;
