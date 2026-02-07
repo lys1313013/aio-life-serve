@@ -4,20 +4,18 @@ import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import top.aiolife.core.query.CommonQuery;
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.*;
 import top.aiolife.core.resq.ApiResponse;
 import top.aiolife.core.resq.PageResp;
 import top.aiolife.record.mapper.ITaskMapper;
 import top.aiolife.record.pojo.entity.TaskEntity;
+import top.aiolife.record.service.ITaskDetail;
 import top.aiolife.record.service.ITaskService;
-import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 任务控制器
@@ -28,27 +26,42 @@ import java.util.List;
 @Slf4j
 @RestController
 @AllArgsConstructor
-@RequestMapping("/task")
+@RequestMapping("/tasks")
 public class TaskController {
 
     private final ITaskService taskService;
 
     private final ITaskMapper taskMapper;
 
+    private final ITaskDetail taskDetailService;
+
     public ITaskMapper getBaseMapper() {
         return taskMapper;
     }
 
-    @PostMapping("/query")
-    public ApiResponse<PageResp<TaskEntity>> query(
-            @RequestBody CommonQuery<TaskEntity> query) {
-        int userId = StpUtil.getLoginIdAsInt();
+    @GetMapping()
+    public ApiResponse<PageResp<TaskEntity>> query(@RequestParam(required = false) Integer taskId,
+                                                    @RequestParam(defaultValue = "1") int get,
+                                                   @RequestParam(defaultValue = "100") int pageSize) {
+        Long userId = StpUtil.getLoginIdAsLong();
         LambdaQueryWrapper<TaskEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(TaskEntity::getUserId, userId);
-        TaskEntity condition = query.getCondition();
+        if (taskId != null) {
+            lambdaQueryWrapper.eq(TaskEntity::getId, taskId);
+        }
+
         lambdaQueryWrapper.orderByAsc(TaskEntity::getSortOrder);        // 分页
-        Page<TaskEntity> page = new Page<>(query.getPage(), query.getPageSize());
+        Page<TaskEntity> page = new Page<>(get, pageSize);
         IPage<TaskEntity> iPage = getBaseMapper().selectPage(page, lambdaQueryWrapper);
+        List<TaskEntity> records = iPage.getRecords();
+        // 获取未完成任务数
+        List<Long> taskIdList = records.stream().map(record -> record.getId().longValue()).toList();
+        Map<Long, Integer> unCompletedCountMap = taskDetailService.getUnCompletedCount(taskIdList, userId);
+        records.forEach(record -> {
+            Integer count = unCompletedCountMap.get(record.getId().longValue());
+            record.setUnCompletedCount(count != null ? count : 0);
+        });
+
         PageResp<TaskEntity> objectPageResp = PageResp.of(iPage.getRecords(), iPage.getTotal());
         return ApiResponse.success(objectPageResp);
     }
@@ -62,7 +75,7 @@ public class TaskController {
     public ApiResponse<TaskEntity> save(@RequestBody TaskEntity entity) {
         entity.setId(null);
         // 获取token
-        entity.setUserId(StpUtil.getLoginIdAsInt());
+        entity.setUserId(StpUtil.getLoginIdAsLong());
         getBaseMapper().insert(entity);
         return ApiResponse.success(entity);
     }
@@ -75,7 +88,7 @@ public class TaskController {
     @PostMapping("/update")
     public ApiResponse<Boolean> update(@RequestBody TaskEntity entity) {
         // 获取token
-        entity.setUserId(StpUtil.getLoginIdAsInt());
+        entity.setUserId(StpUtil.getLoginIdAsLong());
         getBaseMapper().updateById(entity);
         return ApiResponse.success();
     }

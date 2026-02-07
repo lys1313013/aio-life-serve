@@ -1,9 +1,6 @@
 package top.aiolife.record.pojo.entity;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableLogic;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -26,7 +23,7 @@ public class TaskEntity {
     /**
      * 用户ID
      */
-    private Integer userId;
+    private Long userId;
 
     /**
      * 任务内容
@@ -68,4 +65,7 @@ public class TaskEntity {
      * 更新时间
      */
     private LocalDateTime updateTime;
+
+    @TableField(exist = false)
+    private Integer unCompletedCount;
 }
