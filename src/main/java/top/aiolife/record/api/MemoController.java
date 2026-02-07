@@ -60,7 +60,7 @@ public class MemoController {
     @PostMapping("/save")
     public ApiResponse<Boolean> save(@RequestBody MemoEntity entity) {
         entity.setUserId(StpUtil.getLoginIdAsLong());
-        entity.setCreateUser(StpUtil.getLoginIdAsInt());
+        entity.setCreateUser(StpUtil.getLoginIdAsLong());
         entity.setCreateTime(LocalDateTime.now());
         entity.setUpdateTime(LocalDateTime.now());
         memoMapper.insert(entity);
@@ -73,7 +73,7 @@ public class MemoController {
     @PostMapping("/update")
     public ApiResponse<Boolean> update(@RequestBody MemoEntity entity) {
         entity.setUserId(StpUtil.getLoginIdAsLong());
-        entity.setUpdateUser(StpUtil.getLoginIdAsInt());
+        entity.setUpdateUser(StpUtil.getLoginIdAsLong());
         entity.setUpdateTime(LocalDateTime.now());
         memoMapper.updateById(entity);
         return ApiResponse.success(true);

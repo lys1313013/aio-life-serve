@@ -63,7 +63,7 @@ public class ExerciseRecordController {
     public ApiResponse<Boolean> add(@RequestBody ExerciseRecordEntity exerciseRecord) {
         Long userId = StpUtil.getLoginIdAsLong();
         exerciseRecord.setUserId(userId);
-        exerciseRecord.setCreateUser(userId.intValue());
+        exerciseRecord.setCreateUser(userId);
         return ApiResponse.success(getBaseMapper().insert(exerciseRecord) > 0);
     }
 
@@ -73,7 +73,7 @@ public class ExerciseRecordController {
     @PostMapping("/update")
     public ApiResponse<Boolean> update(@RequestBody ExerciseRecordEntity exerciseRecord) {
         long userId = StpUtil.getLoginIdAsLong();
-        exerciseRecord.setUpdateUser((int) userId);
+        exerciseRecord.setUpdateUser(userId);
         return ApiResponse.success(getBaseMapper().updateById(exerciseRecord) > 0);
     }
 

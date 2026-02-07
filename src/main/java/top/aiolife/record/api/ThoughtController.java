@@ -74,7 +74,7 @@ public class ThoughtController {
     @PostMapping("/save")
     public ApiResponse<Boolean> save(@RequestBody ThoughtEntity entity) {
         entity.setUserId(StpUtil.getLoginIdAsLong());
-        entity.setCreateUser(StpUtil.getLoginIdAsInt());
+        entity.setCreateUser(StpUtil.getLoginIdAsLong());
         entity.setUpdateTime(LocalDateTime.now());
         getBaseMapper().insert(entity);
         entity.getEvents().forEach(eventEntity -> {

@@ -67,8 +67,8 @@ public class BVideoController {
 
     @PostMapping("/insertOrUpdate")
     public ApiResponse<Boolean> insertOrUpdate(@RequestBody BVideoEntity entity) {
-        entity.setUserId(StpUtil.getLoginIdAsInt());
-        entity.setUpdateUser(StpUtil.getLoginIdAsInt());
+        entity.setUserId(StpUtil.getLoginIdAsLong());
+        entity.setUpdateUser(StpUtil.getLoginIdAsLong());
         entity.setUpdateTime(LocalDateTime.now());
         boolean b = getBaseMapper().insertOrUpdate(entity);
         return ApiResponse.success(b);
@@ -110,14 +110,14 @@ public class BVideoController {
     @PostMapping("/tagVideo")
     public ApiResponse<Boolean> tagVideo(@RequestBody BVideoEntity entity) {
         log.info("tagVideo: {}", entity);
-        entity.setUserId(StpUtil.getLoginIdAsInt());
+        entity.setUserId(StpUtil.getLoginIdAsLong());
         getBaseMapper().insert(entity);
         return ApiResponse.success();
     }
 
     @PostMapping("/syncProgress")
     public ApiResponse<Boolean> syncProgress(@RequestBody BVideoEntity entity) {
-        entity.setUserId(StpUtil.getLoginIdAsInt());
+        entity.setUserId(StpUtil.getLoginIdAsLong());
         log.info("bvid: {}", entity.getBvid());
         log.info("currentEpisode: {}", entity.getCurrentEpisode());
         LambdaUpdateWrapper<BVideoEntity> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();

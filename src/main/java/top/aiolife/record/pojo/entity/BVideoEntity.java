@@ -91,11 +91,11 @@ public class BVideoEntity extends BaseEntity{
      */
     private LocalDateTime pubdate;
 
-    private Integer userId;
-    private Integer createUser;
+    private Long userId;
+    private Long createUser;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createTime;
-    private Integer updateUser;
+    private Long updateUser;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime updateTime;
 
