@@ -13,8 +13,6 @@ import top.aiolife.record.provider.DashboardCardProvider;
 import top.aiolife.sso.mapper.UserMapper;
 import top.aiolife.sso.pojo.entity.UserEntity;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -78,11 +76,11 @@ public class GithubCardProvider implements DashboardCardProvider {
                         .getJSONObject("contributionsCollection")
                         .getJSONObject("contributionCalendar");
 
-                // Calculate streak
+                // 计算连续提交天数
                 int streak = calculateCurrentStreak(contributionCalendar);
                 card.setTotalValue(streak + " 天");
 
-                // Calculate today's contributions
+                // 计算今日提交数
                 int todayContributions = getTodayContributions(contributionCalendar);
                 card.setValue(todayContributions + "");
                 card.setValueColor(todayContributions > 0 ? "#3FB27F" : "red");
@@ -99,6 +97,13 @@ public class GithubCardProvider implements DashboardCardProvider {
         return card;
     }
 
+    /**
+     * 获取 GitHub 数据
+     *
+     * @param username GitHub 用户名
+     * @param token    GitHub Token
+     * @return GitHub 数据
+     */
     private JSONObject fetchGithubData(String username, String token) {
         String query = "{ \"query\": \"query { user(login: \\\"" + username + "\\\") { contributionsCollection { contributionCalendar { totalContributions weeks { contributionDays { contributionCount date } } } } } }\" }";
         
@@ -115,6 +120,12 @@ public class GithubCardProvider implements DashboardCardProvider {
         return null;
     }
 
+    /**
+     * 计算当前连续提交天数
+     *
+     * @param calendar 贡献日历
+     * @return 连续提交天数
+     */
     private int calculateCurrentStreak(JSONObject calendar) {
         JSONArray weeks = calendar.getJSONArray("weeks");
         List<JSONObject> allDays = new ArrayList<>();
@@ -126,45 +137,34 @@ public class GithubCardProvider implements DashboardCardProvider {
             }
         }
         
-        // Sort by date descending (although it should be sorted already, just to be safe)
-        // But the structure is weeks -> days, so it is naturally ascending. 
-        // We will traverse backwards.
+        // 此时数据按日期升序排列（weeks -> days），我们将倒序遍历
         
-        String today = LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE);
-        int streak = 0;
-
-        // Filter days up to today
-        List<JSONObject> validDays = new ArrayList<>();
-        for (JSONObject day : allDays) {
-            if (day.getString("date").compareTo(today) <= 0) {
-                validDays.add(day);
-            }
-        }
-        
-        if (validDays.isEmpty()) {
+        if (allDays.isEmpty()) {
             return 0;
         }
 
-        // Check from the last day (today) backwards
-        for (int i = validDays.size() - 1; i >= 0; i--) {
-            JSONObject day = validDays.get(i);
-            int count = day.getIntValue("contributionCount");
-            String date = day.getString("date");
+        int streak = 0;
 
+        // 从最后一天（今天）倒序检查
+        for (int i = allDays.size() - 1; i >= 0; i--) {
+            JSONObject day = allDays.get(i);
+            int count = day.getIntValue("contributionCount");
+            
             if (count > 0) {
                 streak++;
             } else {
-                // If today has 0 contributions, streak is still 0 unless we want to be lenient and check yesterday
-                // But usually "current streak" implies active streak. 
-                // However, standard logic: if today is 0, we check if yesterday had contributions.
-                // If yesterday had contributions, the streak is kept but doesn't include today yet (or maybe it counts up to yesterday).
-                // Let's follow common logic: if today is 0, check yesterday. If yesterday > 0, streak starts from yesterday.
-                // If today > 0, streak starts from today.
+                // 如果是最后记录的一天（根据时区可能被视为“今天”或“昨天”）且提交数为 0，
+                // 我们允许跳过它（不中断连续记录，也不增加计数）。
+                // 通常逻辑：
+                // - 如果今天有提交：连续天数包含今天。
+                // - 如果今天无提交：连续天数维持昨天的状态。
+                // - 如果昨天无提交：连续天数归零。
                 
-                if (date.equals(today)) {
-                    continue; // Skip today if 0, check yesterday
+                // 仅处理最后一天为 0 的情况
+                if (i == allDays.size() - 1) {
+                    continue; 
                 } else {
-                    break; // Break on first 0 (excluding today)
+                    break; 
                 }
             }
         }
@@ -172,18 +172,29 @@ public class GithubCardProvider implements DashboardCardProvider {
         return streak;
     }
 
+    /**
+     * 获取今日提交数
+     *
+     * @param calendar 贡献日历
+     * @return 今日提交数
+     */
     private int getTodayContributions(JSONObject calendar) {
-        String today = LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE);
         JSONArray weeks = calendar.getJSONArray("weeks");
+        JSONObject lastDay = null;
+
         for (int i = 0; i < weeks.size(); i++) {
             JSONArray days = weeks.getJSONObject(i).getJSONArray("contributionDays");
-            for (int j = 0; j < days.size(); j++) {
-                JSONObject day = days.getJSONObject(j);
-                if (today.equals(day.getString("date"))) {
-                    return day.getIntValue("contributionCount");
-                }
+            if (!days.isEmpty()) {
+                lastDay = days.getJSONObject(days.size() - 1);
             }
         }
+        
+        // 始终使用 GitHub 返回的最后一天作为“今天”
+        // 处理时区差异和系统时钟不匹配的问题（例如系统是 2026，GitHub 是 2025）
+        if (lastDay != null) {
+            return lastDay.getIntValue("contributionCount");
+        }
+        
         return 0;
     }
 }
