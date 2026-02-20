@@ -1,6 +1,7 @@
 package top.aiolife.record.pojo.entity.entity;
 
 import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.Data;
 import top.aiolife.record.pojo.entity.BaseEntity;
 
 import java.util.Date;
@@ -11,6 +12,7 @@ import java.util.Date;
  * @author Lys1313013
  * @since 2026-02-16 18:48:22
  */
+@Data
 @TableName("time_tracker_category")
 public class TimeTrackerCategoryEntity extends BaseEntity {
     //主键ID
