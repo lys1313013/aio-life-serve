@@ -43,4 +43,9 @@ public class ExerciseRecordEntity extends BaseEntity {
      * 运动描述
      */
     private String description;
+
+    /**
+     * 时间 ID
+     */
+    private Integer timeId;
 }
