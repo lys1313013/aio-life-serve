@@ -4,16 +4,19 @@ import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import top.aiolife.core.query.CommonQuery;
-import top.aiolife.core.resq.ApiResponse;
-import top.aiolife.core.resq.PageResp;
-import top.aiolife.record.pojo.entity.TimeRecordEntity;
-import top.aiolife.record.pojo.vo.RecommendNextVO;
-import top.aiolife.record.pojo.query.TimeWeekQuery;
-import top.aiolife.record.service.ITimeRecordService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import top.aiolife.core.query.CommonQuery;
+import top.aiolife.core.resq.ApiResponse;
+import top.aiolife.core.resq.PageResp;
+import top.aiolife.record.convertor.TimeRecordConvertor;
+import top.aiolife.record.pojo.entity.ExerciseRecordEntity;
+import top.aiolife.record.pojo.entity.TimeRecordEntity;
+import top.aiolife.record.pojo.query.TimeWeekQuery;
+import top.aiolife.record.pojo.req.TimeRecordReq;
+import top.aiolife.record.pojo.vo.RecommendNextVO;
+import top.aiolife.record.service.ITimeRecordService;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -84,7 +87,12 @@ public class TimeRecordController {
     }
 
     @PostMapping("/save")
-    public ApiResponse<Boolean> save(@RequestBody TimeRecordEntity entity) {
+    public ApiResponse<Boolean> save(@RequestBody TimeRecordReq timeRecordReq) {
+        TimeRecordEntity entity = TimeRecordConvertor.INSTANCE.Req2Entity(timeRecordReq);
+        List<ExerciseRecordEntity> exerciseRecordEntities = timeRecordReq.getExercises();
+
+
+
         entity.setUserId(StpUtil.getLoginIdAsLong());
         entity.setCreateUser(StpUtil.getLoginIdAsInt());
         entity.setUpdateTime(LocalDateTime.now());
