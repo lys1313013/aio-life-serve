@@ -47,7 +47,7 @@ public class MilestoneController {
     public ApiResponse<MilestoneEntity> createMilestone(@RequestBody MilestoneEntity milestoneEntity) {
         long userId = StpUtil.getLoginIdAsLong();
         milestoneEntity.setUserId(userId);
-        milestoneEntity.setCreateCommonField(userId);
+        milestoneEntity.fillCreateCommonField(userId);
         milestoneMapper.insert(milestoneEntity);
         return ApiResponse.success(milestoneEntity);
     }
@@ -55,7 +55,7 @@ public class MilestoneController {
     @PutMapping
     public ApiResponse<MilestoneEntity> updateMilestone(@RequestBody MilestoneEntity milestoneEntity) {
         long userId = StpUtil.getLoginIdAsLong();
-        milestoneEntity.setUpdateCommonField(userId);
+        milestoneEntity.fillUpdateCommonField(userId);
         milestoneEntity.setUserId(null);
         LambdaUpdateWrapper<MilestoneEntity> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
         lambdaUpdateWrapper.eq(MilestoneEntity::getId, milestoneEntity.getId());

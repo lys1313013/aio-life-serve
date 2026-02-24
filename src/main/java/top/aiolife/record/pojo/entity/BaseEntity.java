@@ -33,7 +33,7 @@ public class BaseEntity {
     @TableLogic
     private Integer isDeleted;
 
-    public void setCreateCommonField(Long userId) {
+    public void fillCreateCommonField(Long userId) {
         this.createUser = userId;
         this.updateUser = userId;
         this.createTime = LocalDateTime.now();
@@ -41,7 +41,7 @@ public class BaseEntity {
         this.isDeleted = 0;
     }
 
-    public void setUpdateCommonField(Long userId) {
+    public void fillUpdateCommonField(Long userId) {
         this.updateUser = userId;
         this.updateTime = LocalDateTime.now();
     }

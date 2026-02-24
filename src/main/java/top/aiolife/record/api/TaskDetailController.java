@@ -49,7 +49,7 @@ public class TaskDetailController {
     public ApiResponse<TaskDetailEntity> create(@RequestBody TaskDetailEntity entity) {
         Long userId = StpUtil.getLoginIdAsLong();
         entity.setUserId(userId);
-        entity.setCreateCommonField(userId);
+        entity.fillCreateCommonField(userId);
         taskDetailService.save(entity);
         return ApiResponse.success(entity);
     }
@@ -63,7 +63,7 @@ public class TaskDetailController {
     @PutMapping
     public ApiResponse<Boolean> update(@RequestBody TaskDetailEntity entity) {
         Long userId = StpUtil.getLoginIdAsLong();
-        entity.setUpdateCommonField(userId);
+        entity.fillUpdateCommonField(userId);
         // 确保只能更新自己的详情
         LambdaQueryWrapper<TaskDetailEntity> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(TaskDetailEntity::getId, entity.getId());

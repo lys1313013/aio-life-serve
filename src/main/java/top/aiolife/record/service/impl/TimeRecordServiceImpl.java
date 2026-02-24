@@ -1,10 +1,18 @@
 package top.aiolife.record.service.impl;
 
+import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import top.aiolife.record.mapper.ITimeRecordEntity;
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.transaction.annotation.Transactional;
+import top.aiolife.record.convertor.TimeRecordConvertor;
+import top.aiolife.record.mapper.ITimeRecordMapper;
+import top.aiolife.record.pojo.entity.ExerciseRecordEntity;
 import top.aiolife.record.pojo.entity.TimeRecordEntity;
+import top.aiolife.record.pojo.req.TimeRecordReq;
 import top.aiolife.record.pojo.vo.RecommendNextVO;
+import top.aiolife.record.service.IExerciseRecordService;
 import top.aiolife.record.service.ITimeRecordService;
 import org.springframework.stereotype.Service;
 
@@ -20,8 +28,126 @@ import java.util.List;
  * @author Lys
  * @date 2026-01-10 23:55
  */
+@Slf4j
 @Service
-public class TimeRecordServiceImpl extends ServiceImpl<ITimeRecordEntity, TimeRecordEntity> implements ITimeRecordService {
+@AllArgsConstructor
+public class TimeRecordServiceImpl extends ServiceImpl<ITimeRecordMapper, TimeRecordEntity> implements ITimeRecordService {
+
+    private ITimeRecordMapper timeRecordMapper;
+
+    private final IExerciseRecordService exerciseRecordService;
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void saveTimeRecord(TimeRecordReq timeRecordReq) {
+        TimeRecordEntity entity = TimeRecordConvertor.INSTANCE.Req2Entity(timeRecordReq);
+        List<ExerciseRecordEntity> exerciseRecordEntities = timeRecordReq.getExercises();
+
+        long userId = StpUtil.getLoginIdAsLong();
+        entity.setUserId(userId);
+        entity.setCreateUser(StpUtil.getLoginIdAsInt());
+        entity.setCreateTime(LocalDateTime.now());
+        entity.setUpdateTime(LocalDateTime.now());
+
+        // 限制时间最大值为 1439 (23:59)
+        if (entity.getStartTime() != null && entity.getStartTime() > 1439) entity.setStartTime(1439);
+        if (entity.getEndTime() != null && entity.getEndTime() > 1439) entity.setEndTime(1439);
+
+        if (entity.getStartTime() != null && entity.getEndTime() != null) {
+            entity.setDuration(entity.getEndTime() - entity.getStartTime() + 1);
+        }
+
+        this.save(entity);
+
+        if (exerciseRecordEntities != null && !exerciseRecordEntities.isEmpty()) {
+            for (ExerciseRecordEntity exercise : exerciseRecordEntities) {
+                exercise.setUserId(userId);
+                exercise.setTimeId(entity.getId());
+                exercise.fillCreateCommonField(userId);
+                exercise.setExerciseDate(entity.getDate());
+            }
+            exerciseRecordService.saveBatch(exerciseRecordEntities);
+        }
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void updateTimeRecord(TimeRecordReq timeRecordReq) {
+        TimeRecordEntity entity = TimeRecordConvertor.INSTANCE.Req2Entity(timeRecordReq);
+        List<ExerciseRecordEntity> exerciseRecordEntities = timeRecordReq.getExercises();
+
+        long userId = StpUtil.getLoginIdAsLong();
+        entity.setUserId(userId);
+        entity.setUpdateTime(LocalDateTime.now());
+
+        // 限制时间最大值为 1439 (23:59)
+        if (entity.getStartTime() != null && entity.getStartTime() > 1439) entity.setStartTime(1439);
+        if (entity.getEndTime() != null && entity.getEndTime() > 1439) entity.setEndTime(1439);
+
+        if (entity.getStartTime() != null && entity.getEndTime() != null) {
+            entity.setDuration(entity.getEndTime() - entity.getStartTime() + 1);
+        }
+
+        this.updateById(entity);
+
+        // 删除旧的运动记录
+        exerciseRecordService.remove(new LambdaQueryWrapper<ExerciseRecordEntity>()
+                .eq(ExerciseRecordEntity::getTimeId, entity.getId())
+                .eq(ExerciseRecordEntity::getUserId, userId));
+
+        // 添加新的运动记录
+        if (exerciseRecordEntities != null && !exerciseRecordEntities.isEmpty()) {
+            for (ExerciseRecordEntity exercise : exerciseRecordEntities) {
+                exercise.setUserId(userId);
+                exercise.setTimeId(entity.getId());
+
+                // 新增记录，设置创建信息
+                exercise.fillCreateCommonField(userId);
+                exercise.setId(null);
+                exercise.setExerciseDate(entity.getDate());
+            }
+            exerciseRecordService.saveBatch(exerciseRecordEntities);
+        }
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void removeById(String id, long userId) {
+        LambdaQueryWrapper<TimeRecordEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(TimeRecordEntity::getId, id);
+        queryWrapper.eq(TimeRecordEntity::getUserId, userId);
+        this.remove(queryWrapper);
+
+        // 删除关联的运动记录
+        exerciseRecordService.remove(new LambdaQueryWrapper<ExerciseRecordEntity>()
+                .eq(ExerciseRecordEntity::getTimeId, id)
+                .eq(ExerciseRecordEntity::getUserId, userId));
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void removeByDate(LocalDate date, long userId) {
+        // 1. 查询该日期下的所有时间记录ID
+        List<TimeRecordEntity> list = this.lambdaQuery()
+                .select(TimeRecordEntity::getId)
+                .eq(TimeRecordEntity::getDate, date)
+                .eq(TimeRecordEntity::getUserId, userId)
+                .list();
+
+        if (list.isEmpty()) {
+            return;
+        }
+
+        List<String> ids = list.stream().map(TimeRecordEntity::getId).toList();
+
+        // 2. 删除关联的运动记录
+        exerciseRecordService.remove(new LambdaQueryWrapper<ExerciseRecordEntity>()
+                .in(ExerciseRecordEntity::getTimeId, ids)
+                .eq(ExerciseRecordEntity::getUserId, userId));
+
+        // 3. 删除时间记录
+        this.removeByIds(ids);
+    }
 
     @Override
     public String getLastRecordTimeDiff(Long userId) {

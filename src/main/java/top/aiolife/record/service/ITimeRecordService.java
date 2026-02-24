@@ -4,6 +4,10 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import top.aiolife.record.pojo.entity.TimeRecordEntity;
 import top.aiolife.record.pojo.vo.RecommendNextVO;
 
+import top.aiolife.record.pojo.req.TimeRecordReq;
+
+import java.time.LocalDate;
+
 /**
  * 时间记录Service接口
  *
@@ -11,6 +15,30 @@ import top.aiolife.record.pojo.vo.RecommendNextVO;
  * @date 2026-01-10 23:55
  */
 public interface ITimeRecordService extends IService<TimeRecordEntity> {
+
+    /**
+     * 保存时间记录
+     *
+     * @param timeRecordReq 请求参数
+     */
+    void saveTimeRecord(TimeRecordReq timeRecordReq);
+
+    /**
+     * 更新时间记录
+     *
+     * @param timeRecordReq 请求参数
+     */
+    void updateTimeRecord(TimeRecordReq timeRecordReq);
+
+    void removeById(String id, long userId);
+
+    /**
+     * 根据日期删除记录及其关联的运动记录
+     *
+     * @param date   日期
+     * @param userId 用户ID
+     */
+    void removeByDate(LocalDate date, long userId);
 
     /**
      * 获取当天最后一条记录到现在的时间（分钟）

@@ -1,6 +1,7 @@
 package top.aiolife.record.api;
 
 import cn.dev33.satoken.stp.StpUtil;
+import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -10,16 +11,16 @@ import org.springframework.web.bind.annotation.*;
 import top.aiolife.core.query.CommonQuery;
 import top.aiolife.core.resq.ApiResponse;
 import top.aiolife.core.resq.PageResp;
-import top.aiolife.record.convertor.TimeRecordConvertor;
 import top.aiolife.record.pojo.entity.ExerciseRecordEntity;
 import top.aiolife.record.pojo.entity.TimeRecordEntity;
 import top.aiolife.record.pojo.query.TimeWeekQuery;
 import top.aiolife.record.pojo.req.TimeRecordReq;
 import top.aiolife.record.pojo.vo.RecommendNextVO;
+import top.aiolife.record.pojo.vo.TimeRecordVO;
+import top.aiolife.record.service.IExerciseRecordService;
 import top.aiolife.record.service.ITimeRecordService;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -34,6 +35,7 @@ import java.util.List;
 @RequestMapping("/timeRecord")
 public class TimeRecordController {
     private final ITimeRecordService timeRecordService;
+    private final IExerciseRecordService exerciseRecordService;
 
     public ITimeRecordService getBaseMapper() {
         return timeRecordService;
@@ -86,63 +88,43 @@ public class TimeRecordController {
         return ApiResponse.success(list);
     }
 
+    /**
+     * 根据 id 查询
+     * @param id id
+     */
+    @GetMapping("/{id}")
+    public ApiResponse<TimeRecordVO> getById(@PathVariable("id") String id) {
+        int userId = StpUtil.getLoginIdAsInt();
+        LambdaQueryWrapper<TimeRecordEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(TimeRecordEntity::getId, id);
+        lambdaQueryWrapper.eq(TimeRecordEntity::getUserId, userId);
+        TimeRecordEntity entity = timeRecordService.getOne(lambdaQueryWrapper);
+        if (entity == null) {
+            return ApiResponse.success(null);
+        }
+
+        TimeRecordVO vo = new TimeRecordVO();
+        BeanUtil.copyProperties(entity, vo);
+
+        List<ExerciseRecordEntity> exercises = exerciseRecordService.lambdaQuery()
+                .eq(ExerciseRecordEntity::getTimeId, id)
+                .eq(ExerciseRecordEntity::getUserId, userId)
+                .list();
+        vo.setExercises(exercises);
+
+        return ApiResponse.success(vo);
+    }
+
     @PostMapping("/save")
     public ApiResponse<Boolean> save(@RequestBody TimeRecordReq timeRecordReq) {
-        TimeRecordEntity entity = TimeRecordConvertor.INSTANCE.Req2Entity(timeRecordReq);
-        List<ExerciseRecordEntity> exerciseRecordEntities = timeRecordReq.getExercises();
-
-
-
-        entity.setUserId(StpUtil.getLoginIdAsLong());
-        entity.setCreateUser(StpUtil.getLoginIdAsInt());
-        entity.setUpdateTime(LocalDateTime.now());
-        
-        // 限制时间最大值为 1439 (23:59)
-        if (entity.getStartTime() != null && entity.getStartTime() > 1439) entity.setStartTime(1439);
-        if (entity.getEndTime() != null && entity.getEndTime() > 1439) entity.setEndTime(1439);
-        
-        entity.setDuration(entity.getEndTime() - entity.getStartTime() + 1);
-
-        timeRecordService.save(entity);
-        return ApiResponse.success(true);
+        timeRecordService.saveTimeRecord(timeRecordReq);
+        return ApiResponse.success();
     }
 
     @PostMapping("/update")
-    public ApiResponse<Boolean> update(@RequestBody TimeRecordEntity entity) {
-        entity.setUserId(StpUtil.getLoginIdAsLong());
-        entity.setUpdateTime(LocalDateTime.now());
-        
-        // 限制时间最大值为 1439 (23:59)
-        if (entity.getStartTime() != null && entity.getStartTime() > 1439) entity.setStartTime(1439);
-        if (entity.getEndTime() != null && entity.getEndTime() > 1439) entity.setEndTime(1439);
-
-        entity.setDuration(entity.getEndTime() - entity.getStartTime() + 1);
-        timeRecordService.updateById(entity);
-        return ApiResponse.success(true);
-    }
-
-    @PostMapping("/batchUpdate")
-    public ApiResponse<Boolean> batchUpdate(@RequestBody List<TimeRecordEntity> entityList) {
-        // 按照日期删除
-        LocalDate date = entityList.get(0).getDate();
-        LambdaQueryWrapper<TimeRecordEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.eq(TimeRecordEntity::getUserId, StpUtil.getLoginIdAsLong());
-        lambdaQueryWrapper.eq(TimeRecordEntity::getDate, date);
-        timeRecordService.remove(lambdaQueryWrapper);
-
-        entityList.forEach(entity -> {
-            entity.setUserId(StpUtil.getLoginIdAsLong());
-            entity.setCreateUser(StpUtil.getLoginIdAsInt());
-            entity.setUpdateTime(LocalDateTime.now());
-            
-            // 限制时间最大值为 1439 (23:59)
-            if (entity.getStartTime() != null && entity.getStartTime() > 1439) entity.setStartTime(1439);
-            if (entity.getEndTime() != null && entity.getEndTime() > 1439) entity.setEndTime(1439);
-
-            entity.setDuration(entity.getEndTime() - entity.getStartTime() + 1);
-        });
-        timeRecordService.saveBatch(entityList);
-        return ApiResponse.success(true);
+    public ApiResponse<Boolean> update(@RequestBody TimeRecordReq timeRecordReq) {
+        timeRecordService.updateTimeRecord(timeRecordReq);
+        return ApiResponse.success();
     }
 
     /**
@@ -151,11 +133,7 @@ public class TimeRecordController {
      */
     @PostMapping("/delete")
     public ApiResponse<Void> delete(@RequestBody TimeRecordEntity entity) {
-        LambdaQueryWrapper<TimeRecordEntity> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(TimeRecordEntity::getId, entity.getId());
-        queryWrapper.eq(TimeRecordEntity::getUserId, StpUtil.getLoginIdAsInt());
-
-        timeRecordService.remove(queryWrapper);
+        timeRecordService.removeById(entity.getId(),  StpUtil.getLoginIdAsInt());
         return ApiResponse.success();
     }
 
@@ -165,11 +143,7 @@ public class TimeRecordController {
      */
     @PostMapping("/deleteByDate")
     public ApiResponse<Void> deleteByDay(@RequestBody TimeRecordEntity entity) {
-        LambdaQueryWrapper<TimeRecordEntity> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(TimeRecordEntity::getDate, entity.getDate());
-        queryWrapper.eq(TimeRecordEntity::getUserId, StpUtil.getLoginIdAsInt());
-
-        timeRecordService.remove(queryWrapper);
+        timeRecordService.removeByDate(entity.getDate(), StpUtil.getLoginIdAsInt());
         return ApiResponse.success();
     }
 
