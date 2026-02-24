@@ -1,23 +1,20 @@
 package top.aiolife.record.service.impl;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import top.aiolife.record.pojo.entity.TimeRecordEntity;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@SpringBootTest
 class TimeRecordServiceImplTest {
-
+    @Autowired
     private TimeRecordServiceImpl timeRecordService;
-
-    @BeforeEach
-    void setUp() {
-        timeRecordService = new TimeRecordServiceImpl();
-    }
 
     @Test
     void testRecommendNextWithGap() {

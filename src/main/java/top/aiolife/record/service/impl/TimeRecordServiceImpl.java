@@ -33,7 +33,7 @@ import java.util.List;
 @AllArgsConstructor
 public class TimeRecordServiceImpl extends ServiceImpl<ITimeRecordMapper, TimeRecordEntity> implements ITimeRecordService {
 
-    private ITimeRecordMapper timeRecordMapper;
+    private final ITimeRecordMapper timeRecordMapper;
 
     private final IExerciseRecordService exerciseRecordService;
 
