@@ -66,9 +66,9 @@ public class ShanbayCardProvider implements DashboardCardProvider {
         DashboardCardVO card = new DashboardCardVO();
         card.setType(getType());
         card.setIcon(getIcon());
-        card.setIconClickUrl("https://www.shanbay.com/main/user/" + username);
+        card.setIconClickUrl("https://web.shanbay.com/web/users/" + username + "/checkin");
         card.setTitle(getTitle());
-        card.setTitleClickUrl("https://www.shanbay.com/main/user/" + username);
+        card.setTitleClickUrl("https://web.shanbay.com/web/users/" + username + "/checkin");
         card.setTotalTitle(getTotalTitle());
 
         try {
