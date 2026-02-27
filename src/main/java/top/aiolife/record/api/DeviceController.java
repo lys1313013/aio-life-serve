@@ -11,10 +11,7 @@ import top.aiolife.core.util.SysUtil;
 import top.aiolife.record.mapper.IDeviceMapper;
 import top.aiolife.record.pojo.entity.DeviceEntity;
 import lombok.AllArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * 类功能描述
@@ -61,4 +58,17 @@ public class DeviceController {
         return ApiResponse.success(getBaseMapper().insertOrUpdate(entity));
     }
 
+    /**
+     * 删除
+     *
+     * @param id
+     * @return
+     */
+    @DeleteMapping("/{id}")
+    public ApiResponse<Boolean> delete(@PathVariable("id") Integer id) {
+        LambdaQueryWrapper<DeviceEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(DeviceEntity::getId, id);
+        wrapper.eq(DeviceEntity::getUserId, StpUtil.getLoginIdAsInt());
+        return ApiResponse.success(getBaseMapper().delete(wrapper) > 0);
+    }
 }

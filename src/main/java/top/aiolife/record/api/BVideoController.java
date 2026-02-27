@@ -102,7 +102,9 @@ public class BVideoController {
         if (totalTime != null) {
             statisticsVO.setTotalSeconds(totalTime);
         }
-        statisticsVO.setUnstudiedSeconds(totalTime - watchTime);
+        int totalTimeValue = (totalTime != null) ? totalTime : 0;
+        int watchedTimeValue = (watchTime != null) ? watchTime : 0;
+        statisticsVO.setUnstudiedSeconds(totalTimeValue - watchedTimeValue);
 
         return ApiResponse.success(statisticsVO);
     }

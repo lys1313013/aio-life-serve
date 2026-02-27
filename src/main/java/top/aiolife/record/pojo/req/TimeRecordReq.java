@@ -21,6 +21,9 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class TimeRecordReq {
 
+    @TableId
+    private String id;
+
     /**
      * 分类id
      */
@@ -45,9 +48,6 @@ public class TimeRecordReq {
      * 是否手动添加
      */
     private Long isManual;
-
-    @TableId
-    private String id;
 
     List<ExerciseRecordEntity> exercises;
 }
