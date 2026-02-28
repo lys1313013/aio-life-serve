@@ -1,6 +1,7 @@
 package top.aiolife.sso.pojo.entity;
 
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -28,11 +29,13 @@ public class UserEntity {
     /**
      * 密码
      */
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 
     /**
      * 密码盐
      */
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String passwordSalt;
 
     /**
@@ -69,4 +72,9 @@ public class UserEntity {
      * 扇贝账号
      */
     private String shanbayAcct;
+
+    /**
+     * 角色类型
+     */
+    private String role;
 }

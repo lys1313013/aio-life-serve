@@ -2,6 +2,8 @@ package top.aiolife.sso.service.impl;
 
 import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import top.aiolife.core.query.CommonQuery;
+import top.aiolife.core.resq.PageResp;
 import top.aiolife.sso.mapper.LoginLogMapper;
 import top.aiolife.sso.mapper.UserMapper;
 import top.aiolife.sso.pojo.entity.LoginLogEntity;
@@ -11,10 +13,14 @@ import top.aiolife.sso.pojo.vo.UserInfoVO;
 import top.aiolife.sso.pojo.vo.UserLoginVO;
 import top.aiolife.sso.service.IUserService;
 import top.aiolife.sso.util.PasswordUtil;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -65,7 +71,7 @@ public class UserServiceImpl implements IUserService {
         userLoginVO.setId(userEntity.getId());
         userLoginVO.setRealName(userEntity.getNickname());
         userLoginVO.setUsername(userEntity.getNickname());
-        userLoginVO.setRoles(List.of("super"));
+        userLoginVO.setRoles(StringUtils.hasText(userEntity.getRole()) ? Arrays.asList(userEntity.getRole().split(",")) : Collections.singletonList("user"));
         userLoginVO.setAccessToken(token);
         return userLoginVO;
     }
@@ -84,7 +90,7 @@ public class UserServiceImpl implements IUserService {
         userInfoVO.setNickname(userEntity.getNickname());
         userInfoVO.setAvatar(userEntity.getAvatar());
         userInfoVO.setEmail(userEntity.getEmail());
-        userInfoVO.setRoles(List.of("super"));
+        userInfoVO.setRoles(StringUtils.hasText(userEntity.getRole()) ? Arrays.asList(userEntity.getRole().split(",")) : Collections.singletonList("user"));
         userInfoVO.setGithubUsername(userEntity.getGithubUsername());
         userInfoVO.setGithubToken(userEntity.getGithubToken());
         userInfoVO.setLeetcodeAcct(userEntity.getLeetcodeAcct());
@@ -95,5 +101,29 @@ public class UserServiceImpl implements IUserService {
     @Override
     public void updateUser(UserEntity userEntity) {
         userMapper.updateById(userEntity);
+    }
+
+    @Override
+    public PageResp<UserEntity> getUserList(CommonQuery query) {
+        Page<UserEntity> page = new Page<>(query.getPage(), query.getPageSize());
+        LambdaQueryWrapper<UserEntity> wrapper = new LambdaQueryWrapper<>();
+        userMapper.selectPage(page, wrapper);
+        return new PageResp<>(page.getRecords(), page.getTotal());
+    }
+
+    @Override
+    public void addUser(UserEntity userEntity) {
+        if (!StringUtils.hasText(userEntity.getPassword())) {
+            userEntity.setPassword("123456");
+        }
+        String salt = PasswordUtil.getSalt();
+        userEntity.setPasswordSalt(salt);
+        userEntity.setPassword(PasswordUtil.encryptPassword(userEntity.getPassword(), salt));
+        userMapper.insert(userEntity);
+    }
+
+    @Override
+    public void deleteUser(Integer id) {
+        userMapper.deleteById(id);
     }
 }
