@@ -1,8 +1,9 @@
 package top.aiolife.record.service.impl;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.junit.jupiter.MockitoExtension;
 import top.aiolife.record.pojo.entity.TimeRecordEntity;
 
 import java.time.LocalDate;
@@ -11,9 +12,10 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@SpringBootTest
+@ExtendWith(MockitoExtension.class)
 class TimeRecordServiceImplTest {
-    @Autowired
+
+    @InjectMocks
     private TimeRecordServiceImpl timeRecordService;
 
     @Test
