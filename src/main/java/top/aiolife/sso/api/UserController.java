@@ -5,6 +5,7 @@ import top.aiolife.core.resq.ApiResponse;
 import top.aiolife.sso.pojo.entity.UserEntity;
 import top.aiolife.sso.pojo.req.ChangePasswordReq;
 import top.aiolife.sso.pojo.req.LoginReq;
+import top.aiolife.sso.pojo.req.UpdateUserReq;
 import top.aiolife.sso.pojo.vo.UserInfoVO;
 import top.aiolife.sso.pojo.vo.UserLoginVO;
 import top.aiolife.sso.service.IUserService;
@@ -95,10 +96,13 @@ public class UserController {
      * 普通更新用户信息
      */
     @PutMapping("/users")
-    public ApiResponse<Void> modify(@RequestBody UserEntity userEntity) {
+    public ApiResponse<Void> modify(@RequestBody UpdateUserReq req) {
         long id = StpUtil.getLoginIdAsLong();
+        UserEntity userEntity = new UserEntity();
         userEntity.setId(id);
-        userEntity.setPassword(null);
+        userEntity.setNickname(req.getNickname());
+        userEntity.setIntroduction(req.getIntroduction());
+        userEntity.setAvatar(req.getAvatar());
         userService.updateUser(userEntity);
         return ApiResponse.success();
     }
