@@ -373,3 +373,18 @@ CREATE TABLE IF NOT EXISTS `time_tracker_category` (
                                          KEY `idx_user_code` (`user_id`,`code`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='时间追踪-分类配置表';
 
+
+CREATE TABLE IF NOT EXISTS `mail_log` (
+  `id` bigint(20) NOT NULL COMMENT '主键ID',
+  `send_to` varchar(100) NOT NULL COMMENT '接收者邮箱',
+  `subject` varchar(255) DEFAULT NULL COMMENT '邮件标题',
+  `content` text COMMENT '邮件内容',
+  `biz_type` varchar(50) DEFAULT NULL COMMENT '业务类型：register-注册, login-登录, reset_pwd-重置密码, system_notice-系统通知等',
+  `status` tinyint(1) NOT NULL DEFAULT '1' COMMENT '发送状态：1-成功，0-失败',
+  `error_msg` varchar(255) DEFAULT NULL COMMENT '失败原因',
+  `ip_address` varchar(45) DEFAULT NULL COMMENT '请求IP',
+  `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  PRIMARY KEY (`id`),
+  KEY `idx_send_to_biz_type` (`send_to`, `biz_type`),
+  KEY `idx_create_time` (`create_time`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='邮件发送记录表';
