@@ -57,14 +57,16 @@ public class ThoughtController {
 
         // 查询明细
         List<Long> thoughtIdList = iPage.getRecords().stream().map(ThoughtEntity::getId).toList();
-        LambdaQueryWrapper<ThoughtRelaEventEntity> relaEventLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        relaEventLambdaQueryWrapper.in(ThoughtRelaEventEntity::getThoughtId, thoughtIdList);
-        List<ThoughtRelaEventEntity> thoughtRelaEventEntityList = relaEventMapper.selectList(relaEventLambdaQueryWrapper);
-        // 关联事件
-        iPage.getRecords().forEach(thoughtVO -> {
-            List<ThoughtRelaEventEntity> eventEntityList = thoughtRelaEventEntityList.stream().filter(eventEntity -> eventEntity.getThoughtId().equals(thoughtVO.getId())).toList();
-            thoughtVO.setEvents(eventEntityList);
-        });
+        if (!thoughtIdList.isEmpty()) {
+            LambdaQueryWrapper<ThoughtRelaEventEntity> relaEventLambdaQueryWrapper = new LambdaQueryWrapper<>();
+            relaEventLambdaQueryWrapper.in(ThoughtRelaEventEntity::getThoughtId, thoughtIdList);
+            List<ThoughtRelaEventEntity> thoughtRelaEventEntityList = relaEventMapper.selectList(relaEventLambdaQueryWrapper);
+            // 关联事件
+            iPage.getRecords().forEach(thoughtVO -> {
+                List<ThoughtRelaEventEntity> eventEntityList = thoughtRelaEventEntityList.stream().filter(eventEntity -> eventEntity.getThoughtId().equals(thoughtVO.getId())).toList();
+                thoughtVO.setEvents(eventEntityList);
+            });
+        }
 
         PageResp<ThoughtEntity> objectPageResp = PageResp.of(iPage.getRecords(), iPage.getTotal());
 
