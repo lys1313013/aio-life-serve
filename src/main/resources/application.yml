@@ -88,3 +88,9 @@ aio:
   life:
     serve:
       leetcode-corn: 0 30 23 * * ?
+      auth:
+        code:
+          interval-seconds: 180 # 验证码发送间隔（秒），默认3分钟
+          ip-limit-day: 100 # 单IP单日发送限制次数
+          email-limit-day: 20 # 单邮箱单日发送限制次数
+          total-limit-day: 1000 # 全局单日总发送限制次数

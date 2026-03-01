@@ -5,6 +5,8 @@ import top.aiolife.core.resq.PageResp;
 import top.aiolife.sso.pojo.entity.UserEntity;
 import top.aiolife.sso.pojo.req.ChangePasswordReq;
 import top.aiolife.sso.pojo.req.LoginReq;
+import top.aiolife.sso.pojo.req.RegisterReq;
+import top.aiolife.sso.pojo.req.ResetPasswordReq;
 import top.aiolife.sso.pojo.vo.UserInfoVO;
 import top.aiolife.sso.pojo.vo.UserLoginVO;
 
@@ -24,6 +26,36 @@ public interface IUserService {
      * @return 登录结果
      */
     UserLoginVO login(LoginReq loginReq, String ip);
+
+    /**
+     * 注册
+     *
+     * @param registerReq 注册参数
+     */
+    void register(RegisterReq registerReq);
+
+    /**
+     * 发送注册验证码
+     *
+     * @param email 邮箱
+     * @param ip    客户端IP
+     */
+    void sendRegisterCode(String email, String ip);
+
+    /**
+     * 发送重置密码验证码
+     *
+     * @param email 邮箱
+     * @param ip    客户端IP
+     */
+    void sendResetPasswordCode(String email, String ip);
+
+    /**
+     * 重置密码
+     *
+     * @param resetPasswordReq 重置密码参数
+     */
+    void resetPassword(ResetPasswordReq resetPasswordReq);
 
     /**
      * 获取用户信息

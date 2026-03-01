@@ -55,10 +55,10 @@ public class TaskController {
         IPage<TaskEntity> iPage = getBaseMapper().selectPage(page, lambdaQueryWrapper);
         List<TaskEntity> records = iPage.getRecords();
         // 获取未完成任务数
-        List<Long> taskIdList = records.stream().map(record -> record.getId().longValue()).toList();
+        List<Long> taskIdList = records.stream().map(TaskEntity::getId).toList();
         Map<Long, Integer> unCompletedCountMap = taskDetailService.getUnCompletedCount(taskIdList, userId);
         records.forEach(record -> {
-            Integer count = unCompletedCountMap.get(record.getId().longValue());
+            Integer count = unCompletedCountMap.get(record.getId());
             record.setUnCompletedCount(count != null ? count : 0);
         });
 

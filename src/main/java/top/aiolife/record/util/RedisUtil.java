@@ -93,4 +93,36 @@ public class RedisUtil {
     public boolean hasKey(String key) {
         return Boolean.TRUE.equals(stringRedisTemplate.hasKey(key));
     }
+
+    /**
+     * 删除key
+     *
+     * @param key key
+     */
+    public void delete(String key) {
+        stringRedisTemplate.delete(key);
+    }
+
+    /**
+     * 自增
+     *
+     * @param key   key
+     * @param delta 增量
+     * @return 自增后的值
+     */
+    public Long increment(String key, long delta) {
+        return stringRedisTemplate.opsForValue().increment(key, delta);
+    }
+
+    /**
+     * 设置过期时间
+     *
+     * @param key     key
+     * @param timeout 超时时间
+     * @param unit    时间单位
+     * @return 是否设置成功
+     */
+    public Boolean expire(String key, long timeout, TimeUnit unit) {
+        return stringRedisTemplate.expire(key, timeout, unit);
+    }
 }

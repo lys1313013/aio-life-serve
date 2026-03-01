@@ -179,7 +179,7 @@ public class LeetcodeServiceImpl implements ILeetcodeService {
             if (!isWeekday || !isBefore7pm) {
                 try {
                     log.info("给 userId: {} 发送邮件提醒", userEntity.getId());
-                    mailService.sendSimpleEmail(userEntity.getEmail(), "leetcode咋还没刷", "leetcode咋还没刷");
+                    mailService.sendSimpleEmail(userEntity.getEmail(), "leetcode咋还没刷", "leetcode咋还没刷", "leetcode_reminder", "system");
                 } catch (Exception e) {
                     log.error("发送邮件失败", e);
                 }
@@ -277,7 +277,7 @@ public class LeetcodeServiceImpl implements ILeetcodeService {
         for (UserBindEntity bind : binds) {
             UserEntity user = userMapper.selectById(bind.getUserId());
             if (user != null && user.getEmail() != null) {
-                mailService.sendHtmlEmail(user.getEmail(), title, htmlContent);
+                mailService.sendHtmlEmail(user.getEmail(), title, htmlContent, "leetcode_daily_question", "system");
             }
         }
     }
