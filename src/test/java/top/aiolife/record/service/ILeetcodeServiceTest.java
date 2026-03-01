@@ -28,8 +28,7 @@ class ILeetcodeServiceTest {
     @Test
     void checkToday() {
         UserEntity userEntity = new UserEntity();
-        userEntity.setId(1);
-        userEntity.setLeetcodeAcct("xxx");
+        userEntity.setId(1L);
         userEntity.setEmail("xxx@gmail.com");
         leetcodeService.checkToday(userEntity, true);
     }
