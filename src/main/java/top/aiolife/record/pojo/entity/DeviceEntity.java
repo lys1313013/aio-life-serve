@@ -1,5 +1,7 @@
 package top.aiolife.record.pojo.entity;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Getter;
 import lombok.Setter;
@@ -19,6 +21,7 @@ public class DeviceEntity {
     /**
      * 唯一标识
      */
+    @TableId(type = IdType.ASSIGN_ID)
     private Integer id;
 
     /**

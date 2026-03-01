@@ -1,10 +1,7 @@
 package top.aiolife.record.pojo.entity;
 
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
-
-import java.time.LocalDateTime;
 
 /**
  * 类功能描述
@@ -13,7 +10,7 @@ import java.time.LocalDateTime;
  * @date 2025/10/06 22:48
  */
 @Data
-@TableName("bilibili_video")
+@TableName("b_video")
 public class BVideoEntity extends BaseEntity{
 
     /**
@@ -39,7 +36,7 @@ public class BVideoEntity extends BaseEntity{
     /**
      * 观看时长
      */
-    private String watchedDuration;
+    private Integer watchedDuration;
 
     /**
      * 总集数
@@ -81,28 +78,7 @@ public class BVideoEntity extends BaseEntity{
      */
     private String ownerName;
 
-    /**
-     * 视频统计信息（JSON格式存储）
-     */
-    private String statInfo;
-
-    /**
-     * 发布时间
-     */
-    private LocalDateTime pubdate;
-
     private Long userId;
-    private Long createUser;
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDateTime createTime;
-    private Long updateUser;
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDateTime updateTime;
-
-    /**
-     * 版权信息
-     */
-    private Integer copyright = 1;
 
     /**
      * 分集信息（JSON格式存储）

@@ -24,8 +24,8 @@ public class PerformanceEntity {
     /**
      * 唯一标识
      */
-    @TableId(type = IdType.AUTO)
-    private Integer id;
+    @TableId(type = IdType.ASSIGN_ID)
+    private Long id;
 
     /**
      * 演出名称

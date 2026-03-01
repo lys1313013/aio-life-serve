@@ -129,7 +129,7 @@ public class ExpController {
 
         // 获取收入类型字典数据
         List<SysDictDataEntity> dictDataList = sysDictService.getDictDataByDictType("exp_type");
-        Map<Integer, String> dictMap = dictDataList.stream()
+        Map<Long, String> dictMap = dictDataList.stream()
                 .collect(Collectors.toMap(SysDictDataEntity::getDictCode, SysDictDataEntity::getDictLabel));
 
         // 按照年度汇总
@@ -159,7 +159,7 @@ public class ExpController {
 
         // 获取收入类型字典数据
         List<SysDictDataEntity> dictDataList = sysDictService.getDictDataByDictType("exp_type");
-        Map<Integer, String> dictMap = dictDataList.stream()
+        Map<Long, String> dictMap = dictDataList.stream()
                 .collect(Collectors.toMap(SysDictDataEntity::getDictCode, SysDictDataEntity::getDictLabel));
 
         // 按照年月汇总

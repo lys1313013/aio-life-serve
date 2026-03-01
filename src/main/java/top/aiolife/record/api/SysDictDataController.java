@@ -59,7 +59,7 @@ public class SysDictDataController {
             if (SysUtil.isEmpty(sysDictTypeEntities)) {
                 return ApiResponse.success();
             } else {
-                Collection<Integer> dictIdList = sysDictTypeEntities.stream().map(SysDictTypeEntity::getDictId).distinct().toList();
+                Collection<Long> dictIdList = sysDictTypeEntities.stream().map(SysDictTypeEntity::getDictId).distinct().toList();
                 lambdaQueryWrapper.in(SysDictDataEntity::getDictId, dictIdList);
             }
         }

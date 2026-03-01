@@ -1,5 +1,6 @@
 package top.aiolife.sso.pojo.entity;
 
+import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
@@ -62,4 +63,10 @@ public class UserEntity {
      * 个人简介
      */
     private String introduction;
+
+    /**
+     * 是否删除
+     */
+    @TableLogic
+    private Integer isDeleted;
 }

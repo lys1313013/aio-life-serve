@@ -21,8 +21,8 @@ import java.time.LocalDateTime;
 @TableName("expense")
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ExpenseEntity {
-    @TableId(type = IdType.AUTO)
-    private Integer id;
+    @TableId(type = IdType.ASSIGN_ID)
+    private Long id;
     /**
      * 交易金额（支付软件上的支付金额）
      */

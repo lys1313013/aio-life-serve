@@ -10,6 +10,7 @@ import top.aiolife.core.query.CommonQuery;
 import top.aiolife.core.resq.ApiResponse;
 import top.aiolife.core.resq.PageResp;
 import top.aiolife.core.util.SysUtil;
+import top.aiolife.record.enums.StudyEnum;
 import top.aiolife.record.mapper.IBVideoMapper;
 import top.aiolife.record.pojo.entity.BVideoEntity;
 import top.aiolife.record.pojo.vo.BVideoStatisticsVO;
@@ -70,6 +71,9 @@ public class BVideoController {
         entity.setUserId(StpUtil.getLoginIdAsLong());
         entity.setUpdateUser(StpUtil.getLoginIdAsLong());
         entity.setUpdateTime(LocalDateTime.now());
+        if (entity.getStatus() == StudyEnum.COMPLETED.getValue()) {
+            entity.setWatchedDuration(entity.getDuration());
+        }
         boolean b = getBaseMapper().insertOrUpdate(entity);
         return ApiResponse.success(b);
     }

@@ -23,8 +23,8 @@ public class SysDictTypeEntity {
     /**
      * 字典类型的唯一标识
      */
-    @TableId(type = IdType.AUTO)
-    private Integer dictId;
+    @TableId(type = IdType.ASSIGN_ID)
+    private Long dictId;
 
     /**
      * 字典名称

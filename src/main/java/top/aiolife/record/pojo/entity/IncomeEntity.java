@@ -23,8 +23,8 @@ import java.time.LocalDateTime;
 @TableName("income")
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class IncomeEntity {
-    @TableId(type = IdType.AUTO)
-    private Integer incomeId;
+    @TableId(type = IdType.ASSIGN_ID)
+    private Long incomeId;
     private BigDecimal amt;
     /**
      * 收入时间

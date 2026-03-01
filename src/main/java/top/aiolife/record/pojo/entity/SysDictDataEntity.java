@@ -24,8 +24,8 @@ public class SysDictDataEntity {
     /**
      * 字典代码，作为主键
      */
-    @TableId(type = IdType.AUTO)
-    private Integer dictCode;
+    @TableId(type = IdType.ASSIGN_ID)
+    private Long dictCode;
     /**
      * 字典ID
      */

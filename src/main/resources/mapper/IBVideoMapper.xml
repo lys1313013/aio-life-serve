@@ -4,7 +4,7 @@
 
     <select id="getStatusCount" resultType="top.aiolife.record.pojo.vo.StatusCount">
         SELECT status, count(*) AS count
-        FROM bilibili_video
+        FROM b_video
         WHERE is_deleted = 0 and user_id = #{userId}
         GROUP BY status
     </select>
@@ -12,13 +12,13 @@
 
     <select id="getWatchTime" resultType="java.lang.Integer">
         SELECT sum(watched_duration) AS count
-        FROM bilibili_video
+        FROM b_video
         WHERE is_deleted = 0 and user_id = #{userId} AND status = 5
     </select>
 
     <select id="getTotalTime" resultType="java.lang.Integer">
         SELECT sum(duration) AS count
-        FROM bilibili_video
+        FROM b_video
         WHERE is_deleted = 0 and user_id = #{userId}
     </select>
 
