@@ -87,9 +87,10 @@ public class TaskController {
      */
     @PostMapping("/update")
     public ApiResponse<Boolean> update(@RequestBody TaskEntity entity) {
-        // 获取token
-        entity.setUserId(StpUtil.getLoginIdAsLong());
-        getBaseMapper().updateById(entity);
+        LambdaQueryWrapper<TaskEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(TaskEntity::getId, entity.getId());
+        wrapper.eq(TaskEntity::getUserId, StpUtil.getLoginIdAsLong());
+        getBaseMapper().update(entity, wrapper);
         return ApiResponse.success();
     }
 
@@ -99,7 +100,10 @@ public class TaskController {
      */
     @PostMapping("/delete")
     public ApiResponse<Void> delete(@RequestBody TaskEntity entity) {
-        getBaseMapper().deleteById(entity);
+        LambdaQueryWrapper<TaskEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(TaskEntity::getId, entity.getId());
+        wrapper.eq(TaskEntity::getUserId, StpUtil.getLoginIdAsLong());
+        getBaseMapper().delete(wrapper);
         return ApiResponse.success();
     }
 
@@ -110,7 +114,13 @@ public class TaskController {
      */
     @PostMapping("/reSort")
     public ApiResponse<Void> reSort(@RequestBody List<TaskEntity> list) {
-        taskService.updateBatchById(list);
+        Long userId = StpUtil.getLoginIdAsLong();
+        for (TaskEntity entity : list) {
+            LambdaQueryWrapper<TaskEntity> wrapper = new LambdaQueryWrapper<>();
+            wrapper.eq(TaskEntity::getId, entity.getId());
+            wrapper.eq(TaskEntity::getUserId, userId);
+            getBaseMapper().update(entity, wrapper);
+        }
         return ApiResponse.success();
     }
 }

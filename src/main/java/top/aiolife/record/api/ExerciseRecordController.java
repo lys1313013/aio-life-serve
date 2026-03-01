@@ -74,7 +74,12 @@ public class ExerciseRecordController {
     public ApiResponse<Boolean> update(@RequestBody ExerciseRecordEntity exerciseRecord) {
         long userId = StpUtil.getLoginIdAsLong();
         exerciseRecord.setUpdateUser(userId);
-        return ApiResponse.success(getBaseMapper().updateById(exerciseRecord) > 0);
+        
+        LambdaQueryWrapper<ExerciseRecordEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(ExerciseRecordEntity::getId, exerciseRecord.getId());
+        wrapper.eq(ExerciseRecordEntity::getUserId, userId);
+        
+        return ApiResponse.success(getBaseMapper().update(exerciseRecord, wrapper) > 0);
     }
 
     // 批量删除
@@ -83,7 +88,7 @@ public class ExerciseRecordController {
         LambdaQueryWrapper<ExerciseRecordEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(ExerciseRecordEntity::getUserId, StpUtil.getLoginIdAsLong());
         lambdaQueryWrapper.in(ExerciseRecordEntity::getId, commonReq.getIdList());
-        exerciseRecordService.remove(lambdaQueryWrapper);
+        exerciseRecordMapper.delete(lambdaQueryWrapper);
         return ApiResponse.success();
     }
 

@@ -38,7 +38,7 @@ public class TaskEntity {
     /**
      * 列ID
      */
-    private Integer columnId;
+    private Long columnId;
 
     /**
      * 目标完成时间

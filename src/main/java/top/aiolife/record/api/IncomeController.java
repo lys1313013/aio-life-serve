@@ -66,14 +66,25 @@ public class IncomeController {
 
     @PostMapping("/insertOrUpdate")
     public ApiResponse<Boolean> insertOrUpdate(@RequestBody IncomeEntity entity) {
-        entity.setUserId(StpUtil.getLoginIdAsLong());
-        boolean b = getBaseMapper().insertOrUpdate(entity);
-        return ApiResponse.success(b);
+        Long userId = StpUtil.getLoginIdAsLong();
+        entity.setUserId(userId);
+        if (entity.getIncomeId() == null) {
+            getBaseMapper().insert(entity);
+        } else {
+            LambdaQueryWrapper<IncomeEntity> wrapper = new LambdaQueryWrapper<>();
+            wrapper.eq(IncomeEntity::getIncomeId, entity.getIncomeId());
+            wrapper.eq(IncomeEntity::getUserId, userId);
+            getBaseMapper().update(entity, wrapper);
+        }
+        return ApiResponse.success(true);
     }
 
     @PostMapping("/delete")
     public ApiResponse<Boolean> delete(@RequestBody IncomeEntity entity) {
-        boolean b = getBaseMapper().deleteById(entity) > 0;
+        LambdaQueryWrapper<IncomeEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(IncomeEntity::getIncomeId, entity.getIncomeId());
+        wrapper.eq(IncomeEntity::getUserId, StpUtil.getLoginIdAsLong());
+        boolean b = getBaseMapper().delete(wrapper) > 0;
         return ApiResponse.success(b);
     }
 

@@ -86,15 +86,25 @@ public class ThoughtController {
 
     @PostMapping("/update")
     public ApiResponse<Boolean> update(@RequestBody ThoughtEntity entity) {
-        entity.setUserId(StpUtil.getLoginIdAsLong());
+        Long userId = StpUtil.getLoginIdAsLong();
+        entity.setUserId(userId);
         entity.setUpdateTime(LocalDateTime.now());
-        getBaseMapper().updateById(entity);
-        // 更新事件
-        entity.getEvents().forEach(eventEntity -> {
-            eventEntity.setThoughtId(entity.getId());
-            relaEventMapper.insertOrUpdate(eventEntity);
-        });
-        return ApiResponse.success(true);
+        
+        LambdaQueryWrapper<ThoughtEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(ThoughtEntity::getId, entity.getId());
+        wrapper.eq(ThoughtEntity::getUserId, userId);
+        
+        int rows = getBaseMapper().update(entity, wrapper);
+        
+        if (rows > 0) {
+            // 更新事件
+            entity.getEvents().forEach(eventEntity -> {
+                eventEntity.setThoughtId(entity.getId());
+                relaEventMapper.insertOrUpdate(eventEntity);
+            });
+            return ApiResponse.success(true);
+        }
+        return ApiResponse.error("无权操作或记录不存在");
     }
 
     /**

@@ -80,20 +80,29 @@ public class ExpController {
 
     @PostMapping("/insertOrUpdate")
     public ApiResponse<Boolean> insertOrUpdate(@RequestBody ExpenseEntity entity) {
-        entity.setUserId(StpUtil.getLoginIdAsLong());
+        Long userId = StpUtil.getLoginIdAsLong();
+        entity.setUserId(userId);
         // 新增时，交易金额为空时，默认设置为记账金额
         if (entity.getId() == null && entity.getTransactionAmt() == null) {
             entity.setTransactionAmt(entity.getAmt());
         }
-        boolean b = getBaseMapper().insertOrUpdate(entity);
-        return ApiResponse.success(b);
+        
+        if (entity.getId() == null) {
+            getBaseMapper().insert(entity);
+        } else {
+            LambdaQueryWrapper<ExpenseEntity> wrapper = new LambdaQueryWrapper<>();
+            wrapper.eq(ExpenseEntity::getId, entity.getId());
+            wrapper.eq(ExpenseEntity::getUserId, userId);
+            getBaseMapper().update(entity, wrapper);
+        }
+        return ApiResponse.success(true);
     }
 
     // 批量新增
     @PostMapping("/saveBatch")
     public ApiResponse<Boolean> saveBatch(@RequestBody List<ExpenseEntity> list) {
+        long userId = StpUtil.getLoginIdAsLong();
         for (ExpenseEntity entity : list) {
-            long userId = StpUtil.getLoginIdAsLong();
             entity.setUserId(userId);
             entity.setCreateUser(userId);
             entity.setUpdateUser(userId);
@@ -106,15 +115,20 @@ public class ExpController {
 
     @PostMapping("/delete")
     public ApiResponse<Boolean> delete(@RequestBody ExpenseEntity entity) {
-        boolean b = getBaseMapper().deleteById(entity) > 0;
+        LambdaQueryWrapper<ExpenseEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(ExpenseEntity::getId, entity.getId());
+        wrapper.eq(ExpenseEntity::getUserId, StpUtil.getLoginIdAsLong());
+        boolean b = getBaseMapper().delete(wrapper) > 0;
         return ApiResponse.success(b);
     }
 
     // 批量删除
     @PostMapping("/deleteBatch")
     public ApiResponse<Boolean> deleteBatch(@RequestBody CommonReq commonReq) {
-        // todo 加权限删除
-        expenseService.removeBatchByIds(commonReq.getIdList());
+        LambdaQueryWrapper<ExpenseEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.in(ExpenseEntity::getId, commonReq.getIdList());
+        wrapper.eq(ExpenseEntity::getUserId, StpUtil.getLoginIdAsLong());
+        getBaseMapper().delete(wrapper);
         return ApiResponse.success();
     }
 

@@ -66,13 +66,11 @@ public class TaskColumnController {
         // 查询当前最大的sort_order
         LambdaQueryWrapper<TaskColumnEntity> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(TaskColumnEntity::getUserId, userId);
-        queryWrapper.orderByAsc(TaskColumnEntity::getSortOrder);
+        queryWrapper.orderByDesc(TaskColumnEntity::getSortOrder);
+        queryWrapper.last("limit 1");
         TaskColumnEntity taskColumnEntity = getBaseMapper().selectOne(queryWrapper);
-        if (taskColumnEntity == null) {
-            entity.setSortOrder(1);
-        } else {
-            entity.setSortOrder(taskColumnEntity.getSortOrder() + 1);
-        }
+        int maxOrder = (taskColumnEntity != null && taskColumnEntity.getSortOrder() != null) ? taskColumnEntity.getSortOrder() : 0;
+        entity.setSortOrder(maxOrder + 1);
 
         entity.setId(null);
         entity.setIsDeleted(StatusConst.NO_DELETE);
@@ -90,9 +88,14 @@ public class TaskColumnController {
      */
     @PostMapping("/update")
     public ApiResponse<Boolean> update(@RequestBody TaskColumnEntity entity) {
-        // 获取token
-        entity.setUserId(StpUtil.getLoginIdAsLong());
-        getBaseMapper().updateById(entity);
+        Long userId = StpUtil.getLoginIdAsLong();
+        entity.setUserId(userId);
+        
+        LambdaQueryWrapper<TaskColumnEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(TaskColumnEntity::getId, entity.getId());
+        wrapper.eq(TaskColumnEntity::getUserId, userId);
+        
+        getBaseMapper().update(entity, wrapper);
         return ApiResponse.success();
     }
 
@@ -103,7 +106,10 @@ public class TaskColumnController {
      */
     @PostMapping("/delete")
     public ApiResponse<Void> delete(@RequestBody TaskColumnEntity entity) {
-        getBaseMapper().deleteById(entity);
+        LambdaQueryWrapper<TaskColumnEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(TaskColumnEntity::getId, entity.getId());
+        wrapper.eq(TaskColumnEntity::getUserId, StpUtil.getLoginIdAsLong());
+        getBaseMapper().delete(wrapper);
         return ApiResponse.success();
     }
 
@@ -114,7 +120,13 @@ public class TaskColumnController {
      */
     @PostMapping("/reSort")
     public ApiResponse<Void> reSort(@RequestBody List<TaskColumnEntity> list) {
-        taskColumnService.updateBatchById(list);
+        Long userId = StpUtil.getLoginIdAsLong();
+        for (TaskColumnEntity entity : list) {
+            LambdaQueryWrapper<TaskColumnEntity> wrapper = new LambdaQueryWrapper<>();
+            wrapper.eq(TaskColumnEntity::getId, entity.getId());
+            wrapper.eq(TaskColumnEntity::getUserId, userId);
+            getBaseMapper().update(entity, wrapper);
+        }
         return ApiResponse.success();
     }
 }

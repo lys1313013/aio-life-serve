@@ -96,22 +96,24 @@ public class BVideoController {
     public ApiResponse<Boolean> update(@PathVariable Long id, @RequestBody BVideoEntity entity) {
         long userId = StpUtil.getLoginIdAsLong();
 
-        BVideoEntity existEntity = getBaseMapper().selectById(id);
+        LambdaQueryWrapper<BVideoEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(BVideoEntity::getId, id);
+        wrapper.eq(BVideoEntity::getUserId, userId);
+        
+        BVideoEntity existEntity = getBaseMapper().selectOne(wrapper);
         if (existEntity == null) {
-            return ApiResponse.error(ResponseCodeConst.RSCODE_COMMON_FAIL, "该视频不存在，无法更新");
-        }
-        if (existEntity.getUserId() != userId) {
-            return ApiResponse.error(ResponseCodeConst.RSCODE_COMMON_FAIL, "无权限更新该视频");
+            return ApiResponse.error(ResponseCodeConst.RSCODE_COMMON_FAIL, "无权限更新该数据或数据不存在");
         }
 
         entity.setId(id);
         entity.setUserId(userId);
         entity.setUpdateUser(userId);
         entity.setUpdateTime(LocalDateTime.now());
-        if (entity.getStatus() == StudyEnum.COMPLETED.getValue()) {
+        if (entity.getStatus() != null && entity.getStatus() == StudyEnum.COMPLETED.getValue()) {
             entity.setWatchedDuration(entity.getDuration());
         }
-        boolean b = getBaseMapper().updateById(entity) > 0;
+        
+        boolean b = getBaseMapper().update(entity, wrapper) > 0;
         return ApiResponse.success(b);
     }
 
@@ -119,16 +121,15 @@ public class BVideoController {
     @DeleteMapping("/{id}")
     public ApiResponse<Boolean> delete(@PathVariable Long id) {
         long userId = StpUtil.getLoginIdAsLong();
+        
+        LambdaQueryWrapper<BVideoEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(BVideoEntity::getId, id);
+        wrapper.eq(BVideoEntity::getUserId, userId);
 
-        BVideoEntity existEntity = getBaseMapper().selectById(id);
-        if (existEntity == null) {
-            return ApiResponse.error(ResponseCodeConst.RSCODE_COMMON_FAIL, "该视频不存在，无法删除");
+        boolean b = getBaseMapper().delete(wrapper) > 0;
+        if (!b) {
+            return ApiResponse.error(ResponseCodeConst.RSCODE_COMMON_FAIL, "无权限删除该数据或数据不存在");
         }
-        if (existEntity.getUserId() != userId) {
-            return ApiResponse.error(ResponseCodeConst.RSCODE_COMMON_FAIL, "无权限删除该视频");
-        }
-
-        boolean b = getBaseMapper().deleteById(id) > 0;
         return ApiResponse.success(b);
     }
 

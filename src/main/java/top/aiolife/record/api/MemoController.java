@@ -72,10 +72,16 @@ public class MemoController {
      */
     @PostMapping("/update")
     public ApiResponse<Boolean> update(@RequestBody MemoEntity entity) {
-        entity.setUserId(StpUtil.getLoginIdAsLong());
-        entity.setUpdateUser(StpUtil.getLoginIdAsLong());
+        Long userId = StpUtil.getLoginIdAsLong();
+        entity.setUserId(userId);
+        entity.setUpdateUser(userId);
         entity.setUpdateTime(LocalDateTime.now());
-        memoMapper.updateById(entity);
+        
+        LambdaQueryWrapper<MemoEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(MemoEntity::getId, entity.getId());
+        wrapper.eq(MemoEntity::getUserId, userId);
+        
+        memoMapper.update(entity, wrapper);
         return ApiResponse.success(true);
     }
 
@@ -84,7 +90,10 @@ public class MemoController {
      */
     @PostMapping("/delete")
     public ApiResponse<Boolean> delete(@RequestBody MemoEntity entity) {
-        memoMapper.deleteById(entity.getId());
+        LambdaQueryWrapper<MemoEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(MemoEntity::getId, entity.getId());
+        wrapper.eq(MemoEntity::getUserId, StpUtil.getLoginIdAsLong());
+        memoMapper.delete(wrapper);
         return ApiResponse.success(true);
     }
 }

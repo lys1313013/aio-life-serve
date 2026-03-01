@@ -50,8 +50,16 @@ public class PerformanceController {
         long userId = StpUtil.getLoginIdAsLong();
         entity.setCreateBy(userId);
         entity.setUpdateBy(userId);
-        boolean b = getBaseMapper().insertOrUpdate(entity);
-        return ApiResponse.success(b);
+        
+        if (entity.getId() == null) {
+            getBaseMapper().insert(entity);
+        } else {
+            LambdaQueryWrapper<PerformanceEntity> wrapper = new LambdaQueryWrapper<>();
+            wrapper.eq(PerformanceEntity::getId, entity.getId());
+            wrapper.eq(PerformanceEntity::getCreateBy, userId);
+            getBaseMapper().update(entity, wrapper);
+        }
+        return ApiResponse.success(true);
     }
 
     /**
@@ -62,7 +70,10 @@ public class PerformanceController {
      */
     @PostMapping("/delete")
     public ApiResponse<Boolean> delete(@RequestBody PerformanceEntity entity) {
-        boolean b = getBaseMapper().deleteById(entity) > 0;
+        LambdaQueryWrapper<PerformanceEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(PerformanceEntity::getId, entity.getId());
+        wrapper.eq(PerformanceEntity::getCreateBy, StpUtil.getLoginIdAsLong());
+        boolean b = getBaseMapper().delete(wrapper) > 0;
         return ApiResponse.success(b);
     }
 
