@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import top.aiolife.core.constant.StatusConst;
+import top.aiolife.core.constant.ResponseCodeConst;
 import top.aiolife.core.query.CommonQuery;
 import top.aiolife.core.resq.ApiResponse;
 import top.aiolife.core.resq.PageResp;
@@ -33,7 +34,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @RestController
 @AllArgsConstructor
-@RequestMapping("/bilibili-video")
+@RequestMapping("/b-video")
 public class BVideoController {
 
     private IBVideoMapper bVideoMapper;
@@ -66,22 +67,68 @@ public class BVideoController {
         return ApiResponse.success(objectPageResp);
     }
 
-    @PostMapping("/insertOrUpdate")
-    public ApiResponse<Boolean> insertOrUpdate(@RequestBody BVideoEntity entity) {
-        entity.setUserId(StpUtil.getLoginIdAsLong());
-        entity.setUpdateUser(StpUtil.getLoginIdAsLong());
+    @PostMapping
+    public ApiResponse<Boolean> insert(@RequestBody BVideoEntity entity) {
+        long userId = StpUtil.getLoginIdAsLong();
+
+        LambdaQueryWrapper<BVideoEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(BVideoEntity::getBvid, entity.getBvid());
+        queryWrapper.eq(BVideoEntity::getUserId, userId);
+        Long count = getBaseMapper().selectCount(queryWrapper);
+        if (count > 0) {
+            return ApiResponse.error(ResponseCodeConst.RSCODE_COMMON_FAIL, "该视频已存在，无法重复添加");
+        }
+
+        entity.setUserId(userId);
+        entity.setUpdateUser(userId);
+        entity.setUpdateTime(LocalDateTime.now());
+        if (entity.getStatus() == null) {
+            entity.setStatus(StudyEnum.IN_PROGRESS.getValue());
+        }
+        if (entity.getStatus() == StudyEnum.COMPLETED.getValue()) {
+            entity.setWatchedDuration(entity.getDuration());
+        }
+        boolean b = getBaseMapper().insert(entity) > 0;
+        return ApiResponse.success(b);
+    }
+
+    @PutMapping("/{id}")
+    public ApiResponse<Boolean> update(@PathVariable Long id, @RequestBody BVideoEntity entity) {
+        long userId = StpUtil.getLoginIdAsLong();
+
+        BVideoEntity existEntity = getBaseMapper().selectById(id);
+        if (existEntity == null) {
+            return ApiResponse.error(ResponseCodeConst.RSCODE_COMMON_FAIL, "该视频不存在，无法更新");
+        }
+        if (existEntity.getUserId() != userId) {
+            return ApiResponse.error(ResponseCodeConst.RSCODE_COMMON_FAIL, "无权限更新该视频");
+        }
+
+        entity.setId(id);
+        entity.setUserId(userId);
+        entity.setUpdateUser(userId);
         entity.setUpdateTime(LocalDateTime.now());
         if (entity.getStatus() == StudyEnum.COMPLETED.getValue()) {
             entity.setWatchedDuration(entity.getDuration());
         }
-        boolean b = getBaseMapper().insertOrUpdate(entity);
+        boolean b = getBaseMapper().updateById(entity) > 0;
         return ApiResponse.success(b);
     }
 
 
-    @PostMapping("/delete")
-    public ApiResponse<Boolean> delete(@RequestBody BVideoEntity entity) {
-        boolean b = getBaseMapper().deleteById(entity) > 0;
+    @DeleteMapping("/{id}")
+    public ApiResponse<Boolean> delete(@PathVariable Long id) {
+        long userId = StpUtil.getLoginIdAsLong();
+
+        BVideoEntity existEntity = getBaseMapper().selectById(id);
+        if (existEntity == null) {
+            return ApiResponse.error(ResponseCodeConst.RSCODE_COMMON_FAIL, "该视频不存在，无法删除");
+        }
+        if (existEntity.getUserId() != userId) {
+            return ApiResponse.error(ResponseCodeConst.RSCODE_COMMON_FAIL, "无权限删除该视频");
+        }
+
+        boolean b = getBaseMapper().deleteById(id) > 0;
         return ApiResponse.success(b);
     }
 
