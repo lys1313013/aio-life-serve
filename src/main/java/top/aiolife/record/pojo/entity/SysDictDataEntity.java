@@ -29,7 +29,7 @@ public class SysDictDataEntity {
     /**
      * 字典ID
      */
-    private Integer dictId;
+    private Long dictId;
 
     /**
      * 字典名称

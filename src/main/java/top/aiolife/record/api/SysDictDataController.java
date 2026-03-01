@@ -1,5 +1,6 @@
 package top.aiolife.record.api;
 
+import cn.dev33.satoken.annotation.SaCheckRole;
 import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -39,7 +40,7 @@ public class SysDictDataController {
         return sysDictDataMapper;
     }
 
-
+    @SaCheckRole("admin")
     @PostMapping("/query")
     public ApiResponse<PageResp<SysDictDataEntity>> query(
             @RequestBody CommonQuery<SysDictTypeQuery> query) {
@@ -52,9 +53,9 @@ public class SysDictDataController {
         }
 
         // 字典名称使用字典类型表过滤查询
-        if (condition != null && SysUtil.isNotEmpty(condition.getDictId())) {
+        if (condition != null && SysUtil.isNotEmpty(condition.getDictType())) {
             LambdaQueryWrapper<SysDictTypeEntity> typeQueryWrapper = new LambdaQueryWrapper<>();
-            typeQueryWrapper.eq(SysDictTypeEntity::getDictId, condition.getDictId());
+            typeQueryWrapper.eq(SysDictTypeEntity::getDictType, condition.getDictType());
             List<SysDictTypeEntity> sysDictTypeEntities = sysDictTypeMapper.selectList(typeQueryWrapper);
             if (SysUtil.isEmpty(sysDictTypeEntities)) {
                 return ApiResponse.success();
@@ -74,7 +75,7 @@ public class SysDictDataController {
         List<SysDictDataEntity> records = iPage.getRecords();
 
         // 补充dictName
-        Collection<Integer> dictIdList = records.stream().map(SysDictDataEntity::getDictId).distinct().toList();
+        Collection<Long> dictIdList = records.stream().map(SysDictDataEntity::getDictId).distinct().toList();
         List<SysDictTypeEntity> sysDictTypeEntities = sysDictTypeMapper.selectByIds(dictIdList);
         records.forEach(sysDictDataEntity -> {
             for (SysDictTypeEntity sysDictTypeEntity : sysDictTypeEntities)
@@ -88,6 +89,7 @@ public class SysDictDataController {
         return ApiResponse.success(objectPageResp);
     }
 
+    @SaCheckRole("admin")
     @PostMapping("/insertOrUpdate")
     public ApiResponse<Boolean> insertOrUpdate(@RequestBody SysDictDataEntity entity) {
         entity.setCreateBy(StpUtil.getLoginIdAsString());
@@ -96,6 +98,7 @@ public class SysDictDataController {
         return ApiResponse.success(b);
     }
 
+    @SaCheckRole("admin")
     @PostMapping("/delete")
     public ApiResponse<Boolean> delete(@RequestBody SysDictDataEntity entity) {
         boolean b = getBaseMapper().deleteById(entity) > 0;

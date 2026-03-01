@@ -13,7 +13,7 @@ import lombok.Setter;
 @Setter
 public class SysDictTypeQuery {
 
-    private String dictId;
+    private String dictType;
 
     private String dictLabel;
 }

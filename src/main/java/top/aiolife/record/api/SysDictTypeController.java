@@ -1,22 +1,23 @@
 package top.aiolife.record.api;
 
+import cn.dev33.satoken.annotation.SaCheckRole;
 import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import top.aiolife.record.convertor.SysDictDataConvertor;
+import lombok.AllArgsConstructor;
+import org.springframework.web.bind.annotation.*;
 import top.aiolife.core.query.CommonQuery;
 import top.aiolife.core.resq.ApiResponse;
 import top.aiolife.core.resq.PageResp;
 import top.aiolife.core.util.SysUtil;
+import top.aiolife.record.convertor.SysDictDataConvertor;
 import top.aiolife.record.mapper.ISysDictDataMapper;
 import top.aiolife.record.mapper.ISysDictTypeMapper;
 import top.aiolife.record.pojo.entity.SysDictDataEntity;
 import top.aiolife.record.pojo.entity.SysDictTypeEntity;
 import top.aiolife.record.pojo.vo.SysDictDataVO;
 import top.aiolife.record.pojo.vo.SysDictTypeDetailVO;
-import lombok.AllArgsConstructor;
-import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -61,6 +62,7 @@ public class SysDictTypeController {
         return ApiResponse.success(sysDictTypeDetailVO);
     }
 
+    @SaCheckRole("admin")
     @PostMapping("/query")
     public ApiResponse<PageResp<SysDictTypeEntity>> query(
             @RequestBody CommonQuery<SysDictTypeEntity> query) {
@@ -79,7 +81,7 @@ public class SysDictTypeController {
         return ApiResponse.success(objectPageResp);
     }
 
-
+    @SaCheckRole("admin")
     @PostMapping("/insertOrUpdate")
     public ApiResponse<Boolean> insertOrUpdate(@RequestBody SysDictTypeEntity entity) {
         entity.setCreateBy(StpUtil.getLoginIdAsString());
@@ -88,6 +90,7 @@ public class SysDictTypeController {
         return ApiResponse.success(b);
     }
 
+    @SaCheckRole("admin")
     @PostMapping("/delete")
     public ApiResponse<Boolean> delete(@RequestBody SysDictTypeEntity entity) {
         entity.setUpdateBy(StpUtil.getLoginIdAsString());

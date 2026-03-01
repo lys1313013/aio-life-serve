@@ -40,7 +40,7 @@ public class TaskController {
     }
 
     @GetMapping()
-    public ApiResponse<PageResp<TaskEntity>> query(@RequestParam(required = false) Integer taskId,
+    public ApiResponse<PageResp<TaskEntity>> query(@RequestParam(required = false) Long taskId,
                                                     @RequestParam(defaultValue = "1") int get,
                                                    @RequestParam(defaultValue = "100") int pageSize) {
         Long userId = StpUtil.getLoginIdAsLong();
