@@ -44,7 +44,7 @@ public class BVideoController {
     @PostMapping("/query")
     public ApiResponse<PageResp<BVideoEntity>> query(
             @RequestBody CommonQuery<BVideoEntity> query) {
-        int userId = StpUtil.getLoginIdAsInt();
+        long userId = StpUtil.getLoginIdAsLong();
         LambdaQueryWrapper<BVideoEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(BVideoEntity::getUserId, userId);
         lambdaQueryWrapper.eq(BVideoEntity::getIsDeleted, StatusConst.NO_DELETE);
@@ -83,7 +83,7 @@ public class BVideoController {
 
     @GetMapping("/getStatusCount")
     public ApiResponse<Map> getStatusCount() {
-        int userId = StpUtil.getLoginIdAsInt();
+        long userId = StpUtil.getLoginIdAsLong();
         List<StatusCount> statusCount = getBaseMapper().getStatusCount(userId);
         Map<Integer, Integer> map = statusCount.stream().collect(
                 Collectors.toMap(StatusCount::getStatus, StatusCount::getCount));
@@ -92,7 +92,7 @@ public class BVideoController {
 
     @GetMapping("/statistics")
     public ApiResponse<BVideoStatisticsVO> statistics() {
-        int userId = StpUtil.getLoginIdAsInt();
+        long userId = StpUtil.getLoginIdAsLong();
         BVideoStatisticsVO statisticsVO = new BVideoStatisticsVO();
         Integer watchTime = bVideoMapper.getWatchTime(userId);
         Integer totalTime = bVideoMapper.getTotalTime(userId);

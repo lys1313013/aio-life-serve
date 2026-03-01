@@ -45,7 +45,7 @@ public class TimeRecordServiceImpl extends ServiceImpl<ITimeRecordMapper, TimeRe
 
         long userId = StpUtil.getLoginIdAsLong();
         entity.setUserId(userId);
-        entity.setCreateUser(StpUtil.getLoginIdAsInt());
+        entity.setCreateUser(StpUtil.getLoginIdAsLong());
         entity.setCreateTime(LocalDateTime.now());
         entity.setUpdateTime(LocalDateTime.now());
 
@@ -190,12 +190,12 @@ public class TimeRecordServiceImpl extends ServiceImpl<ITimeRecordMapper, TimeRe
     }
 
     @Override
-    public TimeRecordEntity recommendType(int userId, String date, int time) {
+    public TimeRecordEntity recommendType(long userId, String date, int time) {
         return this.baseMapper.recommendType(userId, date, time);
     }
 
     @Override
-    public RecommendNextVO recommendNext(int userId, String date) {
+    public RecommendNextVO recommendNext(long userId, String date) {
         LocalDate targetDate = LocalDate.parse(date);
         LambdaQueryWrapper<TimeRecordEntity> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.select(TimeRecordEntity::getStartTime, TimeRecordEntity::getEndTime)

@@ -64,7 +64,7 @@ public class DashboardController {
         if (provider == null) {
             return ApiResponse.error("未知任务类型");
         }
-        int userId = StpUtil.getLoginIdAsInt();
+        long userId = StpUtil.getLoginIdAsLong();
         return ApiResponse.success(provider.getCard(userId));
     }
 }

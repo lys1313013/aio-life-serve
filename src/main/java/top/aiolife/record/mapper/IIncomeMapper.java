@@ -20,12 +20,12 @@ public interface IIncomeMapper extends BaseMapper<IncomeEntity> {
             FROM income where user_id = #{userId} and is_deleted = 0  
             GROUP BY LEFT(inc_date, 4), inc_type_id
             """)
-    List<IncStaByYearVO> statisticsByYear(int userId);
+    List<IncStaByYearVO> statisticsByYear(long userId);
     
     @Select("""
             SELECT left(inc_date, 4) AS year, substring(inc_date, 6, 2) AS month ,sum(amt) as amt,inc_type_id as type_id
             FROM income where user_id = #{userId} and is_deleted = 0  
             GROUP BY LEFT(inc_date, 4), substring(inc_date, 6, 2), inc_type_id
             """)
-    List<IncStaByYearVO> statisticsByMonth(int userId);
+    List<IncStaByYearVO> statisticsByMonth(long userId);
 }

@@ -56,7 +56,7 @@ public interface ITimeRecordService extends IService<TimeRecordEntity> {
      * @param time   时间
      * @return 分类id
      */
-    TimeRecordEntity recommendType(int userId, String date, int time);
+    TimeRecordEntity recommendType(long userId, String date, int time);
 
     /**
      * 推荐下一个时间块
@@ -64,5 +64,5 @@ public interface ITimeRecordService extends IService<TimeRecordEntity> {
      * @param date 日期 yyyy-MM-dd
      * @return 推荐结果及当日记录
      */
-    RecommendNextVO recommendNext(int userId, String date);
+    RecommendNextVO recommendNext(long userId, String date);
 }

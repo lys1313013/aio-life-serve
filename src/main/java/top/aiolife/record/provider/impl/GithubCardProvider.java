@@ -57,8 +57,8 @@ public class GithubCardProvider implements DashboardCardProvider {
     }
 
     @Override
-    public DashboardCardVO getCard(int userId) {
-        UserBindEntity bind = userBindService.getBindByUserIdAndPlatform((long) userId, "github");
+    public DashboardCardVO getCard(long userId) {
+        UserBindEntity bind = userBindService.getBindByUserIdAndPlatform(userId, "github");
         if (bind == null || bind.getPlatformUsername() == null || bind.getAccessToken() == null) {
             return null;
         }

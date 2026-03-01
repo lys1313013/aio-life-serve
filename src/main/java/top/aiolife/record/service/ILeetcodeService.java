@@ -35,7 +35,7 @@ public interface ILeetcodeService {
      *
      * @param userId 用户ID
      */
-    List<DashboardCardVO> getDashboardCard(int userId);
+    List<DashboardCardVO> getDashboardCard(long userId);
 
     /**
      * 获取今天提交次数

@@ -56,8 +56,8 @@ public class ShanbayCardProvider implements DashboardCardProvider {
     }
 
     @Override
-    public DashboardCardVO getCard(int userId) {
-        UserBindEntity bind = userBindService.getBindByUserIdAndPlatform((long) userId, "shanbay");
+    public DashboardCardVO getCard(long userId) {
+        UserBindEntity bind = userBindService.getBindByUserIdAndPlatform(userId, "shanbay");
         if (bind == null || bind.getPlatformUsername() == null) {
             return null;
         }

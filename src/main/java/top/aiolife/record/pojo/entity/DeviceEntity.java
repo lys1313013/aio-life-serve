@@ -24,7 +24,7 @@ public class DeviceEntity {
     /**
      * 用户ID
      */
-    private Integer userId;
+    private Long userId;
 
     /**
      * 设备的名称

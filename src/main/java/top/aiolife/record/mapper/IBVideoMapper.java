@@ -17,15 +17,15 @@ public interface IBVideoMapper extends BaseMapper<BVideoEntity> {
     /**
      * 获取状态和数量
      */
-    List<StatusCount> getStatusCount(Integer userId);
+    List<StatusCount> getStatusCount(Long userId);
 
     /**
      * 获取已学习时长
      */
-    Integer getWatchTime(Integer userId);
+    Integer getWatchTime(Long userId);
 
     /**
      * 获取总时长
      */
-    Integer getTotalTime(Integer userId);
+    Integer getTotalTime(Long userId);
 }

@@ -55,7 +55,7 @@ public class ExpController {
     @PostMapping("/query")
     public ApiResponse<PageResp<ExpenseEntity>> query(
             @RequestBody CommonQuery<ExpenseQuery> query) {
-        int userId = StpUtil.getLoginIdAsInt();
+        long userId = StpUtil.getLoginIdAsLong();
         LambdaQueryWrapper<ExpenseEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(ExpenseEntity::getUserId, userId);
         lambdaQueryWrapper.eq(ExpenseEntity::getIsDeleted, StatusConst.NO_DELETE);
@@ -80,7 +80,7 @@ public class ExpController {
 
     @PostMapping("/insertOrUpdate")
     public ApiResponse<Boolean> insertOrUpdate(@RequestBody ExpenseEntity entity) {
-        entity.setUserId(StpUtil.getLoginIdAsInt());
+        entity.setUserId(StpUtil.getLoginIdAsLong());
         // 新增时，交易金额为空时，默认设置为记账金额
         if (entity.getId() == null && entity.getTransactionAmt() == null) {
             entity.setTransactionAmt(entity.getAmt());
@@ -93,7 +93,7 @@ public class ExpController {
     @PostMapping("/saveBatch")
     public ApiResponse<Boolean> saveBatch(@RequestBody List<ExpenseEntity> list) {
         for (ExpenseEntity entity : list) {
-            int userId = StpUtil.getLoginIdAsInt();
+            long userId = StpUtil.getLoginIdAsLong();
             entity.setUserId(userId);
             entity.setCreateUser(userId);
             entity.setUpdateUser(userId);
@@ -123,7 +123,7 @@ public class ExpController {
      */
     @PostMapping("/statisticsByYear")
     public ApiResponse<Object> statisticsByYear() {
-        int userId = StpUtil.getLoginIdAsInt();
+        long userId = StpUtil.getLoginIdAsLong();
         List<ExpStaByYearVO> list = expenseMapper.statisticsByYear(userId);
         List<ExpStaticByYearVO> ans = new ArrayList<>();
 
@@ -153,7 +153,7 @@ public class ExpController {
      */
     @PostMapping("/statisticsByMonth")
     public ApiResponse<Object> statisticsByMonth() {
-        int userId = StpUtil.getLoginIdAsInt();
+        long userId = StpUtil.getLoginIdAsLong();
         List<ExpStaByYearVO> list = expenseMapper.statisticsByMonth(userId);
         List<ExpStaticByYearVO> ans = new ArrayList<>();
 

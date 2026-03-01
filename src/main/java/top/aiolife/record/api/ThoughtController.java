@@ -10,7 +10,7 @@ import top.aiolife.core.resq.ApiResponse;
 import top.aiolife.core.resq.PageResp;
 import top.aiolife.record.mapper.IRelaEventMapper;
 import top.aiolife.record.mapper.IThoughtMapper;
-import top.aiolife.record.pojo.entity.RelaEventEntity;
+import top.aiolife.record.pojo.entity.ThoughtRelaEventEntity;
 import top.aiolife.record.pojo.entity.ThoughtEntity;
 import top.aiolife.record.pojo.req.CommonReq;
 import lombok.AllArgsConstructor;
@@ -45,7 +45,7 @@ public class ThoughtController {
     @PostMapping("/query")
     public ApiResponse<PageResp<ThoughtEntity>> query(
             @RequestBody CommonQuery<ThoughtEntity> query) {
-        int userId = StpUtil.getLoginIdAsInt();
+        long userId = StpUtil.getLoginIdAsLong();
         LambdaQueryWrapper<ThoughtEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(ThoughtEntity::getUserId, userId);
         ThoughtEntity condition = query.getCondition();
@@ -57,12 +57,12 @@ public class ThoughtController {
 
         // 查询明细
         List<Long> thoughtIdList = iPage.getRecords().stream().map(ThoughtEntity::getId).toList();
-        LambdaQueryWrapper<RelaEventEntity> relaEventLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        relaEventLambdaQueryWrapper.in(RelaEventEntity::getThoughtId, thoughtIdList);
-        List<RelaEventEntity> relaEventEntityList = relaEventMapper.selectList(relaEventLambdaQueryWrapper);
+        LambdaQueryWrapper<ThoughtRelaEventEntity> relaEventLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        relaEventLambdaQueryWrapper.in(ThoughtRelaEventEntity::getThoughtId, thoughtIdList);
+        List<ThoughtRelaEventEntity> thoughtRelaEventEntityList = relaEventMapper.selectList(relaEventLambdaQueryWrapper);
         // 关联事件
         iPage.getRecords().forEach(thoughtVO -> {
-            List<RelaEventEntity> eventEntityList = relaEventEntityList.stream().filter(eventEntity -> eventEntity.getThoughtId().equals(thoughtVO.getId())).toList();
+            List<ThoughtRelaEventEntity> eventEntityList = thoughtRelaEventEntityList.stream().filter(eventEntity -> eventEntity.getThoughtId().equals(thoughtVO.getId())).toList();
             thoughtVO.setEvents(eventEntityList);
         });
 

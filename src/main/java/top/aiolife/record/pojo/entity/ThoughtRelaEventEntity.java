@@ -10,8 +10,8 @@ import lombok.Data;
  * @date 2025-11-16 15:34
  */
 @Data
-@TableName("rela_event")
-public class RelaEventEntity extends BaseEntity{
+@TableName("thought_rela_event")
+public class ThoughtRelaEventEntity extends BaseEntity{
 
     private Long thoughtId;
 

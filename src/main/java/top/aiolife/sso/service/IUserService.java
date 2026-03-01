@@ -31,14 +31,14 @@ public interface IUserService {
      * @param userId 用户ID
      * @return 用户信息
      */
-    UserInfoVO getUserInfo(int userId);
+    UserInfoVO getUserInfo(long userId);
 
     void updateUser(UserEntity userEntity);
 
     /**
      * 修改密码
      */
-    void changePassword(int userId, ChangePasswordReq changePasswordReq);
+    void changePassword(long userId, ChangePasswordReq changePasswordReq);
 
     /**
      * 获取用户列表
@@ -53,5 +53,5 @@ public interface IUserService {
     /**
      * 删除用户
      */
-    void deleteUser(Integer id);
+    void deleteUser(Long id);
 }

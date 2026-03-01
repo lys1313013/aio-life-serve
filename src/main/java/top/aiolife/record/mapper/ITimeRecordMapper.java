@@ -19,5 +19,5 @@ public interface ITimeRecordMapper extends BaseMapper<TimeRecordEntity> {
      * @param time   时间
      * @return 分类id
      */
-    TimeRecordEntity recommendType(int userId, String date, int time);
+    TimeRecordEntity recommendType(long userId, String date, int time);
 }

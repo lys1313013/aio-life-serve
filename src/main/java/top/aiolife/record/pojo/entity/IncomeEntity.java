@@ -32,11 +32,11 @@ public class IncomeEntity {
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate incDate;
     private String remark;
-    private Integer userId;
-    private Integer createUser;
+    private Long userId;
+    private Long createUser;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createTime;
-    private Integer updateUser;
+    private Long updateUser;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime updateTime;
     private Integer isDeleted;

@@ -44,7 +44,7 @@ public class TimeRecordController {
     @PostMapping("/query")
     public ApiResponse<PageResp<TimeRecordEntity>> query(
             @RequestBody CommonQuery<TimeRecordEntity> query) {
-        int userId = StpUtil.getLoginIdAsInt();
+        long userId = StpUtil.getLoginIdAsLong();
         LambdaQueryWrapper<TimeRecordEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.select(
                 TimeRecordEntity::getId,
@@ -71,7 +71,7 @@ public class TimeRecordController {
     @PostMapping("/queryForWeek")
     public ApiResponse<List<TimeRecordEntity>> queryForWeek(
             @RequestBody CommonQuery<TimeWeekQuery> query) {
-        int userId = StpUtil.getLoginIdAsInt();
+        long userId = StpUtil.getLoginIdAsLong();
         LambdaQueryWrapper<TimeRecordEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.select(TimeRecordEntity::getId,
                 TimeRecordEntity::getCategoryId,
@@ -94,7 +94,7 @@ public class TimeRecordController {
      */
     @GetMapping("/{id}")
     public ApiResponse<TimeRecordVO> getById(@PathVariable("id") String id) {
-        int userId = StpUtil.getLoginIdAsInt();
+        long userId = StpUtil.getLoginIdAsLong();
         LambdaQueryWrapper<TimeRecordEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(TimeRecordEntity::getId, id);
         lambdaQueryWrapper.eq(TimeRecordEntity::getUserId, userId);
@@ -133,7 +133,7 @@ public class TimeRecordController {
      */
     @PostMapping("/delete")
     public ApiResponse<Void> delete(@RequestBody TimeRecordEntity entity) {
-        timeRecordService.removeById(entity.getId(),  StpUtil.getLoginIdAsInt());
+        timeRecordService.removeById(entity.getId(),  StpUtil.getLoginIdAsLong());
         return ApiResponse.success();
     }
 
@@ -143,7 +143,7 @@ public class TimeRecordController {
      */
     @PostMapping("/deleteByDate")
     public ApiResponse<Void> deleteByDay(@RequestBody TimeRecordEntity entity) {
-        timeRecordService.removeByDate(entity.getDate(), StpUtil.getLoginIdAsInt());
+        timeRecordService.removeByDate(entity.getDate(), StpUtil.getLoginIdAsLong());
         return ApiResponse.success();
     }
 
@@ -155,7 +155,7 @@ public class TimeRecordController {
      */
     @GetMapping("/recommendType")
     public ApiResponse<String> recommendType(String date, int time) {
-        int userId = StpUtil.getLoginIdAsInt();
+        long userId = StpUtil.getLoginIdAsLong();
         // 周一取上周五，周六取上周日
         // todo 按照工作日计算
         int dayOfWeek = LocalDate.parse(date).getDayOfWeek().getValue();
@@ -183,7 +183,7 @@ public class TimeRecordController {
      */
     @GetMapping("/recommendNext")
     public ApiResponse<RecommendNextVO> recommendNext(String date) {
-        int userId = StpUtil.getLoginIdAsInt();
+        long userId = StpUtil.getLoginIdAsLong();
         RecommendNextVO result = timeRecordService.recommendNext(userId, date);
         
         // 获取推荐分类

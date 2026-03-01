@@ -49,7 +49,7 @@ public class TimeCardProvider implements DashboardCardProvider {
     }
 
     @Override
-    public DashboardCardVO getCard(int userId) {
+    public DashboardCardVO getCard(long userId) {
         DashboardCardVO card = new DashboardCardVO();
         card.setType(getType());
         card.setTitle(getTitle());
@@ -57,7 +57,7 @@ public class TimeCardProvider implements DashboardCardProvider {
         // 配合前端代码，实现点击标题打开时间记录弹窗
         card.setTitleClickUrl("action:open-time-tracker-modal");
         try {
-            card.setValue(timeRecordService.getLastRecordTimeDiff((long) userId));
+            card.setValue(timeRecordService.getLastRecordTimeDiff(userId));
         } catch (Exception e) {
             log.error("获取最后一条记录时间差失败", e);
             card.setValue("获取失败");

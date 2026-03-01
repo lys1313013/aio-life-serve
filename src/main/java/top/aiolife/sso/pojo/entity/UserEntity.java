@@ -19,7 +19,7 @@ public class UserEntity {
     /**
      * 主键
      */
-    private Integer id;
+    private Long id;
 
     /**
      * 用户名

@@ -32,7 +32,7 @@ public interface DashboardCardProvider {
     /**
      * 获取卡片数据
      */
-    DashboardCardVO getCard(int userId);
+    DashboardCardVO getCard(long userId);
 
     /**
      * 排序权重

@@ -35,7 +35,7 @@ public class UserCenterController {
     }
 
     @DeleteMapping("/{id}")
-    public ApiResponse<Void> delete(@PathVariable Integer id) {
+    public ApiResponse<Void> delete(@PathVariable Long id) {
         userService.deleteUser(id);
         return ApiResponse.success();
     }

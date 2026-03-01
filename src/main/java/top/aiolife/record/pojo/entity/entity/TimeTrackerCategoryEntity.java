@@ -14,7 +14,7 @@ import top.aiolife.record.pojo.entity.BaseEntity;
 @TableName("time_tracker_category")
 public class TimeTrackerCategoryEntity extends BaseEntity {
     //用户ID
-    private Integer userId;
+    private Long userId;
     //分类标识(如: rest, work)
     private String code;
     //分类名称

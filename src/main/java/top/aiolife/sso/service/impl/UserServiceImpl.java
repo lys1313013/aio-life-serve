@@ -80,7 +80,7 @@ public class UserServiceImpl implements IUserService {
 
     @Override
     @Cacheable(value = "userInfo", key = "#userId")
-    public UserInfoVO getUserInfo(int userId) {
+    public UserInfoVO getUserInfo(long userId) {
         UserEntity userEntity = userMapper.selectById(userId);
         if (userEntity == null) {
             return null;
@@ -100,11 +100,14 @@ public class UserServiceImpl implements IUserService {
     @Override
     @CacheEvict(value = "userInfo", key = "#userEntity.id")
     public void updateUser(UserEntity userEntity) {
+        // 禁止通过此接口修改密码
+        userEntity.setPassword(null);
+        userEntity.setPasswordSalt(null);
         userMapper.updateById(userEntity);
     }
 
     @Override
-    public void changePassword(int userId, ChangePasswordReq changePasswordReq) {
+    public void changePassword(long userId, ChangePasswordReq changePasswordReq) {
         UserEntity userEntity = userMapper.selectById(userId);
         if (userEntity == null) {
             throw new RuntimeException("用户不存在");
@@ -140,7 +143,7 @@ public class UserServiceImpl implements IUserService {
 
     @Override
     @CacheEvict(value = "userInfo", key = "#id")
-    public void deleteUser(Integer id) {
+    public void deleteUser(Long id) {
         userMapper.deleteById(id);
     }
 }

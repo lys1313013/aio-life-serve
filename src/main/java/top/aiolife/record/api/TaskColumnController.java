@@ -43,7 +43,7 @@ public class TaskColumnController {
     @PostMapping("/query")
     public ApiResponse<PageResp<TaskColumnEntity>> query(
             @RequestBody CommonQuery<TaskColumnEntity> query) {
-        int userId = StpUtil.getLoginIdAsInt();
+        long userId = StpUtil.getLoginIdAsLong();
         LambdaQueryWrapper<TaskColumnEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(TaskColumnEntity::getUserId, userId);
         lambdaQueryWrapper.eq(TaskColumnEntity::getIsDeleted, StatusConst.NO_DELETE);
@@ -62,9 +62,10 @@ public class TaskColumnController {
      */
     @PostMapping("/save")
     public ApiResponse<TaskColumnEntity> save(@RequestBody TaskColumnEntity entity) {
+        long userId = StpUtil.getLoginIdAsLong();
         // 查询当前最大的sort_order
         LambdaQueryWrapper<TaskColumnEntity> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(TaskColumnEntity::getUserId, entity.getUserId());
+        queryWrapper.eq(TaskColumnEntity::getUserId, userId);
         queryWrapper.orderByAsc(TaskColumnEntity::getSortOrder);
         TaskColumnEntity taskColumnEntity = getBaseMapper().selectOne(queryWrapper);
         if (taskColumnEntity == null) {
@@ -76,7 +77,7 @@ public class TaskColumnController {
         entity.setId(null);
         entity.setIsDeleted(StatusConst.NO_DELETE);
         // 获取token
-        entity.setUserId(StpUtil.getLoginIdAsInt());
+        entity.setUserId(userId);
         getBaseMapper().insertOrUpdate(entity);
 
         return ApiResponse.success(entity);
@@ -90,7 +91,7 @@ public class TaskColumnController {
     @PostMapping("/update")
     public ApiResponse<Boolean> update(@RequestBody TaskColumnEntity entity) {
         // 获取token
-        entity.setUserId(StpUtil.getLoginIdAsInt());
+        entity.setUserId(StpUtil.getLoginIdAsLong());
         getBaseMapper().updateById(entity);
         return ApiResponse.success();
     }

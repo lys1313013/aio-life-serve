@@ -14,7 +14,7 @@ import java.util.List;
 @Getter
 @Setter
 public class UserInfoVO {
-    private Integer id;
+    private Long id;
 
     private String realName;
 

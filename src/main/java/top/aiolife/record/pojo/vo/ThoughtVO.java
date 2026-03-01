@@ -1,6 +1,6 @@
 package top.aiolife.record.pojo.vo;
 
-import top.aiolife.record.pojo.entity.RelaEventEntity;
+import top.aiolife.record.pojo.entity.ThoughtRelaEventEntity;
 import lombok.Data;
 
 import java.util.List;
@@ -18,5 +18,5 @@ public class ThoughtVO {
     private String content;
     private String createTime;
 
-    private List<RelaEventEntity> events;
+    private List<ThoughtRelaEventEntity> events;
 }

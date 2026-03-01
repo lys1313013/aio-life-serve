@@ -14,7 +14,7 @@ import java.util.List;
 @Getter
 @Setter
 public class UserLoginVO {
-    private Integer id;
+    private Long id;
     private String realName;
     private List<String> roles;
     private String username;

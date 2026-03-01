@@ -21,7 +21,7 @@ public interface IExpenseMapper extends BaseMapper<ExpenseEntity> {
             WHERE user_id = #{userId} and is_deleted = 0  
             GROUP BY LEFT(exp_time, 4), exp_type_id
             """)
-    List<ExpStaByYearVO> statisticsByYear(int userId);
+    List<ExpStaByYearVO> statisticsByYear(long userId);
 
     @Select("""
             SELECT left(exp_time, 4) AS year, substring(exp_time, 6, 2) AS month ,sum(amt) as amt,exp_type_id AS type_id
@@ -29,5 +29,5 @@ public interface IExpenseMapper extends BaseMapper<ExpenseEntity> {
             WHERE user_id = #{userId} and is_deleted = 0  
             GROUP BY LEFT(exp_time, 4), substring(exp_time, 6, 2), exp_type_id
             """)
-    List<ExpStaByYearVO> statisticsByMonth(int userId);
+    List<ExpStaByYearVO> statisticsByMonth(long userId);
 }

@@ -32,7 +32,7 @@ public class DeviceController {
     @PostMapping("/query")
     public ApiResponse<PageResp<DeviceEntity>> query(
             @RequestBody CommonQuery<DeviceEntity> query) {
-        int userId = StpUtil.getLoginIdAsInt();
+        long userId = StpUtil.getLoginIdAsLong();
         LambdaQueryWrapper<DeviceEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(DeviceEntity::getUserId, userId);
         DeviceEntity condition = query.getCondition();
@@ -53,7 +53,7 @@ public class DeviceController {
     @PostMapping("/insertOrUpdate")
     public ApiResponse<Boolean> insertOrUpdate(@RequestBody DeviceEntity entity) {
         // 获取token
-        entity.setUserId(StpUtil.getLoginIdAsInt());
+        entity.setUserId(StpUtil.getLoginIdAsLong());
 
         return ApiResponse.success(getBaseMapper().insertOrUpdate(entity));
     }
@@ -68,7 +68,7 @@ public class DeviceController {
     public ApiResponse<Boolean> delete(@PathVariable("id") Integer id) {
         LambdaQueryWrapper<DeviceEntity> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(DeviceEntity::getId, id);
-        wrapper.eq(DeviceEntity::getUserId, StpUtil.getLoginIdAsInt());
+        wrapper.eq(DeviceEntity::getUserId, StpUtil.getLoginIdAsLong());
         return ApiResponse.success(getBaseMapper().delete(wrapper) > 0);
     }
 }

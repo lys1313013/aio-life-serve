@@ -45,7 +45,7 @@ public class TimeRecordEntity {
     @TableId
     private String id;
 
-    private Integer createUser;
+    private Long createUser;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createTime;

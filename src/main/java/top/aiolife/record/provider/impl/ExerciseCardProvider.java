@@ -46,7 +46,7 @@ public class ExerciseCardProvider implements DashboardCardProvider {
     }
 
     @Override
-    public DashboardCardVO getCard(int userId) {
+    public DashboardCardVO getCard(long userId) {
         DashboardCardVO card = new DashboardCardVO();
         card.setType(getType());
         card.setIcon(getIcon());
@@ -54,11 +54,11 @@ public class ExerciseCardProvider implements DashboardCardProvider {
         card.setIconClickUrl("/my-hub/exercise");
         card.setTitleClickUrl("action:open-exercise-modal");
         try {
-            int count = exerciseRecordService.countTodayExerciseTypes((long) userId);
+            int count = exerciseRecordService.countTodayExerciseTypes(userId);
             card.setValue(String.valueOf(count));
             card.setValueColor(count == 0 ? "red" : "#3FB27F");
             card.setTotalTitle(getTotalTitle());
-            card.setTotalValue(exerciseRecordService.getConsecutiveExerciseDays((long) userId) + " 天");
+            card.setTotalValue(exerciseRecordService.getConsecutiveExerciseDays(userId) + " 天");
             card.setRefreshInterval(600);
         } catch (Exception e) {
             log.error("获取运动数据失败", e);

@@ -36,7 +36,7 @@ public class PerformanceController {
     public ApiResponse<PageResp<PerformanceEntity>> query(
             @RequestBody CommonQuery<PerformanceEntity> query) {
         LambdaQueryWrapper<PerformanceEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.eq(PerformanceEntity::getCreateBy, StpUtil.getLoginIdAsInt());
+        lambdaQueryWrapper.eq(PerformanceEntity::getCreateBy, StpUtil.getLoginIdAsLong());
 
         // 分页
         Page<PerformanceEntity> page = new Page<>(query.getPage(), query.getPageSize());
@@ -47,7 +47,7 @@ public class PerformanceController {
 
     @PostMapping("/insertOrUpdate")
     public ApiResponse<Boolean> insertOrUpdate(@RequestBody PerformanceEntity entity) {
-        int userId = StpUtil.getLoginIdAsInt();
+        long userId = StpUtil.getLoginIdAsLong();
         entity.setCreateBy(userId);
         entity.setUpdateBy(userId);
         boolean b = getBaseMapper().insertOrUpdate(entity);

@@ -33,7 +33,7 @@ public class ExpenseEntity {
     private BigDecimal amt;
     private Integer expTypeId;
 
-    private Integer userId;
+    private Long userId;
 
     /**
      * 支付方式
@@ -84,8 +84,8 @@ public class ExpenseEntity {
     private Integer isDeleted;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createTime;
-    private Integer createUser;
+    private Long createUser;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime updateTime;
-    private Integer updateUser;
+    private Long updateUser;
 }

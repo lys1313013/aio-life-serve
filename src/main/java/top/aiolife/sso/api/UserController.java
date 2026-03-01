@@ -44,7 +44,7 @@ public class UserController {
      */
     @PostMapping("/auth/change-password")
     public ApiResponse<Void> changePassword(@RequestBody ChangePasswordReq changePasswordReq) {
-        int id = StpUtil.getLoginIdAsInt();
+        long id = StpUtil.getLoginIdAsLong();
         userService.changePassword(id, changePasswordReq);
         return ApiResponse.success();
     }
@@ -54,7 +54,7 @@ public class UserController {
      */
     @GetMapping("/user/info")
     public ApiResponse<UserInfoVO> info() {
-        int id = StpUtil.getLoginIdAsInt();
+        long id = StpUtil.getLoginIdAsLong();
         return ApiResponse.success(userService.getUserInfo(id));
     }
 
@@ -96,7 +96,7 @@ public class UserController {
      */
     @PutMapping("/users")
     public ApiResponse<Void> modify(@RequestBody UserEntity userEntity) {
-        int id = StpUtil.getLoginIdAsInt();
+        long id = StpUtil.getLoginIdAsLong();
         userEntity.setId(id);
         userEntity.setPassword(null);
         userService.updateUser(userEntity);

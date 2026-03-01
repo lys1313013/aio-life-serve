@@ -101,7 +101,7 @@ public class PerformanceEntity {
     /**
      * 创建人
      */
-    private Integer createBy;
+    private Long createBy;
 
     /**
      * 创建时间
@@ -112,7 +112,7 @@ public class PerformanceEntity {
     /**
      * 更新人
      */
-    private Integer updateBy;
+    private Long updateBy;
 
     /**
      * 更新时间

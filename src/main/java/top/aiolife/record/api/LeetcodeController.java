@@ -23,7 +23,7 @@ public class LeetcodeController {
      */
     @GetMapping("/notifyTodayQuestion")
     public ApiResponse<Void> notifyTodayQuestion() throws MessagingException {
-        StpUtil.getLoginIdAsInt();
+        StpUtil.getLoginIdAsLong();
         leetcodeService.notifyTodayQuestion();
         return ApiResponse.success();
     }

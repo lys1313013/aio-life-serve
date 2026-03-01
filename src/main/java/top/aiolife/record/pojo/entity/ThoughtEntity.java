@@ -21,5 +21,5 @@ public class ThoughtEntity extends BaseEntity {
     private String content;
 
     @TableField(exist = false)
-    private List<RelaEventEntity> events;
+    private List<ThoughtRelaEventEntity> events;
 }

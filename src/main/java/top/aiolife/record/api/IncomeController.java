@@ -49,7 +49,7 @@ public class IncomeController {
     @PostMapping("/query")
     public ApiResponse<PageResp<IncomeEntity>> query(
             @RequestBody CommonQuery<IncomeQuery> query) {
-        int userId = StpUtil.getLoginIdAsInt();
+        long userId = StpUtil.getLoginIdAsLong();
         LambdaQueryWrapper<IncomeEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(IncomeEntity::getUserId, userId);
         IncomeQuery condition = query.getCondition();
@@ -66,7 +66,7 @@ public class IncomeController {
 
     @PostMapping("/insertOrUpdate")
     public ApiResponse<Boolean> insertOrUpdate(@RequestBody IncomeEntity entity) {
-        entity.setUserId(StpUtil.getLoginIdAsInt());
+        entity.setUserId(StpUtil.getLoginIdAsLong());
         boolean b = getBaseMapper().insertOrUpdate(entity);
         return ApiResponse.success(b);
     }
@@ -79,7 +79,7 @@ public class IncomeController {
 
     @PostMapping("/statisticsByYear")
     public ApiResponse<Object> statisticsByYear() {
-        int userId = StpUtil.getLoginIdAsInt();
+        long userId = StpUtil.getLoginIdAsLong();
         List<IncStaByYearVO> list = incomeMapper.statisticsByYear(userId);
         List<IncStaticByYearVO> ans = new ArrayList<>();
         
@@ -106,7 +106,7 @@ public class IncomeController {
     
     @PostMapping("/statisticsByMonth")
     public ApiResponse<Object> statisticsByMonth() {
-        int userId = StpUtil.getLoginIdAsInt();
+        long userId = StpUtil.getLoginIdAsLong();
         List<IncStaByYearVO> list = incomeMapper.statisticsByMonth(userId);
         List<IncStaticByYearVO> ans = new ArrayList<>();
 

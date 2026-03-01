@@ -27,7 +27,7 @@ public class TaskColumnEntity {
     /**
      * 用户ID
      */
-    private Integer userId;
+    private Long userId;
 
     /**
      * 列标题

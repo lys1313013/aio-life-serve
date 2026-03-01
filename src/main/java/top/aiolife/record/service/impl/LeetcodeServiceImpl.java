@@ -251,7 +251,7 @@ public class LeetcodeServiceImpl implements ILeetcodeService {
     }
 
     @Override
-    public List<DashboardCardVO> getDashboardCard(int userId) {
+    public List<DashboardCardVO> getDashboardCard(long userId) {
         return new ArrayList<>();
     }
 
