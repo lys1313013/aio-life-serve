@@ -19,7 +19,7 @@ public class ExpStaByYearVO {
 
     private BigDecimal amt;
 
-    private Integer typeId;
+    private Long typeId;
 
     private String typeName;
 }
