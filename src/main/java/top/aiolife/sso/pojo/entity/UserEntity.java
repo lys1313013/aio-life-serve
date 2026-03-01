@@ -54,27 +54,12 @@ public class UserEntity {
     private String email;
 
     /**
-     * github 用户名
-     */
-    private String githubUsername;
-
-    /**
-     * github token(只需要有Access public repositories权限）
-     */
-    private String githubToken;
-
-    /**
-     * leetcode账号
-     */
-    private String leetcodeAcct;
-
-    /**
-     * 扇贝账号
-     */
-    private String shanbayAcct;
-
-    /**
      * 角色类型
      */
     private String role;
+
+    /**
+     * 个人简介
+     */
+    private String introduction;
 }

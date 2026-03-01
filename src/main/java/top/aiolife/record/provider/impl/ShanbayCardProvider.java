@@ -7,10 +7,10 @@ import com.alibaba.fastjson2.JSONObject;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import top.aiolife.record.pojo.entity.UserBindEntity;
 import top.aiolife.record.pojo.vo.DashboardCardVO;
 import top.aiolife.record.provider.DashboardCardProvider;
-import top.aiolife.sso.mapper.UserMapper;
-import top.aiolife.sso.pojo.entity.UserEntity;
+import top.aiolife.record.service.IUserBindService;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -28,7 +28,7 @@ import java.time.format.DateTimeFormatter;
 @AllArgsConstructor
 public class ShanbayCardProvider implements DashboardCardProvider {
 
-    private final UserMapper userMapper;
+    private final IUserBindService userBindService;
 
     @Override
     public String getType() {
@@ -57,12 +57,12 @@ public class ShanbayCardProvider implements DashboardCardProvider {
 
     @Override
     public DashboardCardVO getCard(int userId) {
-        UserEntity user = userMapper.selectById(userId);
-        if (user == null || user.getShanbayAcct() == null) {
+        UserBindEntity bind = userBindService.getBindByUserIdAndPlatform((long) userId, "shanbay");
+        if (bind == null || bind.getPlatformUsername() == null) {
             return null;
         }
 
-        String username = user.getShanbayAcct();
+        String username = bind.getPlatformUsername();
         DashboardCardVO card = new DashboardCardVO();
         card.setType(getType());
         card.setIcon(getIcon());

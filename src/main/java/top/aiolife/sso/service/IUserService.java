@@ -3,6 +3,7 @@ package top.aiolife.sso.service;
 import top.aiolife.core.query.CommonQuery;
 import top.aiolife.core.resq.PageResp;
 import top.aiolife.sso.pojo.entity.UserEntity;
+import top.aiolife.sso.pojo.req.ChangePasswordReq;
 import top.aiolife.sso.pojo.req.LoginReq;
 import top.aiolife.sso.pojo.vo.UserInfoVO;
 import top.aiolife.sso.pojo.vo.UserLoginVO;
@@ -33,6 +34,11 @@ public interface IUserService {
     UserInfoVO getUserInfo(int userId);
 
     void updateUser(UserEntity userEntity);
+
+    /**
+     * 修改密码
+     */
+    void changePassword(int userId, ChangePasswordReq changePasswordReq);
 
     /**
      * 获取用户列表

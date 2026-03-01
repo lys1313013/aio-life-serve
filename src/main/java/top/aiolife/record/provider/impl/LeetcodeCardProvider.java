@@ -1,8 +1,10 @@
 package top.aiolife.record.provider.impl;
 
+import top.aiolife.record.pojo.entity.UserBindEntity;
 import top.aiolife.record.pojo.vo.DashboardCardVO;
 import top.aiolife.record.provider.DashboardCardProvider;
 import top.aiolife.record.service.ILeetcodeService;
+import top.aiolife.record.service.IUserBindService;
 import top.aiolife.sso.mapper.UserMapper;
 import top.aiolife.sso.pojo.entity.UserEntity;
 import lombok.AllArgsConstructor;
@@ -23,6 +25,7 @@ public class LeetcodeCardProvider implements DashboardCardProvider {
 
     private final ILeetcodeService leetcodeService;
     private final UserMapper userMapper;
+    private final IUserBindService userBindService;
 
     @Override
     public String getType() {
@@ -52,14 +55,16 @@ public class LeetcodeCardProvider implements DashboardCardProvider {
     @Override
     public DashboardCardVO getCard(int userId) {
         UserEntity user = userMapper.selectById(userId);
-        if (user == null || user.getLeetcodeAcct() == null) {
+        UserBindEntity bind = userBindService.getBindByUserIdAndPlatform((long) userId, "leetcode");
+
+        if (user == null || bind == null || bind.getPlatformUsername() == null) {
             return null;
         }
 
         DashboardCardVO card = new DashboardCardVO();
         card.setType(getType());
         card.setIcon(getIcon());
-        card.setIconClickUrl("https://leetcode.cn/u/" + user.getLeetcodeAcct());
+        card.setIconClickUrl("https://leetcode.cn/u/" + bind.getPlatformUsername());
         card.setTitle(getTitle());
         try {
             Pair<Boolean, String> result = leetcodeService.checkToday(user, false);
@@ -67,7 +72,7 @@ public class LeetcodeCardProvider implements DashboardCardProvider {
             card.setValue(result.getFirst() ? "已完成" : "未完成");
             card.setValueColor(result.getFirst() ? "#3FB27F" : "red");
             card.setTotalTitle(getTotalTitle());
-            card.setTotalValue(String.valueOf(leetcodeService.getTodaySubmissionCount(user.getLeetcodeAcct())));
+            card.setTotalValue(String.valueOf(leetcodeService.getTodaySubmissionCount(bind.getPlatformUsername())));
             card.setRefreshInterval(600);
         } catch (Exception e) {
             log.error("获取 LeetCode 数据失败", e);

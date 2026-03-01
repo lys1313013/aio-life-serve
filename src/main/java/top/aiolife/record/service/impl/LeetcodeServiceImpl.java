@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import top.aiolife.core.util.DateUtil;
 import top.aiolife.record.client.LeetcodeClient;
+import top.aiolife.record.pojo.entity.UserBindEntity;
 import top.aiolife.record.pojo.leetcode.QuestionDataResponse;
 import top.aiolife.record.pojo.leetcode.RecentACSubmissionsResponse;
 import top.aiolife.record.pojo.leetcode.TodayRecordResponse;
@@ -25,6 +26,7 @@ import top.aiolife.record.pojo.leetcode.UserCalendarResponse;
 import top.aiolife.record.pojo.vo.DashboardCardVO;
 import top.aiolife.record.service.ILeetcodeService;
 import top.aiolife.record.service.IMailService;
+import top.aiolife.record.service.IUserBindService;
 import top.aiolife.record.util.RedisUtil;
 import top.aiolife.sso.mapper.UserMapper;
 import top.aiolife.sso.pojo.entity.UserEntity;
@@ -50,6 +52,8 @@ import java.util.function.Supplier;
 public class LeetcodeServiceImpl implements ILeetcodeService {
 
     private final UserMapper userMapper;
+
+    private final IUserBindService userBindService;
 
     private final RestTemplate restTemplate;
 
@@ -111,12 +115,15 @@ public class LeetcodeServiceImpl implements ILeetcodeService {
 
     @Override
     public void check() {
-        LambdaQueryWrapper<UserEntity> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.isNotNull(UserEntity::getLeetcodeAcct);
-        List<UserEntity> userEntityList = userMapper.selectList(queryWrapper);
+        // Find all users with leetcode bind
+        List<UserBindEntity> binds = userBindService.list(new LambdaQueryWrapper<UserBindEntity>()
+                .eq(UserBindEntity::getPlatform, "leetcode"));
 
-        for (UserEntity userEntity : userEntityList) {
-            checkToday(userEntity, true);
+        for (UserBindEntity bind : binds) {
+            UserEntity user = userMapper.selectById(bind.getUserId());
+            if (user != null) {
+                checkToday(user, true);
+            }
         }
     }
 
@@ -135,7 +142,11 @@ public class LeetcodeServiceImpl implements ILeetcodeService {
             return Pair.of(true, todayUrl);
         }
 
-        String leetcodeAcct = userEntity.getLeetcodeAcct();
+        UserBindEntity bind = userBindService.getBindByUserIdAndPlatform((long) userEntity.getId(), "leetcode");
+        if (bind == null || bind.getPlatformUsername() == null) {
+            return Pair.of(false, todayUrl);
+        }
+        String leetcodeAcct = bind.getPlatformUsername();
 
         // 查询最近提交
         RecentACSubmissionsResponse recentACSubmissions = this.fetchRecentAcSubmissions(leetcodeAcct);
@@ -246,10 +257,9 @@ public class LeetcodeServiceImpl implements ILeetcodeService {
 
     @Override
     public void notifyTodayQuestion() throws MessagingException {
-        LambdaQueryWrapper<UserEntity> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.isNotNull(UserEntity::getEmail);
-        queryWrapper.isNotNull(UserEntity::getLeetcodeAcct);
-        List<UserEntity> userEntityList = userMapper.selectList(queryWrapper);
+        // Find all bindings for leetcode
+        List<UserBindEntity> binds = userBindService.list(new LambdaQueryWrapper<UserBindEntity>()
+                .eq(UserBindEntity::getPlatform, "leetcode"));
 
         QuestionDataResponse questionData = this.getTodayQuestion();
 
@@ -264,8 +274,11 @@ public class LeetcodeServiceImpl implements ILeetcodeService {
                 """, question, questionData.getData().getQuestion().getTitleSlug(), questionData.getData().getQuestion().getTranslatedTitle()
         );
 
-        for (UserEntity userEntity : userEntityList) {
-            mailService.sendHtmlEmail(userEntity.getEmail(), title, htmlContent);
+        for (UserBindEntity bind : binds) {
+            UserEntity user = userMapper.selectById(bind.getUserId());
+            if (user != null && user.getEmail() != null) {
+                mailService.sendHtmlEmail(user.getEmail(), title, htmlContent);
+            }
         }
     }
 

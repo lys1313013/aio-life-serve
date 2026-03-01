@@ -3,6 +3,7 @@ package top.aiolife.sso.api;
 import cn.dev33.satoken.stp.StpUtil;
 import top.aiolife.core.resq.ApiResponse;
 import top.aiolife.sso.pojo.entity.UserEntity;
+import top.aiolife.sso.pojo.req.ChangePasswordReq;
 import top.aiolife.sso.pojo.req.LoginReq;
 import top.aiolife.sso.pojo.vo.UserInfoVO;
 import top.aiolife.sso.pojo.vo.UserLoginVO;
@@ -36,6 +37,16 @@ public class UserController {
     public ApiResponse<UserLoginVO> login(@RequestBody LoginReq loginReq, HttpServletRequest request) {
         String ip = getIp(request);
         return ApiResponse.success(userService.login(loginReq, ip));
+    }
+
+    /**
+     * 修改密码
+     */
+    @PostMapping("/auth/change-password")
+    public ApiResponse<Void> changePassword(@RequestBody ChangePasswordReq changePasswordReq) {
+        int id = StpUtil.getLoginIdAsInt();
+        userService.changePassword(id, changePasswordReq);
+        return ApiResponse.success();
     }
 
     /**
@@ -84,7 +95,7 @@ public class UserController {
      * 普通更新用户信息
      */
     @PutMapping("/users")
-    public ApiResponse<Void> modify(UserEntity userEntity) {
+    public ApiResponse<Void> modify(@RequestBody UserEntity userEntity) {
         int id = StpUtil.getLoginIdAsInt();
         userEntity.setId(id);
         userEntity.setPassword(null);

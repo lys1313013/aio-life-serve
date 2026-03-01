@@ -8,8 +8,10 @@ import com.alibaba.fastjson2.JSONObject;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import top.aiolife.record.pojo.entity.UserBindEntity;
 import top.aiolife.record.pojo.vo.DashboardCardVO;
 import top.aiolife.record.provider.DashboardCardProvider;
+import top.aiolife.record.service.IUserBindService;
 import top.aiolife.sso.mapper.UserMapper;
 import top.aiolife.sso.pojo.entity.UserEntity;
 
@@ -27,7 +29,7 @@ import java.util.List;
 @AllArgsConstructor
 public class GithubCardProvider implements DashboardCardProvider {
 
-    private final UserMapper userMapper;
+    private final IUserBindService userBindService;
 
     @Override
     public String getType() {
@@ -56,20 +58,20 @@ public class GithubCardProvider implements DashboardCardProvider {
 
     @Override
     public DashboardCardVO getCard(int userId) {
-        UserEntity user = userMapper.selectById(userId);
-        if (user == null || user.getGithubUsername() == null || user.getGithubToken() == null) {
+        UserBindEntity bind = userBindService.getBindByUserIdAndPlatform((long) userId, "github");
+        if (bind == null || bind.getPlatformUsername() == null || bind.getAccessToken() == null) {
             return null;
         }
 
         DashboardCardVO card = new DashboardCardVO();
         card.setType(getType());
         card.setIcon(getIcon());
-        card.setIconClickUrl("https://github.com/" + user.getGithubUsername());
+        card.setIconClickUrl("https://github.com/" + bind.getPlatformUsername());
         card.setTitle(getTitle());
         card.setTotalTitle(getTotalTitle());
 
         try {
-            JSONObject data = fetchGithubData(user.getGithubUsername(), user.getGithubToken());
+            JSONObject data = fetchGithubData(bind.getPlatformUsername(), bind.getAccessToken());
             if (data != null && data.containsKey("data")) {
                 JSONObject contributionCalendar = data.getJSONObject("data")
                         .getJSONObject("user")
@@ -84,7 +86,7 @@ public class GithubCardProvider implements DashboardCardProvider {
                 int todayContributions = getTodayContributions(contributionCalendar);
                 card.setValue(todayContributions + "");
                 card.setValueColor(todayContributions > 0 ? "#3FB27F" : "red");
-                card.setTitleClickUrl("https://github.com/" + user.getGithubUsername());
+                card.setTitleClickUrl("https://github.com/" + bind.getPlatformUsername());
             } else {
                 card.setValue("获取失败");
                 log.error("GitHub API response invalid: {}", data);

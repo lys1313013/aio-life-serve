@@ -23,26 +23,6 @@ public class UserInfoVO {
     private String nickname;
 
     /**
-     * github 用户名
-     */
-    private String githubUsername;
-
-    /**
-     * github token
-     */
-    private String githubToken;
-
-    /**
-     * leetcode 账号
-     */
-    private String leetcodeAcct;
-
-    /**
-     * 扇贝账号
-     */
-    private String shanbayAcct;
-
-    /**
      * 头像url
      */
     private String avatar;
@@ -51,6 +31,9 @@ public class UserInfoVO {
      * 邮件
      */
     private String email;
-
+    /**
+     * 个人简介
+     */
+    private String introduction;
     private List<String> roles;
 }

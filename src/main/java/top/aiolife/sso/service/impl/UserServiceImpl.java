@@ -8,6 +8,7 @@ import top.aiolife.sso.mapper.LoginLogMapper;
 import top.aiolife.sso.mapper.UserMapper;
 import top.aiolife.sso.pojo.entity.LoginLogEntity;
 import top.aiolife.sso.pojo.entity.UserEntity;
+import top.aiolife.sso.pojo.req.ChangePasswordReq;
 import top.aiolife.sso.pojo.req.LoginReq;
 import top.aiolife.sso.pojo.vo.UserInfoVO;
 import top.aiolife.sso.pojo.vo.UserLoginVO;
@@ -16,6 +17,7 @@ import top.aiolife.sso.util.PasswordUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -90,16 +92,30 @@ public class UserServiceImpl implements IUserService {
         userInfoVO.setNickname(userEntity.getNickname());
         userInfoVO.setAvatar(userEntity.getAvatar());
         userInfoVO.setEmail(userEntity.getEmail());
+        userInfoVO.setIntroduction(userEntity.getIntroduction());
         userInfoVO.setRoles(StringUtils.hasText(userEntity.getRole()) ? Arrays.asList(userEntity.getRole().split(",")) : Collections.singletonList("user"));
-        userInfoVO.setGithubUsername(userEntity.getGithubUsername());
-        userInfoVO.setGithubToken(userEntity.getGithubToken());
-        userInfoVO.setLeetcodeAcct(userEntity.getLeetcodeAcct());
-        userInfoVO.setShanbayAcct(userEntity.getShanbayAcct());
         return userInfoVO;
     }
 
     @Override
+    @CacheEvict(value = "userInfo", key = "#userEntity.id")
     public void updateUser(UserEntity userEntity) {
+        userMapper.updateById(userEntity);
+    }
+
+    @Override
+    public void changePassword(int userId, ChangePasswordReq changePasswordReq) {
+        UserEntity userEntity = userMapper.selectById(userId);
+        if (userEntity == null) {
+            throw new RuntimeException("用户不存在");
+        }
+        String encryptedPassword = PasswordUtil.encryptPassword(changePasswordReq.getOldPassword(), userEntity.getPasswordSalt());
+        if (!userEntity.getPassword().equals(encryptedPassword)) {
+            throw new RuntimeException("旧密码错误");
+        }
+        String salt = PasswordUtil.getSalt();
+        userEntity.setPasswordSalt(salt);
+        userEntity.setPassword(PasswordUtil.encryptPassword(changePasswordReq.getNewPassword(), salt));
         userMapper.updateById(userEntity);
     }
 
@@ -123,6 +139,7 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
+    @CacheEvict(value = "userInfo", key = "#id")
     public void deleteUser(Integer id) {
         userMapper.deleteById(id);
     }
