@@ -1,4 +1,4 @@
-# aio-life-serve - 个人生活数据管理系统
+# aio-life-serve - 人生管理系统
 
 > 记录、统计、分析人生的所有数据
 
