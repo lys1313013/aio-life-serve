@@ -78,6 +78,7 @@ public class TimeRecordController {
                 TimeRecordEntity::getDate,
                 TimeRecordEntity::getStartTime,
                 TimeRecordEntity::getEndTime,
+                TimeRecordEntity::getDuration,
                 TimeRecordEntity::getTitle);
         lambdaQueryWrapper.eq(TimeRecordEntity::getUserId, userId);
         TimeWeekQuery condition = query.getCondition();
