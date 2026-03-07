@@ -35,8 +35,25 @@ public class TaskDetailController {
         LambdaQueryWrapper<TaskDetailEntity> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(TaskDetailEntity::getTaskId, taskId);
         queryWrapper.eq(TaskDetailEntity::getUserId, userId);
-        queryWrapper.orderByAsc(TaskDetailEntity::getIsCompleted, TaskDetailEntity::getId);
+        queryWrapper.orderByAsc(TaskDetailEntity::getIsCompleted, TaskDetailEntity::getSort, TaskDetailEntity::getId);
         return ApiResponse.success(taskDetailService.list(queryWrapper));
+    }
+
+    /**
+     * 拖拽排序
+     *
+     * @param list 只传id和sort
+     */
+    @PostMapping("/reSort")
+    public ApiResponse<Void> reSort(@RequestBody List<TaskDetailEntity> list) {
+        Long userId = StpUtil.getLoginIdAsLong();
+        for (TaskDetailEntity entity : list) {
+            LambdaQueryWrapper<TaskDetailEntity> wrapper = new LambdaQueryWrapper<>();
+            wrapper.eq(TaskDetailEntity::getId, entity.getId());
+            wrapper.eq(TaskDetailEntity::getUserId, userId);
+            taskDetailService.update(entity, wrapper);
+        }
+        return ApiResponse.success();
     }
 
     /**

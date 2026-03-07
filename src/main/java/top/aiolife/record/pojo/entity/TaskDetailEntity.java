@@ -20,6 +20,6 @@ public class TaskDetailEntity extends BaseEntity {
     private Long userId;
 
     private String content;
-
     private Integer isCompleted;
+    private Integer sort;
 }
