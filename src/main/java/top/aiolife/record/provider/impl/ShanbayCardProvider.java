@@ -52,7 +52,7 @@ public class ShanbayCardProvider implements DashboardCardProvider {
 
     @Override
     public int getOrder() {
-        return 20;
+        return 5;
     }
 
     @Override

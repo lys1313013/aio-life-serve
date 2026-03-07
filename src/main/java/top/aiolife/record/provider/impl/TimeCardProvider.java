@@ -45,7 +45,7 @@ public class TimeCardProvider implements DashboardCardProvider {
 
     @Override
     public int getOrder() {
-        return 10;
+        return 1;
     }
 
     @Override

@@ -49,7 +49,7 @@ public class LeetcodeCardProvider implements DashboardCardProvider {
 
     @Override
     public int getOrder() {
-        return 30;
+        return 2;
     }
 
     @Override

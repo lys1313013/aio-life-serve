@@ -42,7 +42,7 @@ public class ExerciseCardProvider implements DashboardCardProvider {
 
     @Override
     public int getOrder() {
-        return 20;
+        return 4;
     }
 
     @Override

@@ -12,8 +12,6 @@ import top.aiolife.record.pojo.entity.UserBindEntity;
 import top.aiolife.record.pojo.vo.DashboardCardVO;
 import top.aiolife.record.provider.DashboardCardProvider;
 import top.aiolife.record.service.IUserBindService;
-import top.aiolife.sso.mapper.UserMapper;
-import top.aiolife.sso.pojo.entity.UserEntity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,7 +51,7 @@ public class GithubCardProvider implements DashboardCardProvider {
 
     @Override
     public int getOrder() {
-        return 25;
+        return 3;
     }
 
     @Override
