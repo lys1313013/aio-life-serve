@@ -78,18 +78,12 @@ sshpass -p "$PASSWORD" ssh -o StrictHostKeyChecking=no "$USERNAME@$SERVER_IP" \
 echo "上传 JAR 文件..."
 # 使用 rsync 显示进度条
 PROGRESS_FLAG="--progress"
-if rsync --help | grep -q "--info"; then
+if rsync --help | grep -q -- "--info"; then
     PROGRESS_FLAG="--info=progress2"
 fi
 
 RSYNC_CMD="sshpass -p '$PASSWORD' rsync -e 'ssh -o StrictHostKeyChecking=no' $PROGRESS_FLAG '$LOCAL_JAR_PATH' '$USERNAME@$SERVER_IP:/projects/service/$JAR_FILENAME'"
 eval $RSYNC_CMD
-
-# 检查上传是否成功
-if [[ $? -ne 0 ]]; then
-    echo "错误: 文件上传失败" >&2
-    exit 1
-fi
 
 # 检查上传是否成功
 if [[ $? -ne 0 ]]; then
