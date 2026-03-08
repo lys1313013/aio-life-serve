@@ -9,6 +9,7 @@ import top.aiolife.sso.pojo.req.RegisterReq;
 import top.aiolife.sso.pojo.req.ResetPasswordReq;
 import top.aiolife.sso.pojo.vo.UserInfoVO;
 import top.aiolife.sso.pojo.vo.UserLoginVO;
+import top.aiolife.sso.pojo.vo.UserVO;
 
 /**
  * 用户服务接口
@@ -75,7 +76,7 @@ public interface IUserService {
     /**
      * 获取用户列表
      */
-    PageResp<UserEntity> getUserList(CommonQuery query);
+    PageResp<UserVO> getUserList(CommonQuery query);
 
     /**
      * 新增用户

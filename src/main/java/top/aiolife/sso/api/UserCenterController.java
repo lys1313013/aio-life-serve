@@ -7,6 +7,7 @@ import top.aiolife.core.query.CommonQuery;
 import top.aiolife.core.resq.ApiResponse;
 import top.aiolife.core.resq.PageResp;
 import top.aiolife.sso.pojo.entity.UserEntity;
+import top.aiolife.sso.pojo.vo.UserVO;
 import top.aiolife.sso.service.IUserService;
 
 @RestController
@@ -18,7 +19,7 @@ public class UserCenterController {
     private final IUserService userService;
 
     @PostMapping("/list")
-    public ApiResponse<PageResp<UserEntity>> list(@RequestBody CommonQuery query) {
+    public ApiResponse<PageResp<UserVO>> list(@RequestBody CommonQuery query) {
         return ApiResponse.success(userService.getUserList(query));
     }
 

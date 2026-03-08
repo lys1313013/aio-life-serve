@@ -13,6 +13,7 @@ import top.aiolife.core.query.CommonQuery;
 import top.aiolife.core.resq.PageResp;
 import top.aiolife.record.service.IMailService;
 import top.aiolife.record.util.RedisUtil;
+import top.aiolife.sso.convertor.UserConvertor;
 import top.aiolife.sso.mapper.LoginLogMapper;
 import top.aiolife.sso.mapper.UserMapper;
 import top.aiolife.sso.pojo.entity.LoginLogEntity;
@@ -23,6 +24,7 @@ import top.aiolife.sso.pojo.req.RegisterReq;
 import top.aiolife.sso.pojo.req.ResetPasswordReq;
 import top.aiolife.sso.pojo.vo.UserInfoVO;
 import top.aiolife.sso.pojo.vo.UserLoginVO;
+import top.aiolife.sso.pojo.vo.UserVO;
 import top.aiolife.sso.service.IUserService;
 import top.aiolife.sso.util.PasswordUtil;
 import cn.hutool.core.date.DateUtil;
@@ -30,7 +32,9 @@ import org.springframework.beans.factory.annotation.Value;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * 用户服务实现类
@@ -144,11 +148,18 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
-    public PageResp<UserEntity> getUserList(CommonQuery query) {
+    public PageResp<UserVO> getUserList(CommonQuery query) {
         Page<UserEntity> page = new Page<>(query.getPage(), query.getPageSize());
         LambdaQueryWrapper<UserEntity> wrapper = new LambdaQueryWrapper<>();
         userMapper.selectPage(page, wrapper);
-        return new PageResp<>(page.getRecords(), page.getTotal());
+
+        List<UserVO> voList = page.getRecords().stream().map(user -> {
+            UserVO vo = UserConvertor.INSTANCE.entity2VO(user);
+            vo.setIsOnline(StpUtil.isLogin(user.getId()));
+            return vo;
+        }).collect(Collectors.toList());
+
+        return new PageResp<>(voList, page.getTotal());
     }
 
     @Override
