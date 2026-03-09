@@ -40,4 +40,11 @@ public interface DashboardCardProvider {
     default int getOrder() {
         return 0;
     }
+
+    /**
+     * 是否可见
+     */
+    default boolean isVisible(long userId) {
+        return true;
+    }
 }

@@ -53,6 +53,14 @@ public class LeetcodeCardProvider implements DashboardCardProvider {
     }
 
     @Override
+    public boolean isVisible(long userId) {
+//        UserEntity user = userMapper.selectById(userId);
+//        UserBindEntity bind = userBindService.getBindByUserIdAndPlatform(userId, "leetcode");
+//        return user != null && bind != null && bind.getPlatformUsername() != null;
+        return true;
+    }
+
+    @Override
     public DashboardCardVO getCard(long userId) {
         UserEntity user = userMapper.selectById(userId);
         UserBindEntity bind = userBindService.getBindByUserIdAndPlatform(userId, "leetcode");

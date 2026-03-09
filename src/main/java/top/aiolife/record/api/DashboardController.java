@@ -40,7 +40,9 @@ public class DashboardController {
      */
     @GetMapping("/tasks")
     public ApiResponse<List<DashboardCardVO>> getTasks() {
+        long userId = StpUtil.getLoginIdAsLong();
         List<DashboardCardVO> tasks = providerMap.values().stream()
+                .filter(provider -> provider.isVisible(userId))
                 .sorted(Comparator.comparingInt(DashboardCardProvider::getOrder))
                 .map(provider -> {
                     DashboardCardVO card = new DashboardCardVO();

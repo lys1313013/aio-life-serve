@@ -55,6 +55,13 @@ public class GithubCardProvider implements DashboardCardProvider {
     }
 
     @Override
+    public boolean isVisible(long userId) {
+//        UserBindEntity bind = userBindService.getBindByUserIdAndPlatform(userId, "github");
+//        return bind != null && bind.getPlatformUsername() != null && bind.getAccessToken() != null;
+        return true;
+    }
+
+    @Override
     public DashboardCardVO getCard(long userId) {
         UserBindEntity bind = userBindService.getBindByUserIdAndPlatform(userId, "github");
         if (bind == null || bind.getPlatformUsername() == null || bind.getAccessToken() == null) {
