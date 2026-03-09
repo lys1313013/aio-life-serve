@@ -388,3 +388,31 @@ CREATE TABLE IF NOT EXISTS `mail_log` (
   KEY `idx_send_to_biz_type` (`send_to`, `biz_type`),
   KEY `idx_create_time` (`create_time`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='邮件发送记录表';
+
+CREATE TABLE IF NOT EXISTS `api_key` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `user_id` bigint(20) NOT NULL COMMENT '用户ID',
+  `api_key` varchar(128) NOT NULL COMMENT 'API Key',
+  `remark` varchar(255) DEFAULT NULL COMMENT '备注',
+  `expired_at` datetime DEFAULT NULL COMMENT '过期时间',
+  `create_user` bigint(20) NOT NULL COMMENT '创建人',
+  `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_user` bigint(20) NOT NULL COMMENT '更新人',
+  `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  `is_deleted` tinyint(4) NOT NULL DEFAULT '0' COMMENT '是否删除',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_api_key` (`api_key`),
+  KEY `idx_user_id` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='API Key 表';
+
+CREATE TABLE IF NOT EXISTS `api_key_log` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `api_key_id` bigint(20) NOT NULL COMMENT 'API Key ID',
+  `request_path` varchar(255) NOT NULL COMMENT '请求路径',
+  `request_method` varchar(10) NOT NULL COMMENT '请求方法',
+  `response_status` int(11) DEFAULT NULL COMMENT '响应状态码',
+  `client_ip` varchar(45) DEFAULT NULL COMMENT '客户端IP',
+  `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '记录时间',
+  PRIMARY KEY (`id`),
+  KEY `idx_api_key_id` (`api_key_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='API Key 调用日志表';
