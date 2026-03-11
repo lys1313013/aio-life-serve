@@ -55,6 +55,7 @@ public class MessageController {
         long userId = StpUtil.getLoginIdAsLong();
         message.setCreateUser(userId);
         message.setUpdateUser(userId);
+        message.setSenderId(userId);
         return ApiResponse.success(messageService.createMessage(message));
     }
 
@@ -80,6 +81,7 @@ public class MessageController {
     public ApiResponse<Void> adminSend(@RequestBody MessageEntity message) {
         message.setCreateUser(StpUtil.getLoginIdAsLong());
         message.setUpdateUser(StpUtil.getLoginIdAsLong());
+        message.setSenderId(StpUtil.getLoginIdAsLong());
         messageService.createMessage(message);
         return ApiResponse.success();
     }
