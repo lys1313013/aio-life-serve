@@ -7,6 +7,7 @@ import top.aiolife.sso.pojo.req.ChangePasswordReq;
 import top.aiolife.sso.pojo.req.LoginReq;
 import top.aiolife.sso.pojo.req.RegisterReq;
 import top.aiolife.sso.pojo.req.ResetPasswordReq;
+import top.aiolife.sso.pojo.vo.UserBasicInfoVO;
 import top.aiolife.sso.pojo.vo.UserInfoVO;
 import top.aiolife.sso.pojo.vo.UserLoginVO;
 import top.aiolife.sso.pojo.vo.UserVO;
@@ -65,6 +66,14 @@ public interface IUserService {
      * @return 用户信息
      */
     UserInfoVO getUserInfo(long userId);
+
+    /**
+     * 获取用户基本信息
+     *
+     * @param userId 用户ID
+     * @return 用户基本信息
+     */
+    UserBasicInfoVO getUserBasicInfo(long userId);
 
     void updateUser(UserEntity userEntity);
 

@@ -22,6 +22,7 @@ import top.aiolife.sso.pojo.req.ChangePasswordReq;
 import top.aiolife.sso.pojo.req.LoginReq;
 import top.aiolife.sso.pojo.req.RegisterReq;
 import top.aiolife.sso.pojo.req.ResetPasswordReq;
+import top.aiolife.sso.pojo.vo.UserBasicInfoVO;
 import top.aiolife.sso.pojo.vo.UserInfoVO;
 import top.aiolife.sso.pojo.vo.UserLoginVO;
 import top.aiolife.sso.pojo.vo.UserVO;
@@ -123,7 +124,21 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
-    @CacheEvict(value = "userInfo", key = "#userEntity.id")
+    @Cacheable(value = "userBasicInfo", key = "#userId")
+    public UserBasicInfoVO getUserBasicInfo(long userId) {
+        UserEntity userEntity = userMapper.selectById(userId);
+        if (userEntity == null) {
+            return null;
+        }
+        UserBasicInfoVO vo = new UserBasicInfoVO();
+        vo.setId(userEntity.getId());
+        vo.setNickname(userEntity.getNickname());
+        vo.setAvatar(userEntity.getAvatar());
+        return vo;
+    }
+
+    @Override
+    @CacheEvict(value = {"userInfo", "userBasicInfo"}, key = "#userEntity.id")
     public void updateUser(UserEntity userEntity) {
         // 禁止通过此接口修改密码
         userEntity.setPassword(null);

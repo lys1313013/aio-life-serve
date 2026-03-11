@@ -6,6 +6,7 @@ import top.aiolife.sso.pojo.entity.UserEntity;
 import top.aiolife.sso.pojo.req.ChangePasswordReq;
 import top.aiolife.sso.pojo.req.LoginReq;
 import top.aiolife.sso.pojo.req.UpdateUserReq;
+import top.aiolife.sso.pojo.vo.UserBasicInfoVO;
 import top.aiolife.sso.pojo.vo.UserInfoVO;
 import top.aiolife.sso.pojo.vo.UserLoginVO;
 import top.aiolife.sso.service.IUserService;
@@ -57,6 +58,14 @@ public class UserController {
     public ApiResponse<UserInfoVO> info() {
         long id = StpUtil.getLoginIdAsLong();
         return ApiResponse.success(userService.getUserInfo(id));
+    }
+
+    /**
+     * 获取用户基本信息
+     */
+    @GetMapping("/user/{id}/basic")
+    public ApiResponse<UserBasicInfoVO> basicInfo(@PathVariable Long id) {
+        return ApiResponse.success(userService.getUserBasicInfo(id));
     }
 
     @GetMapping("/auth/codes")
