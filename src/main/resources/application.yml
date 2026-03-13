@@ -97,3 +97,9 @@ aio:
           ip-limit-day: 100 # 单IP单日发送限制次数
           email-limit-day: 20 # 单邮箱单日发送限制次数
           total-limit-day: 1000 # 全局单日总发送限制次数
+      minio:
+        endpoint: ${MINIO_ENDPOINT:http://localhost:1300}
+        access-key: ${MINIO_ACCESS_KEY:aio_life}
+        secret-key: ${MINIO_SECRET_KEY:aio_life}
+        bucket-name: ${MINIO_BUCKET_NAME:aiolife}
+        image-prefix: ${MINIO_IMAGE_PREFIX:images/}

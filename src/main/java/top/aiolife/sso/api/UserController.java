@@ -2,6 +2,7 @@ package top.aiolife.sso.api;
 
 import cn.dev33.satoken.stp.StpUtil;
 import top.aiolife.core.resq.ApiResponse;
+import top.aiolife.core.constant.ResponseCodeConst;
 import top.aiolife.sso.pojo.entity.UserEntity;
 import top.aiolife.sso.pojo.req.ChangePasswordReq;
 import top.aiolife.sso.pojo.req.LoginReq;
@@ -9,10 +10,14 @@ import top.aiolife.sso.pojo.req.UpdateUserReq;
 import top.aiolife.sso.pojo.vo.UserBasicInfoVO;
 import top.aiolife.sso.pojo.vo.UserInfoVO;
 import top.aiolife.sso.pojo.vo.UserLoginVO;
+import top.aiolife.core.util.MinioUtil;
 import top.aiolife.sso.service.IUserService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -28,6 +33,7 @@ import java.util.Map;
 public class UserController {
 
     private final IUserService userService;
+    private final MinioUtil minioUtil;
 
     /**
      * 登录
@@ -114,5 +120,27 @@ public class UserController {
         userEntity.setAvatar(req.getAvatar());
         userService.updateUser(userEntity);
         return ApiResponse.success();
+    }
+
+    /**
+     * 上传头像文件
+     */
+    @PostMapping("/users/avatar/upload")
+    public ApiResponse<String> uploadAvatar(@RequestParam("file") MultipartFile file) {
+        try {
+            // 生成唯一文件名
+            String fileName = minioUtil.generateUniqueFileName(file.getOriginalFilename());
+            String objectName = "images/avatar/" + fileName;
+            // 上传到 minio，使用 images/avatar 前缀
+            minioUtil.uploadFile(file, objectName);
+            
+            // 构建完整的文件访问URL
+            String baseUrl = ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString();
+            String imageUrl = baseUrl + "/file/preview?fileName=" + objectName;
+                    
+            return ApiResponse.success(imageUrl);
+        } catch (Exception e) {
+            return ApiResponse.error(ResponseCodeConst.RSCODE_COMMON_FAIL, "上传失败: " + e.getMessage());
+        }
     }
 }
