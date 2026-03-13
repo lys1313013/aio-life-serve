@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
-import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.Cache;
@@ -18,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import top.aiolife.core.util.DateUtil;
 import top.aiolife.record.client.LeetcodeClient;
+import top.aiolife.record.notification.AbstractNotificationSender;
 import top.aiolife.record.pojo.entity.UserBindEntity;
 import top.aiolife.record.pojo.leetcode.QuestionDataResponse;
 import top.aiolife.record.pojo.leetcode.RecentACSubmissionsResponse;
@@ -25,7 +25,6 @@ import top.aiolife.record.pojo.leetcode.TodayRecordResponse;
 import top.aiolife.record.pojo.leetcode.UserCalendarResponse;
 import top.aiolife.record.pojo.vo.DashboardCardVO;
 import top.aiolife.record.service.ILeetcodeService;
-import top.aiolife.record.service.IMailService;
 import top.aiolife.record.service.IUserBindService;
 import top.aiolife.record.util.RedisUtil;
 import top.aiolife.sso.mapper.UserMapper;
@@ -57,7 +56,7 @@ public class LeetcodeServiceImpl implements ILeetcodeService {
 
     private final RestTemplate restTemplate;
 
-    private final IMailService mailService;
+    private final List<AbstractNotificationSender> notificationSenders;
 
     private final RedisUtil redisUtil;
 
@@ -178,10 +177,14 @@ public class LeetcodeServiceImpl implements ILeetcodeService {
             // 只有在非工作日或者19点后才发送邮件
             if (!isWeekday || !isBefore7pm) {
                 try {
-                    log.info("给 userId: {} 发送邮件提醒", userEntity.getId());
-                    mailService.sendSimpleEmail(userEntity.getEmail(), "leetcode咋还没刷", "leetcode咋还没刷", "leetcode_reminder", "system");
+                    log.info("给 userId: {} 发送通知提醒", userEntity.getId());
+                    String title = "leetcode咋还没刷";
+                    String content = "leetcode咋还没刷";
+                    for (AbstractNotificationSender sender : notificationSenders) {
+                        sender.send(userEntity, title, content, content);
+                    }
                 } catch (Exception e) {
-                    log.error("发送邮件失败", e);
+                    log.error("发送通知失败", e);
                 }
             } else {
                 log.info("周一到周五19点前不发送邮件提醒，当前时间：{} {}", dayOfWeek, currentTime);
@@ -256,7 +259,7 @@ public class LeetcodeServiceImpl implements ILeetcodeService {
     }
 
     @Override
-    public void notifyTodayQuestion() throws MessagingException {
+    public void notifyTodayQuestion() {
         // Find all bindings for leetcode
         List<UserBindEntity> binds = userBindService.list(new LambdaQueryWrapper<UserBindEntity>()
                 .eq(UserBindEntity::getPlatform, "leetcode"));
@@ -273,11 +276,16 @@ public class LeetcodeServiceImpl implements ILeetcodeService {
                 <a href="https://leetcode.cn/problems/%s/"  target="_blank" >%s</a>
                 """, question, questionData.getData().getQuestion().getTitleSlug(), questionData.getData().getQuestion().getTranslatedTitle()
         );
+        
+        // 纯文本内容
+        String textContent = question.replaceAll("<[^>]+>", "") + "\n\n" + "https://leetcode.cn/problems/" + questionData.getData().getQuestion().getTitleSlug() + "/";
 
         for (UserBindEntity bind : binds) {
             UserEntity user = userMapper.selectById(bind.getUserId());
-            if (user != null && user.getEmail() != null) {
-                mailService.sendHtmlEmail(user.getEmail(), title, htmlContent, "leetcode_daily_question", "system");
+            if (user != null) {
+                for (AbstractNotificationSender sender : notificationSenders) {
+                    sender.send(user, title, htmlContent, textContent);
+                }
             }
         }
     }

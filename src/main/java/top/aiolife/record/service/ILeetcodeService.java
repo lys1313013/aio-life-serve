@@ -2,7 +2,6 @@ package top.aiolife.record.service;
 
 import top.aiolife.record.pojo.vo.DashboardCardVO;
 import top.aiolife.sso.pojo.entity.UserEntity;
-import jakarta.mail.MessagingException;
 import org.springframework.data.util.Pair;
 
 import java.util.List;
@@ -48,5 +47,5 @@ public interface ILeetcodeService {
     /**
      * 邮件通知今天每日一题
      */
-    void notifyTodayQuestion() throws MessagingException;
+    void notifyTodayQuestion();
 }

@@ -2,7 +2,6 @@ package top.aiolife.record.autotask;
 
 import top.aiolife.record.service.ILeetcodeService;
 import jakarta.annotation.Resource;
-import jakarta.mail.MessagingException;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -31,7 +30,7 @@ public class AutoTask {
      * 邮件通知每日一题
      */
     @Scheduled(cron = "${aio.life.serve.corn.notifyTodayQuestion:0 0 7 * * ?}")
-    public void notifyTodayQuestion() throws MessagingException {
+    public void notifyTodayQuestion() {
         leetcodeService.notifyTodayQuestion();
     }
 }
