@@ -90,6 +90,7 @@ mybatis-plus:
 aio:
   life:
     serve:
+      base-url: ${AIO_LIFE_SERVE_BASE_URL:http://localhost:45678/api}
       leetcode-corn: 0 30 23 * * ?
       auth:
         code:

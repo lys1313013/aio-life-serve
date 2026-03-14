@@ -36,6 +36,6 @@ public class SaTokenConfig implements WebMvcConfigurer {
                 .excludePathPatterns("/auth/login", "/auth/register", "/auth/sendEmailCode", "/auth/sendResetPasswordCode",
                         "/auth/resetPassword",
                         "/actuator/**",
-                        "/file/preview");
+                        "/file/preview/**");
     }
 }

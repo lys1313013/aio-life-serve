@@ -1,8 +1,14 @@
 package top.aiolife.sso.api;
 
 import cn.dev33.satoken.stp.StpUtil;
-import top.aiolife.core.resq.ApiResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import top.aiolife.core.constant.ResponseCodeConst;
+import top.aiolife.core.resq.ApiResponse;
+import top.aiolife.core.util.MinioUtil;
 import top.aiolife.sso.pojo.entity.UserEntity;
 import top.aiolife.sso.pojo.req.ChangePasswordReq;
 import top.aiolife.sso.pojo.req.LoginReq;
@@ -10,14 +16,7 @@ import top.aiolife.sso.pojo.req.UpdateUserReq;
 import top.aiolife.sso.pojo.vo.UserBasicInfoVO;
 import top.aiolife.sso.pojo.vo.UserInfoVO;
 import top.aiolife.sso.pojo.vo.UserLoginVO;
-import top.aiolife.core.util.MinioUtil;
 import top.aiolife.sso.service.IUserService;
-import jakarta.servlet.http.HttpServletRequest;
-import lombok.AllArgsConstructor;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -29,11 +28,14 @@ import java.util.Map;
  * @date 2025/4/3
  */
 @RestController
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class UserController {
 
     private final IUserService userService;
     private final MinioUtil minioUtil;
+
+    @Value("${aio.life.serve.base-url}")
+    private String serveBaseUrl;
 
     /**
      * 登录
@@ -130,13 +132,12 @@ public class UserController {
         try {
             // 生成唯一文件名
             String fileName = minioUtil.generateUniqueFileName(file.getOriginalFilename());
-            String objectName = "images/avatar/" + fileName;
-            // 上传到 minio，使用 images/avatar 前缀
-            minioUtil.uploadFile(file, objectName);
+            String objectName = StpUtil.getLoginIdAsLong() + "/" + fileName;
+            String bucketName = "avatar";
+            minioUtil.uploadFile(bucketName, file, objectName);
             
             // 构建完整的文件访问URL
-            String baseUrl = ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString();
-            String imageUrl = baseUrl + "/file/preview?fileName=" + objectName;
+            String imageUrl = serveBaseUrl + "/file/preview/" + bucketName + "/" + objectName;
                     
             return ApiResponse.success(imageUrl);
         } catch (Exception e) {

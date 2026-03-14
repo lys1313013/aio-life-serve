@@ -25,20 +25,22 @@ public class MinioUtil {
 
     /**
      * 上传文件到 MinIO
-     * @param file 上传的文件
+     *
+     * @param bucketName 桶名
+     * @param file       上传的文件
      * @param objectName 文件对象名
      * @return 文件访问 URL
      */
-    public String uploadFile(MultipartFile file, String objectName) throws Exception {
+    public String uploadFile(String bucketName, MultipartFile file, String objectName) throws Exception {
         // 确保桶存在
-        ensureBucketExists();
+        ensureBucketExists(bucketName);
 
         // 获取文件输入流
         try (InputStream inputStream = file.getInputStream()) {
             // 上传文件
             minioClient.putObject(
                     PutObjectArgs.builder()
-                            .bucket(minioConfig.getBucketName())
+                            .bucket(bucketName)
                             .object(objectName)
                             .stream(inputStream, file.getSize(), -1)
                             .contentType(file.getContentType())
@@ -52,13 +54,14 @@ public class MinioUtil {
 
     /**
      * 获取文件流
+     * @param bucketName 桶名
      * @param objectName 文件对象名
      * @return 文件输入流
      */
-    public InputStream getFile(String objectName) throws Exception {
+    public InputStream getFile(String bucketName, String objectName) throws Exception {
         return minioClient.getObject(
                 GetObjectArgs.builder()
-                        .bucket(minioConfig.getBucketName())
+                        .bucket(bucketName)
                         .object(objectName)
                         .build()
         );
@@ -76,21 +79,22 @@ public class MinioUtil {
 
     /**
      * 确保桶存在，如果不存在则创建
+     * @param bucketName 桶名
      */
-    private void ensureBucketExists() throws Exception {
+    private void ensureBucketExists(String bucketName) throws Exception {
         boolean exists = minioClient.bucketExists(
                 BucketExistsArgs.builder()
-                        .bucket(minioConfig.getBucketName())
+                        .bucket(bucketName)
                         .build()
         );
 
         if (!exists) {
             minioClient.makeBucket(
                     MakeBucketArgs.builder()
-                            .bucket(minioConfig.getBucketName())
+                            .bucket(bucketName)
                             .build()
             );
-            log.info("创建 MinIO 桶: {}", minioConfig.getBucketName());
+            log.info("创建 MinIO 桶: {}", bucketName);
         }
     }
 }
