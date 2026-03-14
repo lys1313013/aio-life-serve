@@ -21,6 +21,7 @@
 - Lombok
 - MapStruct
 - Hutool工具库
+- MinIO (对象存储)
 - Maven
 
 ## 项目结构
@@ -36,6 +37,7 @@
 - JDK 21+
 - MySQL 8.x
 - Redis
+- MinIO
 - Maven 3.6+
 
 ### 安装步骤
@@ -47,6 +49,7 @@ git clone https://github.com/lys1313013/aio-life-serve
 
 2. 配置数据库
    - 创建MySQL数据库
+   - 执行 sql 文件夹下的脚本文件
    - 修改`application.yml`中的数据库连接配置
 3. 启动Redis
 4. 启动程序
