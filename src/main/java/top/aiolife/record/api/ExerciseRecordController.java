@@ -9,11 +9,21 @@ import top.aiolife.core.resq.ApiResponse;
 import top.aiolife.core.resq.PageResp;
 import top.aiolife.core.util.SysUtil;
 import top.aiolife.record.mapper.IExerciseRecordMapper;
+import top.aiolife.record.pojo.dto.ExerciseStatisticsDTO;
 import top.aiolife.record.pojo.entity.ExerciseRecordEntity;
 import top.aiolife.record.pojo.req.CommonReq;
 import top.aiolife.record.service.IExerciseRecordService;
+
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+
+@Slf4j
 
 /**
  * 运动记录控制器
@@ -101,5 +111,93 @@ public class ExerciseRecordController {
         lambdaQueryWrapper.eq(ExerciseRecordEntity::getUserId, StpUtil.getLoginIdAsLong());
         lambdaQueryWrapper.eq(ExerciseRecordEntity::getId, id);
         return ApiResponse.success(getBaseMapper().selectOne(lambdaQueryWrapper));
+    }
+
+    /**
+     * 获取运动记录统计数据（限制时间范围和数据量），用于统计图表
+     * 返回完整的实体对象
+     */
+    @PostMapping("/statistics")
+    public ApiResponse<List<ExerciseRecordEntity>> getStatistics(@RequestBody(required = false) Map<String, Object> params) {
+        Long userId = StpUtil.getLoginIdAsLong();
+        LambdaQueryWrapper<ExerciseRecordEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(ExerciseRecordEntity::getUserId, userId);
+
+        // 处理查询条件
+        if (params != null) {
+            // 运动类型
+            String exerciseTypeId = (String) params.get("exerciseTypeId");
+            lambdaQueryWrapper.eq(SysUtil.isNotEmpty(exerciseTypeId), ExerciseRecordEntity::getExerciseTypeId, exerciseTypeId);
+
+            // 日期区间
+            String startDate = (String) params.get("startDate");
+            String endDate = (String) params.get("endDate");
+            if (SysUtil.isNotEmpty(startDate)) {
+                lambdaQueryWrapper.ge(ExerciseRecordEntity::getExerciseDate, java.time.LocalDate.parse(startDate));
+            }
+            if (SysUtil.isNotEmpty(endDate)) {
+                lambdaQueryWrapper.le(ExerciseRecordEntity::getExerciseDate, java.time.LocalDate.parse(endDate));
+            }
+        } else {
+            // 默认限制时间范围为最近一年
+            LocalDate oneYearAgo = LocalDate.now().minusYears(1);
+            lambdaQueryWrapper.ge(ExerciseRecordEntity::getExerciseDate, oneYearAgo);
+        }
+
+        // 限制返回数据量，避免性能问题
+        lambdaQueryWrapper.orderByDesc(ExerciseRecordEntity::getExerciseDate, ExerciseRecordEntity::getCreateTime);
+        lambdaQueryWrapper.last("LIMIT 1000"); // 限制最多返回1000条记录
+
+        List<ExerciseRecordEntity> list = getBaseMapper().selectList(lambdaQueryWrapper);
+        return ApiResponse.success(list);
+    }
+
+    /**
+     * 获取轻量级运动记录统计数据，仅包含统计所需字段
+     */
+    @PostMapping("/statistics/light")
+    public ApiResponse<List<ExerciseStatisticsDTO>> getLightStatistics(@RequestBody(required = false) Map<String, Object> params) {
+        Long userId = StpUtil.getLoginIdAsLong();
+        LambdaQueryWrapper<ExerciseRecordEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(ExerciseRecordEntity::getUserId, userId);
+
+        // 处理查询条件
+        if (params != null) {
+            // 运动类型
+            String exerciseTypeId = (String) params.get("exerciseTypeId");
+            lambdaQueryWrapper.eq(SysUtil.isNotEmpty(exerciseTypeId), ExerciseRecordEntity::getExerciseTypeId, exerciseTypeId);
+
+            // 日期区间
+            String startDate = (String) params.get("startDate");
+            String endDate = (String) params.get("endDate");
+            if (SysUtil.isNotEmpty(startDate)) {
+                lambdaQueryWrapper.ge(ExerciseRecordEntity::getExerciseDate, java.time.LocalDate.parse(startDate));
+            }
+            if (SysUtil.isNotEmpty(endDate)) {
+                lambdaQueryWrapper.le(ExerciseRecordEntity::getExerciseDate, java.time.LocalDate.parse(endDate));
+            }
+        } else {
+            // 默认限制时间范围为最近一年
+            LocalDate oneYearAgo = LocalDate.now().minusYears(1);
+            lambdaQueryWrapper.ge(ExerciseRecordEntity::getExerciseDate, oneYearAgo);
+        }
+
+        // 限制返回数据量，避免性能问题
+        lambdaQueryWrapper.orderByDesc(ExerciseRecordEntity::getExerciseDate, ExerciseRecordEntity::getCreateTime);
+        lambdaQueryWrapper.last("LIMIT 1000"); // 限制最多返回1000条记录
+
+        List<ExerciseRecordEntity> entities = getBaseMapper().selectList(lambdaQueryWrapper);
+
+        // 转换为轻量级DTO
+        List<ExerciseStatisticsDTO> dtos = entities.stream().map(entity -> {
+            ExerciseStatisticsDTO dto = new ExerciseStatisticsDTO();
+            dto.setExerciseTypeId(entity.getExerciseTypeId());
+            dto.setExerciseDate(entity.getExerciseDate());
+            dto.setExerciseCount(entity.getExerciseCount());
+            dto.setDescription(entity.getDescription());
+            return dto;
+        }).collect(Collectors.toList());
+
+        return ApiResponse.success(dtos);
     }
 }
