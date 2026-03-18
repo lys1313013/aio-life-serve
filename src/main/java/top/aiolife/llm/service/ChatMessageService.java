@@ -9,7 +9,13 @@ public interface ChatMessageService extends IService<ChatMessageEntity> {
 
     List<ChatMessageEntity> listByUserId(Long userId);
 
+    List<ChatMessageEntity> listByconversationId(Long userId, Long conversationId);
+
     ChatMessageEntity saveMessage(Long userId, String role, String content, String modelName);
 
+    ChatMessageEntity saveMessage(Long userId, Long conversationId, String role, String content, String modelName);
+
     void deleteByUserId(Long userId);
+
+    void deleteByconversationId(Long userId, Long conversationId);
 }

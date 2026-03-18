@@ -10,21 +10,15 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-@TableName("chat_message")
-public class ChatMessageEntity {
+@TableName("conversation")
+public class ConversationEntity {
 
     @TableId(type = IdType.ASSIGN_ID)
     private Long id;
 
     private Long userId;
 
-    private Long conversationId;
-
-    private String role;
-
-    private String content;
-
-    private String modelName;
+    private String title;
 
     private Long createUser;
 
@@ -40,6 +34,7 @@ public class ChatMessageEntity {
     private Integer isDeleted;
 
     public void fillCreateCommonField(Long userId) {
+        this.userId = userId;
         this.createUser = userId;
         this.updateUser = userId;
         this.createTime = LocalDateTime.now();

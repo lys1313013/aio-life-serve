@@ -18,13 +18,27 @@ public class ChatMessageServiceImpl extends ServiceImpl<ChatMessageMapper, ChatM
     public List<ChatMessageEntity> listByUserId(Long userId) {
         return this.list(new LambdaQueryWrapper<ChatMessageEntity>()
                 .eq(ChatMessageEntity::getUserId, userId)
-                .orderByDesc(ChatMessageEntity::getCreateTime));
+                .orderByAsc(ChatMessageEntity::getCreateTime));
+    }
+
+    @Override
+    public List<ChatMessageEntity> listByconversationId(Long userId, Long conversationId) {
+        return this.list(new LambdaQueryWrapper<ChatMessageEntity>()
+                .eq(ChatMessageEntity::getUserId, userId)
+                .eq(ChatMessageEntity::getConversationId, conversationId)
+                .orderByAsc(ChatMessageEntity::getCreateTime));
     }
 
     @Override
     public ChatMessageEntity saveMessage(Long userId, String role, String content, String modelName) {
+        return saveMessage(userId, null, role, content, modelName);
+    }
+
+    @Override
+    public ChatMessageEntity saveMessage(Long userId, Long conversationId, String role, String content, String modelName) {
         ChatMessageEntity message = new ChatMessageEntity();
         message.setUserId(userId);
+        message.setConversationId(conversationId);
         message.setRole(role);
         message.setContent(content);
         message.setModelName(modelName);
@@ -37,5 +51,12 @@ public class ChatMessageServiceImpl extends ServiceImpl<ChatMessageMapper, ChatM
     public void deleteByUserId(Long userId) {
         this.remove(new LambdaQueryWrapper<ChatMessageEntity>()
                 .eq(ChatMessageEntity::getUserId, userId));
+    }
+
+    @Override
+    public void deleteByconversationId(Long userId, Long conversationId) {
+        this.remove(new LambdaQueryWrapper<ChatMessageEntity>()
+                .eq(ChatMessageEntity::getUserId, userId)
+                .eq(ChatMessageEntity::getConversationId, conversationId));
     }
 }
