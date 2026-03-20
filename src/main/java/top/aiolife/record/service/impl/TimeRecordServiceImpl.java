@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.transaction.annotation.Transactional;
+import top.aiolife.core.util.SysUtil;
 import top.aiolife.record.convertor.TimeRecordConvertor;
 import top.aiolife.record.mapper.ITimeRecordMapper;
 import top.aiolife.record.pojo.entity.ExerciseRecordEntity;
@@ -60,13 +61,20 @@ public class TimeRecordServiceImpl extends ServiceImpl<ITimeRecordMapper, TimeRe
         this.save(entity);
 
         if (exerciseRecordEntities != null && !exerciseRecordEntities.isEmpty()) {
+            List<ExerciseRecordEntity> validExercises = new java.util.ArrayList<>();
             for (ExerciseRecordEntity exercise : exerciseRecordEntities) {
+                if (SysUtil.isEmpty(exercise.getExerciseTypeId())) {
+                    continue;
+                }
                 exercise.setUserId(userId);
                 exercise.setTimeId(entity.getId());
                 exercise.fillCreateCommonField(userId);
                 exercise.setExerciseDate(entity.getDate());
+                validExercises.add(exercise);
             }
-            exerciseRecordService.saveBatch(exerciseRecordEntities);
+            if (!validExercises.isEmpty()) {
+                exerciseRecordService.saveBatch(validExercises);
+            }
         }
     }
 
@@ -97,7 +105,11 @@ public class TimeRecordServiceImpl extends ServiceImpl<ITimeRecordMapper, TimeRe
 
         // 添加新的运动记录
         if (exerciseRecordEntities != null && !exerciseRecordEntities.isEmpty()) {
+            List<ExerciseRecordEntity> validExercises = new java.util.ArrayList<>();
             for (ExerciseRecordEntity exercise : exerciseRecordEntities) {
+                if (SysUtil.isEmpty(exercise.getExerciseTypeId())) {
+                    continue;
+                }
                 exercise.setUserId(userId);
                 exercise.setTimeId(entity.getId());
 
@@ -105,8 +117,11 @@ public class TimeRecordServiceImpl extends ServiceImpl<ITimeRecordMapper, TimeRe
                 exercise.fillCreateCommonField(userId);
                 exercise.setId(null);
                 exercise.setExerciseDate(entity.getDate());
+                validExercises.add(exercise);
             }
-            exerciseRecordService.saveBatch(exerciseRecordEntities);
+            if (!validExercises.isEmpty()) {
+                exerciseRecordService.saveBatch(validExercises);
+            }
         }
     }
 
