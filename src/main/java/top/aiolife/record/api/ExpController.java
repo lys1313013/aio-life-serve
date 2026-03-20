@@ -4,6 +4,7 @@ import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import top.aiolife.core.constant.ResponseCodeConst;
 import top.aiolife.core.constant.StatusConst;
 import top.aiolife.core.query.CommonQuery;
 import top.aiolife.core.resq.ApiResponse;
@@ -102,6 +103,30 @@ public class ExpController {
     @PostMapping("/saveBatch")
     public ApiResponse<Boolean> saveBatch(@RequestBody List<ExpenseEntity> list) {
         long userId = StpUtil.getLoginIdAsLong();
+        
+        // 提取所有有交易号的记录
+        List<String> transactionIds = list.stream()
+                .map(ExpenseEntity::getTransactionId)
+                .filter(tid -> tid != null && !tid.trim().isEmpty())
+                .distinct()
+                .toList();
+        
+        // 用户级别验重：检查交易号是否已存在
+        if (!transactionIds.isEmpty()) {
+            LambdaQueryWrapper<ExpenseEntity> wrapper = new LambdaQueryWrapper<>();
+            wrapper.eq(ExpenseEntity::getUserId, userId);
+            wrapper.in(ExpenseEntity::getTransactionId, transactionIds);
+            List<ExpenseEntity> existingList = getBaseMapper().selectList(wrapper);
+            
+            if (!existingList.isEmpty()) {
+                List<String> duplicatedIds = existingList.stream()
+                        .map(ExpenseEntity::getTransactionId)
+                        .toList();
+                return ApiResponse.error(ResponseCodeConst.RSCODE_COMMON_FAIL, 
+                        "交易号已存在: " + String.join(", ", duplicatedIds));
+            }
+        }
+        
         for (ExpenseEntity entity : list) {
             entity.setUserId(userId);
             entity.setCreateUser(userId);
