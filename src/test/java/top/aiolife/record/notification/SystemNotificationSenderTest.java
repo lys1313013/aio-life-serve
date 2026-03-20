@@ -1,8 +1,11 @@
 package top.aiolife.record.notification;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.transaction.annotation.Transactional;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import top.aiolife.sso.pojo.entity.MessageEntity;
 import top.aiolife.sso.pojo.entity.UserEntity;
 import top.aiolife.sso.service.IMessageService;
@@ -18,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * @date 2026-03-13 19:28
  */
 @SpringBootTest
+@Transactional
 class SystemNotificationSenderTest {
 
     @Autowired
@@ -25,6 +29,13 @@ class SystemNotificationSenderTest {
 
     @Autowired
     private IMessageService messageService;
+
+    @BeforeEach
+    void setUp() {
+        // 清理测试数据
+        messageService.remove(new LambdaQueryWrapper<MessageEntity>()
+                .in(MessageEntity::getReceiverId, 100L, 200L, 300L));
+    }
 
     @Test
     void send_Success() {
