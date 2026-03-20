@@ -22,4 +22,8 @@ public class TaskDetailEntity extends BaseEntity {
     private String content;
     private Integer isCompleted;
     private Integer sort;
+    /**
+     * 优先级: 1-高, 10-中, 20-低
+     */
+    private Integer priority;
 }

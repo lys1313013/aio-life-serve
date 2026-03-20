@@ -35,7 +35,9 @@ public class TaskDetailController {
         LambdaQueryWrapper<TaskDetailEntity> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(TaskDetailEntity::getTaskId, taskId);
         queryWrapper.eq(TaskDetailEntity::getUserId, userId);
-        queryWrapper.orderByAsc(TaskDetailEntity::getIsCompleted, TaskDetailEntity::getSort, TaskDetailEntity::getId);
+        queryWrapper.orderByAsc(TaskDetailEntity::getIsCompleted);
+        queryWrapper.orderByAsc(TaskDetailEntity::getPriority);
+        queryWrapper.orderByAsc(TaskDetailEntity::getSort, TaskDetailEntity::getId);
         return ApiResponse.success(taskDetailService.list(queryWrapper));
     }
 
