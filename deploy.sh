@@ -25,29 +25,37 @@ if [[ -z "$PASSWORD" ]]; then
     exit 1
 fi
 
+echo "开始执行 Maven 打包..."
+cd "$PROJECT_DIR"
+mvn clean
+mvn clean package -DskipTests
+
+if [[ $? -ne 0 ]]; then
+    echo "错误: Maven 打包失败，请检查代码或配置" >&2
+    exit 1
+fi
+
 # 查找 target 目录下的 JAR 文件
-echo "在 $PROJECT_DIR/target/ 目录下查找 JAR 文件..."
+echo "在 target/ 目录下查找 JAR 文件..."
 
 # 检查 target 目录是否存在
-if [[ ! -d "$PROJECT_DIR/target" ]]; then
-    echo "错误: target 目录不存在: $PROJECT_DIR/target" >&2
-    echo "请确保已在项目目录下执行了构建命令（如 mvn package 或 ./gradlew build）" >&2
+if [[ ! -d "target" ]]; then
+    echo "错误: target 目录不存在: target" >&2
     exit 1
 fi
 
 # 查找 JAR 文件（排除原始 JAR，优先选择可执行 JAR）
 # 先尝试找包含 original 的排除，找普通的 JAR
-JAR_FILES=($(find "$PROJECT_DIR/target" -maxdepth 1 -name "*.jar" -not -name "*original*.jar" 2>/dev/null))
+JAR_FILES=($(find "target" -maxdepth 1 -name "*.jar" -not -name "*original*.jar" 2>/dev/null))
 
 # 如果没找到，再找所有 JAR 文件
 if [[ ${#JAR_FILES[@]} -eq 0 ]]; then
-    JAR_FILES=($(find "$PROJECT_DIR/target" -maxdepth 1 -name "*.jar" 2>/dev/null))
+    JAR_FILES=($(find "target" -maxdepth 1 -name "*.jar" 2>/dev/null))
 fi
 
 # 验证是否找到 JAR 文件
 if [[ ${#JAR_FILES[@]} -eq 0 ]]; then
-    echo "错误: 在 $PROJECT_DIR/target/ 目录下未找到 JAR 文件" >&2
-    echo "请先构建项目：mvn package 或 ./gradlew build" >&2
+    echo "错误: 在 target/ 目录下未找到 JAR 文件" >&2
     exit 1
 fi
 
