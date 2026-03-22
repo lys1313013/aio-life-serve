@@ -30,6 +30,10 @@ public class TimeTrackerCategoryEntity extends BaseEntity {
      */
     private String color;
     /**
+     * 图标名称(Iconify格式)
+     */
+    private String icon;
+    /**
      * 描述
      */
     private String description;

@@ -54,6 +54,7 @@ public class TimeTrackerCategoryServiceImpl extends ServiceImpl<ITimeTrackerCate
                 merged.setTemplateId(publicCategory.getId());
                 merged.setName(overrideRecord.getName() != null ? overrideRecord.getName() : publicCategory.getName());
                 merged.setColor(overrideRecord.getColor() != null ? overrideRecord.getColor() : publicCategory.getColor());
+                merged.setIcon(overrideRecord.getIcon() != null ? overrideRecord.getIcon() : publicCategory.getIcon());
                 merged.setDescription(overrideRecord.getDescription() != null ? overrideRecord.getDescription() : publicCategory.getDescription());
                 merged.setIsTrackTime(overrideRecord.getIsTrackTime() != null ? overrideRecord.getIsTrackTime() : publicCategory.getIsTrackTime());
                 merged.setSort(overrideRecord.getSort() != null ? overrideRecord.getSort() : publicCategory.getSort());
@@ -113,6 +114,7 @@ public class TimeTrackerCategoryServiceImpl extends ServiceImpl<ITimeTrackerCate
                 hidden.setTemplateId(publicCat.getId());
                 hidden.setName(override.getName() != null ? override.getName() : publicCat.getName());
                 hidden.setColor(override.getColor() != null ? override.getColor() : publicCat.getColor());
+                hidden.setIcon(override.getIcon() != null ? override.getIcon() : publicCat.getIcon());
                 hidden.setDescription(override.getDescription() != null ? override.getDescription() : publicCat.getDescription());
                 hidden.setIsTrackTime(override.getIsTrackTime() != null ? override.getIsTrackTime() : publicCat.getIsTrackTime());
                 hidden.setIsEnabled(0);
@@ -158,7 +160,6 @@ public class TimeTrackerCategoryServiceImpl extends ServiceImpl<ITimeTrackerCate
                 updates.setUserId(userId);
                 updates.setTemplateId(categoryId);
                 updates.setIsDeleted(0); // 确保未删除
-                updates.setIsEnabled(1); // 确保恢复可见（如果之前被隐藏了）
                 this.updateById(updates);
             } else {
                 // 插入新的覆盖记录
@@ -168,7 +169,6 @@ public class TimeTrackerCategoryServiceImpl extends ServiceImpl<ITimeTrackerCate
                 updates.setUpdateUser(userId);
                 updates.setTemplateId(categoryId);
                 updates.setIsDeleted(0);
-                updates.setIsEnabled(1);
                 this.save(updates);
             }
         } else if (target.getUserId().equals(userId)) {
@@ -207,6 +207,7 @@ public class TimeTrackerCategoryServiceImpl extends ServiceImpl<ITimeTrackerCate
                 hideRecord.setTemplateId(categoryId);
                 hideRecord.setName(target.getName());
                 hideRecord.setColor(target.getColor());
+                hideRecord.setIcon(target.getIcon());
                 hideRecord.setCreateUser(userId);
                 hideRecord.setUpdateUser(userId);
                 hideRecord.setIsEnabled(0);

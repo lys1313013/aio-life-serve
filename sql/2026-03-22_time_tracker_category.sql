@@ -17,3 +17,6 @@ where exists(
 alter table time_tracker_category modify code varchar(50) null comment '分类标识(如: rest, work)';
 -- 迁移完成后，也可以直接删除字段
 -- ALTER TABLE time_tracker_category DROP COLUMN code;
+
+-- 新增 icon 字段，用于存储分类图标
+ALTER TABLE time_tracker_category ADD COLUMN icon VARCHAR(100) NULL COMMENT '图标名称(Iconify格式)';
