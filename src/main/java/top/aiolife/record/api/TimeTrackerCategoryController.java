@@ -1,9 +1,7 @@
 package top.aiolife.record.api;
 
+import cn.dev33.satoken.annotation.SaCheckRole;
 import cn.dev33.satoken.stp.StpUtil;
-import cn.hutool.core.util.IdUtil;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import top.aiolife.core.resq.ApiResponse;
@@ -26,17 +24,21 @@ public class TimeTrackerCategoryController {
     private final ITimeTrackerCategoryService categoryService;
 
     /**
-     * 获取当前用户的所有分类
+     * 获取当前用户的所有分类（含合并的公共分类）
      */
     @GetMapping("/list")
     public ApiResponse<List<TimeTrackerCategoryEntity>> list() {
         long userId = StpUtil.getLoginIdAsLong();
-        List<TimeTrackerCategoryEntity> list = categoryService.list(
-                new LambdaQueryWrapper<TimeTrackerCategoryEntity>()
-                        .eq(TimeTrackerCategoryEntity::getUserId, userId)
-                        .orderByAsc(TimeTrackerCategoryEntity::getSort)
-        );
-        return ApiResponse.success(list);
+        return ApiResponse.success(categoryService.listUserVisibleCategories(userId));
+    }
+
+    /**
+     * 获取当前用户隐藏的分类列表
+     */
+    @GetMapping("/hidden")
+    public ApiResponse<List<TimeTrackerCategoryEntity>> listHidden() {
+        long userId = StpUtil.getLoginIdAsLong();
+        return ApiResponse.success(categoryService.listUserHiddenCategories(userId));
     }
 
     /**
@@ -45,10 +47,9 @@ public class TimeTrackerCategoryController {
     @PostMapping
     public ApiResponse<Boolean> save(@RequestBody TimeTrackerCategoryEntity entity) {
         long userId = StpUtil.getLoginIdAsLong();
-        entity.setUserId(userId);
-        entity.setCode(IdUtil.fastSimpleUUID());
         entity.fillCreateCommonField(userId);
-        return ApiResponse.success(categoryService.save(entity));
+        categoryService.createCategory(entity, userId);
+        return ApiResponse.success(true);
     }
 
     /**
@@ -57,9 +58,9 @@ public class TimeTrackerCategoryController {
     @PutMapping
     public ApiResponse<Boolean> update(@RequestBody TimeTrackerCategoryEntity entity) {
         long userId = StpUtil.getLoginIdAsLong();
-        entity.setUserId(userId);
         entity.fillUpdateCommonField(userId);
-        return ApiResponse.success(categoryService.updateById(entity));
+        categoryService.updateCategory(entity.getId(), entity, userId);
+        return ApiResponse.success(true);
     }
 
     /**
@@ -67,25 +68,62 @@ public class TimeTrackerCategoryController {
      */
     @DeleteMapping("/{id}")
     public ApiResponse<Boolean> delete(@PathVariable Long id) {
-        return ApiResponse.success(categoryService.removeById(id));
+        long userId = StpUtil.getLoginIdAsLong();
+        categoryService.deleteCategory(id, userId);
+        return ApiResponse.success(true);
     }
 
     /**
      * 拖拽排序
      *
-     * @param list 只传id和sort
+     * @param list 传id/templateId和sort
      */
     @PostMapping("/reSort")
     public ApiResponse<Void> reSort(@RequestBody List<TimeTrackerCategoryEntity> list) {
         long userId = StpUtil.getLoginIdAsLong();
         for (TimeTrackerCategoryEntity entity : list) {
-            categoryService.update(
-                    new LambdaUpdateWrapper<TimeTrackerCategoryEntity>()
-                            .eq(TimeTrackerCategoryEntity::getId, entity.getId())
-                            .eq(TimeTrackerCategoryEntity::getUserId, userId)
-                            .set(TimeTrackerCategoryEntity::getSort, entity.getSort())
-            );
+            TimeTrackerCategoryEntity update = new TimeTrackerCategoryEntity();
+            update.setSort(entity.getSort());
+            
+            if (entity.getTemplateId() != null) {
+                // 如果是公共分类（且可能没有覆盖记录），调用 updateCategory 创建/更新覆盖记录
+                categoryService.updateCategory(entity.getTemplateId(), update, userId);
+            } else {
+                // 私有分类或原记录
+                categoryService.updateCategory(entity.getId(), update, userId);
+            }
         }
         return ApiResponse.success();
+    }
+
+    // ================= 管理员 API =================
+
+    @SaCheckRole("admin")
+    @GetMapping("/admin/list")
+    public ApiResponse<List<TimeTrackerCategoryEntity>> adminList() {
+        return ApiResponse.success(categoryService.listAllCategories());
+    }
+
+    @SaCheckRole("admin")
+    @PostMapping("/admin")
+    public ApiResponse<Boolean> adminSave(@RequestBody TimeTrackerCategoryEntity entity) {
+        entity.fillCreateCommonField(0L);
+        categoryService.adminCreateCategory(entity);
+        return ApiResponse.success(true);
+    }
+
+    @SaCheckRole("admin")
+    @PutMapping("/admin/{id}")
+    public ApiResponse<Boolean> adminUpdate(@PathVariable Long id, @RequestBody TimeTrackerCategoryEntity entity) {
+        entity.fillUpdateCommonField(0L);
+        categoryService.adminUpdateCategory(id, entity);
+        return ApiResponse.success(true);
+    }
+
+    @SaCheckRole("admin")
+    @DeleteMapping("/admin/{id}")
+    public ApiResponse<Boolean> adminDelete(@PathVariable Long id) {
+        categoryService.adminDeleteCategory(id);
+        return ApiResponse.success(true);
     }
 }

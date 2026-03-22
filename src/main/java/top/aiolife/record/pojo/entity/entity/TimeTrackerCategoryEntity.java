@@ -13,21 +13,41 @@ import top.aiolife.record.pojo.entity.BaseEntity;
 @Data
 @TableName("time_tracker_category")
 public class TimeTrackerCategoryEntity extends BaseEntity {
-    //用户ID
+    /**
+     * 用户ID
+     */
     private Long userId;
-    //分类标识(如: rest, work)
-    private String code;
-    //分类名称
+    /**
+     * 模板ID，指向被覆盖的公共分类ID
+     */
+    private Long templateId;
+    /**
+     * 分类名称
+     */
     private String name;
-    //颜色值(Hex)
+    /**
+     * 颜色值(Hex)
+     */
     private String color;
-    //描述
+    /**
+     * 描述
+     */
     private String description;
-    //是否记录时间
+    /**
+     * 是否记录时间
+     */
     private Integer isTrackTime;
-    //排序权重
+    /**
+     * 排序权重
+     */
     private Integer sort;
-    //是否删除
+    /**
+     * 是否启用：1-启用，0-禁用
+     */
+    private Integer isEnabled;
+    /**
+     * 是否删除
+     */
     private Integer isDeleted;
 }
 
