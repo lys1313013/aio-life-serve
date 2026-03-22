@@ -35,6 +35,11 @@ public class DeviceEntity {
     private String name;
 
     /**
+     * 设备配置
+     */
+    private String spec;
+
+    /**
      * 设备类型
      */
     private String type;
@@ -70,7 +75,7 @@ public class DeviceEntity {
     private String image;
 
     /**
-     * 订单号字段
+     * 设备的结束日期（用于计算日均费用）
      */
-    private String orderNumber;
+    private String endDate;
 }
