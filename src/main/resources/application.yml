@@ -117,3 +117,6 @@ aio:
         secret-key: ${MINIO_SECRET_KEY:aio_life}
         bucket-name: ${MINIO_BUCKET_NAME:aiolife}
         image-prefix: ${MINIO_IMAGE_PREFIX:images/}
+      mbti:
+        api-key: ${AIO_LIFE_MBTI_API_KEY:}
+        base-url: ${AIO_LIFE_MBTI_BASE_URL:https://api.devil.ai}
