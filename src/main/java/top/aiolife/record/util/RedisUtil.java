@@ -7,6 +7,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -124,5 +126,32 @@ public class RedisUtil {
      */
     public Boolean expire(String key, long timeout, TimeUnit unit) {
         return stringRedisTemplate.expire(key, timeout, unit);
+    }
+
+    /**
+     * Set 添加成员
+     */
+    public Long sAdd(String key, String... members) {
+        return stringRedisTemplate.opsForSet().add(key, members);
+    }
+
+    /**
+     * Set 弹出成员（会移除）
+     */
+    public List<String> sPop(String key, long count) {
+        if (count <= 0) {
+            return List.of();
+        }
+        return stringRedisTemplate.opsForSet().pop(key, count);
+    }
+
+    /**
+     * 批量获取值
+     */
+    public List<String> multiGet(Collection<String> keys) {
+        if (keys == null || keys.isEmpty()) {
+            return List.of();
+        }
+        return stringRedisTemplate.opsForValue().multiGet(keys);
     }
 }
