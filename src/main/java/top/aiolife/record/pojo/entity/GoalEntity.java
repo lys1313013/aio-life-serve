@@ -66,9 +66,14 @@ public class GoalEntity {
     private Integer status;
 
     /**
-     * 目标进度（0-100）
+     * 目标值（如：100本书）
      */
-    private Integer progress;
+    private Integer targetValue;
+
+    /**
+     * 当前值（如：已完成50本）
+     */
+    private Integer currentValue;
 
     /**
      * 年份（用于年度目标筛选）

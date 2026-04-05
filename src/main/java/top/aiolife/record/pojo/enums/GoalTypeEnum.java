@@ -9,19 +9,54 @@ package top.aiolife.record.pojo.enums;
 public enum GoalTypeEnum {
 
     /**
-     * 年度目标
+     * 日目标
      */
-    YEAR(1, "年度目标"),
+    DAY(1, "日目标"),
+
+    /**
+     * 周目标
+     */
+    WEEK(2, "周目标"),
 
     /**
      * 月度目标
      */
-    MONTH(2, "月度目标"),
+    MONTH(3, "月度目标"),
 
     /**
-     * 日目标
+     * 季度目标
      */
-    DAY(3, "日目标");
+    QUARTER(4, "季度目标"),
+
+    /**
+     * 半年目标
+     */
+    HALF_YEAR(5, "半年目标"),
+
+    /**
+     * 年度目标
+     */
+    YEAR(6, "年度目标"),
+
+    /**
+     * 三年目标
+     */
+    THREE_YEAR(7, "三年目标"),
+
+    /**
+     * 五年目标
+     */
+    FIVE_YEAR(8, "五年目标"),
+
+    /**
+     * 十年目标
+     */
+    TEN_YEAR(9, "十年目标"),
+
+    /**
+     * 人生目标
+     */
+    LIFE(10, "人生目标");
 
     private final Integer code;
 
