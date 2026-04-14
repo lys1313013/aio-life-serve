@@ -138,10 +138,10 @@ CREATE TABLE IF NOT EXISTS `expense` (
 
 CREATE TABLE IF NOT EXISTS `income` (
                           `income_id` bigint(20) NOT NULL AUTO_INCREMENT,
-                          `amt` decimal(10,2) DEFAULT NULL COMMENT '收入',
-                          `inc_date` date DEFAULT NULL COMMENT '收入时间',
+                          `amt` decimal(10,2) NOT NULL COMMENT '收入',
+                          `inc_date` date NOT NULL COMMENT '收入时间',
                           `remark` varchar(255) DEFAULT NULL COMMENT '备注',
-                          `user_id` bigint(20) DEFAULT NULL COMMENT '用户id',
+                          `user_id` bigint(20) NOT NULL COMMENT '用户id',
                           `create_user` bigint(20) DEFAULT NULL COMMENT '创建人',
                           `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
                           `update_user` bigint(20) DEFAULT NULL COMMENT '修改人',

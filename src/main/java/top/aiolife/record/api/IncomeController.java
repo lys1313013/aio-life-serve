@@ -4,6 +4,7 @@ import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import top.aiolife.core.constant.ResponseCodeConst;
 import top.aiolife.core.query.CommonQuery;
 import top.aiolife.core.resq.ApiResponse;
 import top.aiolife.core.resq.PageResp;
@@ -16,6 +17,7 @@ import top.aiolife.record.pojo.vo.IncStaByYearVO;
 import top.aiolife.record.pojo.vo.IncStaticByYearVO;
 import top.aiolife.record.service.ISysDictService;
 import lombok.AllArgsConstructor;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -65,7 +67,7 @@ public class IncomeController {
 
 
     @PostMapping("/insertOrUpdate")
-    public ApiResponse<Boolean> insertOrUpdate(@RequestBody IncomeEntity entity) {
+    public ApiResponse<Boolean> insertOrUpdate(@Validated @RequestBody IncomeEntity entity) {
         Long userId = StpUtil.getLoginIdAsLong();
         entity.setUserId(userId);
         if (entity.getIncomeId() == null) {
