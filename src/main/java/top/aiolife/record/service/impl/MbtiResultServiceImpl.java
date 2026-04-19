@@ -13,6 +13,7 @@ import top.aiolife.record.service.IMbtiResultService;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * MBTI测试结果服务实现
@@ -41,13 +42,19 @@ public class MbtiResultServiceImpl extends ServiceImpl<IMbtiResultMapper, MbtiRe
     public Map<String, Object> createTest() {
         try {
             // 文档地址：https://devil.ai/api
+            Map<String, Object> result = new HashMap<>();
+            if (mbtiApiKey == null || mbtiApiKey.isBlank()) {
+                result.put("success", false);
+                result.put("message", "请先配置 MBTI API Key（环境变量 AIO_LIFE_MBTI_API_KEY）");
+                return result;
+            }
+
             String url = mbtiBaseUrl + "/v1/new_test?api_key=" + mbtiApiKey + "&lang=cn";
-            log.info("创建MBTI测试请求: {}", url);
+            log.info("创建MBTI测试请求: {}/v1/new_test?lang=cn", mbtiBaseUrl);
             
             Map<String, Object> response = restTemplate.getForObject(url, Map.class);
             log.info("创建MBTI测试响应: {}", response);
             
-            Map<String, Object> result = new HashMap<>();
             if (response != null && response.containsKey("data")) {
                 Map<String, Object> data = (Map<String, Object>) response.get("data");
                 if (data != null && data.containsKey("test_id")) {
@@ -58,9 +65,24 @@ public class MbtiResultServiceImpl extends ServiceImpl<IMbtiResultMapper, MbtiRe
                     result.put("success", false);
                     result.put("message", "创建测试失败: 未获取到test_id");
                 }
+            } else if (response != null && response.containsKey("meta") && response.get("meta") instanceof Map<?, ?> meta) {
+                Object statusCode = meta.get("status_code");
+                Object metaSuccess = meta.get("success");
+                Object metaMessage = meta.get("message");
+                Object metaError = meta.get("error");
+                String detail = String.valueOf(Objects.requireNonNullElse(metaMessage, metaError));
+                if (detail.isBlank()) {
+                    detail = "响应格式错误";
+                }
+                result.put("success", false);
+                result.put("message", "创建测试失败: " + String.valueOf(statusCode) + " " + detail + " (success=" + String.valueOf(metaSuccess) + ")");
             } else {
                 result.put("success", false);
-                result.put("message", "创建测试失败: 响应格式错误");
+                String detail = String.valueOf(response);
+                if (detail.length() > 500) {
+                    detail = detail.substring(0, 500) + "...";
+                }
+                result.put("message", "创建测试失败: 响应格式错误: " + detail);
             }
             
             return result;
@@ -77,13 +99,19 @@ public class MbtiResultServiceImpl extends ServiceImpl<IMbtiResultMapper, MbtiRe
     @Override
     public Map<String, Object> checkTest(String testId) {
         try {
+            Map<String, Object> result = new HashMap<>();
+            if (mbtiApiKey == null || mbtiApiKey.isBlank()) {
+                result.put("success", false);
+                result.put("message", "请先配置 MBTI API Key（环境变量 AIO_LIFE_MBTI_API_KEY）");
+                return result;
+            }
+
             String url = mbtiBaseUrl + "/v1/check_test?api_key=" + mbtiApiKey + "&test_id=" + testId;
-            log.info("查询MBTI测试结果请求: {}", url);
+            log.info("查询MBTI测试结果请求: {}/v1/check_test?test_id={}", mbtiBaseUrl, testId);
             
             Map<String, Object> response = restTemplate.getForObject(url, Map.class);
             log.info("查询MBTI测试结果响应: {}", response);
             
-            Map<String, Object> result = new HashMap<>();
             if (response != null && response.containsKey("data")) {
                 Map<String, Object> data = (Map<String, Object>) response.get("data");
                 result.put("success", true);
@@ -97,9 +125,24 @@ public class MbtiResultServiceImpl extends ServiceImpl<IMbtiResultMapper, MbtiRe
                     result.put("matches", data.get("matches"));
                     result.put("resultsPage", data.get("results_page"));
                 }
+            } else if (response != null && response.containsKey("meta") && response.get("meta") instanceof Map<?, ?> meta) {
+                Object statusCode = meta.get("status_code");
+                Object metaSuccess = meta.get("success");
+                Object metaMessage = meta.get("message");
+                Object metaError = meta.get("error");
+                String detail = String.valueOf(Objects.requireNonNullElse(metaMessage, metaError));
+                if (detail.isBlank()) {
+                    detail = "响应格式错误";
+                }
+                result.put("success", false);
+                result.put("message", "查询结果失败: " + String.valueOf(statusCode) + " " + detail + " (success=" + String.valueOf(metaSuccess) + ")");
             } else {
                 result.put("success", false);
-                result.put("message", "查询结果失败: 响应格式错误");
+                String detail = String.valueOf(response);
+                if (detail.length() > 500) {
+                    detail = detail.substring(0, 500) + "...";
+                }
+                result.put("message", "查询结果失败: 响应格式错误: " + detail);
             }
             
             return result;

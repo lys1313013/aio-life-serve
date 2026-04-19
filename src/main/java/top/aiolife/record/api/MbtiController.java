@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import top.aiolife.core.constant.ResponseCodeConst;
 import top.aiolife.core.resq.ApiResponse;
 import top.aiolife.record.pojo.entity.MbtiResultEntity;
 import top.aiolife.record.service.IMbtiResultService;
@@ -34,7 +35,8 @@ public class MbtiController {
         if (Boolean.TRUE.equals(result.get("success"))) {
             return ApiResponse.success(result);
         } else {
-            return ApiResponse.error(result.get("message").toString());
+            String message = String.valueOf(result.getOrDefault("message", "创建测试失败"));
+            return ApiResponse.error(ResponseCodeConst.RSCODE_COMMON_FAIL, message);
         }
     }
 
@@ -81,7 +83,7 @@ public class MbtiController {
     public ApiResponse<Map<String, Object>> getById(@PathVariable Long id) {
         MbtiResultEntity result = mbtiResultService.getById(id);
         if (result == null) {
-            return ApiResponse.error("记录不存在");
+            return ApiResponse.error(ResponseCodeConst.RSCODE_COMMON_FAIL, "记录不存在");
         }
 
         Map<String, Object> response = new HashMap<>();

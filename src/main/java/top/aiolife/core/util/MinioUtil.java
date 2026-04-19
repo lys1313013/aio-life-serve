@@ -32,12 +32,9 @@ public class MinioUtil {
      * @return 文件访问 URL
      */
     public String uploadFile(String bucketName, MultipartFile file, String objectName) throws Exception {
-        // 确保桶存在
         ensureBucketExists(bucketName);
 
-        // 获取文件输入流
         try (InputStream inputStream = file.getInputStream()) {
-            // 上传文件
             minioClient.putObject(
                     PutObjectArgs.builder()
                             .bucket(bucketName)
@@ -47,8 +44,33 @@ public class MinioUtil {
                             .build()
             );
 
-            // 返回文件访问 URL
             return objectName;
+        }
+    }
+
+    public void putObject(String bucketName, String objectName, InputStream inputStream, long size, String contentType) throws Exception {
+        ensureBucketExists(bucketName);
+        minioClient.putObject(
+                PutObjectArgs.builder()
+                        .bucket(bucketName)
+                        .object(objectName)
+                        .stream(inputStream, size, -1)
+                        .contentType(contentType)
+                        .build()
+        );
+    }
+
+    public boolean objectExists(String bucketName, String objectName) {
+        try {
+            minioClient.statObject(
+                    StatObjectArgs.builder()
+                            .bucket(bucketName)
+                            .object(objectName)
+                            .build()
+            );
+            return true;
+        } catch (Exception e) {
+            return false;
         }
     }
 
