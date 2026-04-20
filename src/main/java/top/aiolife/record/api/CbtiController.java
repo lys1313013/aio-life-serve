@@ -172,6 +172,22 @@ public class CbtiController {
         return ApiResponse.success(detail);
     }
 
+    /**
+     * 删除 CBTI 测试历史（逻辑删除）。
+     *
+     * @param id 历史记录ID
+     * @return 是否删除成功
+     */
+    @DeleteMapping("/result/{id}")
+    public ApiResponse<Boolean> deleteResult(@PathVariable Long id) {
+        long userId = StpUtil.getLoginIdAsLong();
+        boolean ok = cbtiService.deleteHistory(id, userId);
+        if (!ok) {
+            return ApiResponse.error(ResponseCodeConst.RSCODE_COMMON_FAIL, "记录不存在");
+        }
+        return ApiResponse.success(true);
+    }
+
     private Map<String, Object> toPersonalityView(CbtiPersonalityEntity entity) {
         Map<String, Object> p = new HashMap<>();
         p.put("code", entity.getCode());

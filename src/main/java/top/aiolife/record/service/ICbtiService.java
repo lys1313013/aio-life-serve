@@ -63,5 +63,13 @@ public interface ICbtiService {
      * @return 历史详情
      */
     Map<String, Object> getHistoryDetail(long id, long userId);
-}
 
+    /**
+     * 删除用户 CBTI 测试历史（逻辑删除）。
+     *
+     * @param id 历史记录ID
+     * @param userId 用户ID
+     * @return 是否删除成功
+     */
+    boolean deleteHistory(long id, long userId);
+}

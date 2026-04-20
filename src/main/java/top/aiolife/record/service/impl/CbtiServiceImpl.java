@@ -224,6 +224,17 @@ public class CbtiServiceImpl implements ICbtiService {
         return result;
     }
 
+    @Override
+    public boolean deleteHistory(long id, long userId) {
+        CbtiResultEntity entity = cbtiResultMapper.selectById(id);
+        if (entity == null || !Objects.equals(entity.getUserId(), userId) || !Objects.equals(entity.getIsDeleted(), 0)) {
+            return false;
+        }
+        entity.setIsDeleted(1);
+        entity.fillUpdateCommonField(userId);
+        return cbtiResultMapper.updateById(entity) > 0;
+    }
+
     private boolean isCoffeeAddict(Map<String, Object> hiddenAnswers) {
         if (hiddenAnswers == null) {
             return false;
@@ -407,4 +418,3 @@ public class CbtiServiceImpl implements ICbtiService {
         }
     }
 }
-
