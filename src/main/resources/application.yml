@@ -118,12 +118,12 @@ aio:
         bucket-name: ${MINIO_BUCKET_NAME:aiolife}
         image-prefix: ${MINIO_IMAGE_PREFIX:images/}
       mbti:
-        api-key: ${AIO_LIFE_MBTI_API_KEY:}
+        api-key: ${AIO_LIFE_MBTI_API_KEY:ee1aee-d3178c-1f49b8-652d40}
         base-url: ${AIO_LIFE_MBTI_BASE_URL:https://api.devil.ai}
       cbti:
         enabled: ${AIO_LIFE_CBTI_ENABLED:true}
         init-on-startup: ${AIO_LIFE_CBTI_INIT_ON_STARTUP:true}
         bucket-name: ${AIO_LIFE_CBTI_BUCKET_NAME:}
         object-prefix: ${AIO_LIFE_CBTI_OBJECT_PREFIX:images/cbti/characters/}
-        personalities-path: ${AIO_LIFE_CBTI_PERSONALITIES_PATH:}
-        characters-dir: ${AIO_LIFE_CBTI_CHARACTERS_DIR:}
+        personalities-path: ${AIO_LIFE_CBTI_PERSONALITIES_PATH:D:/my_document/program_product/sbti-test-main/cbti-test-main/src/config/personalities.json}
+        characters-dir: ${AIO_LIFE_CBTI_CHARACTERS_DIR:D:/my_document/program_product/sbti-test-main/cbti-test-main/public/characters}
