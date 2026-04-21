@@ -2,16 +2,21 @@ package top.aiolife.system.api;
 
 import cn.dev33.satoken.annotation.SaCheckRole;
 import cn.dev33.satoken.stp.StpUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import top.aiolife.core.constant.ResponseCodeConst;
 import top.aiolife.core.resq.ApiResponse;
+import top.aiolife.sso.mapper.UserMapper;
+import top.aiolife.sso.pojo.entity.UserEntity;
 import top.aiolife.system.pojo.req.MenuSaveReq;
 import top.aiolife.system.pojo.vo.MenuAdminVO;
 import top.aiolife.system.service.IMenuService;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * 菜单管理控制器
@@ -29,6 +34,8 @@ public class MenuAdminController {
 
     private final IMenuService menuService;
 
+    private final UserMapper userMapper;
+
     /**
      * 获取菜单树（管理端）。
      *
@@ -37,6 +44,41 @@ public class MenuAdminController {
     @GetMapping("/tree")
     public ApiResponse<List<MenuAdminVO>> tree() {
         return ApiResponse.success(menuService.getAdminMenuTree());
+    }
+
+    /**
+     * 获取角色选项列表（用于菜单 Roles 下拉选择）。
+     *
+     * <p>用途：为菜单管理页提供可选角色集合，避免前端写死或手工输入。</p>
+     *
+     * @return 统一返回结构，data 为去重后的角色字符串数组
+     */
+    @GetMapping("/role-options")
+    public ApiResponse<List<String>> roleOptions() {
+        LambdaQueryWrapper<UserEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.select(UserEntity::getRole);
+        wrapper.eq(UserEntity::getIsDeleted, 0);
+        List<UserEntity> users = userMapper.selectList(wrapper);
+
+        Set<String> roles = new TreeSet<>();
+        roles.add("admin");
+        roles.add("user");
+        for (UserEntity u : users) {
+            String roleStr = u == null ? null : u.getRole();
+            if (roleStr == null || roleStr.isBlank()) {
+                continue;
+            }
+            for (String r : roleStr.split(",")) {
+                if (r == null) {
+                    continue;
+                }
+                String v = r.trim();
+                if (!v.isEmpty()) {
+                    roles.add(v);
+                }
+            }
+        }
+        return ApiResponse.success(List.copyOf(roles));
     }
 
     /**

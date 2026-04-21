@@ -278,12 +278,15 @@ public class MenuServiceImpl implements IMenuService {
     }
 
     private boolean isRoleAllowed(String menuRoles, List<String> userRoles) {
-        if (!StringUtils.hasText(menuRoles)) {
+        if (userRoles != null && userRoles.contains("admin")) {
             return true;
+        }
+        if (!StringUtils.hasText(menuRoles)) {
+            return false;
         }
         Set<String> allowed = parseRoles(menuRoles);
         if (allowed.isEmpty()) {
-            return true;
+            return false;
         }
         if (userRoles == null || userRoles.isEmpty()) {
             return false;
