@@ -87,4 +87,11 @@ public class UserEntity {
     @TableField("updated_at")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime updateTime;
+
+    /**
+     * 最后活跃时间
+     */
+    @TableField("last_active_at")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime lastActiveTime;
 }

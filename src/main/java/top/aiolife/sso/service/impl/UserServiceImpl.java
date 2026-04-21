@@ -31,9 +31,15 @@ import top.aiolife.sso.util.PasswordUtil;
 import cn.hutool.core.date.DateUtil;
 import org.springframework.beans.factory.annotation.Value;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.IntStream;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -46,6 +52,8 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements IUserService {
+
+    private static final String LAST_ACTIVE_KEY_PREFIX = "user:last_active:";
 
     private final UserMapper userMapper;
     private final LoginLogMapper loginLogMapper;
@@ -168,13 +176,65 @@ public class UserServiceImpl implements IUserService {
         LambdaQueryWrapper<UserEntity> wrapper = new LambdaQueryWrapper<>();
         userMapper.selectPage(page, wrapper);
 
+        Map<Long, LocalDateTime> redisLastActiveMap = buildRedisLastActiveMap(page.getRecords());
         List<UserVO> voList = page.getRecords().stream().map(user -> {
             UserVO vo = UserConvertor.INSTANCE.entity2VO(user);
             vo.setIsOnline(StpUtil.isLogin(user.getId()));
+            vo.setLastActiveTime(maxTime(vo.getLastActiveTime(), redisLastActiveMap.get(user.getId())));
             return vo;
         }).collect(Collectors.toList());
 
         return new PageResp<>(voList, page.getTotal());
+    }
+
+    private Map<Long, LocalDateTime> buildRedisLastActiveMap(List<UserEntity> users) {
+        if (users == null || users.isEmpty()) {
+            return Map.of();
+        }
+        List<Long> userIds = users.stream()
+                .map(UserEntity::getId)
+                .filter(Objects::nonNull)
+                .toList();
+        if (userIds.isEmpty()) {
+            return Map.of();
+        }
+
+        List<String> keys = userIds.stream()
+                .map(id -> LAST_ACTIVE_KEY_PREFIX + id)
+                .toList();
+        List<String> values = redisUtil.multiGet(keys);
+        if (values == null || values.isEmpty()) {
+            return Map.of();
+        }
+
+        ZoneId zoneId = ZoneId.systemDefault();
+        return IntStream.range(0, Math.min(userIds.size(), values.size()))
+                .boxed()
+                .filter(i -> toLocalDateTime(values.get(i), zoneId) != null)
+                .map(i -> Map.entry(userIds.get(i), toLocalDateTime(values.get(i), zoneId)))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    }
+
+    private LocalDateTime toLocalDateTime(String epochMillisStr, ZoneId zoneId) {
+        if (!StringUtils.hasText(epochMillisStr)) {
+            return null;
+        }
+        try {
+            long epochMillis = Long.parseLong(epochMillisStr);
+            return LocalDateTime.ofInstant(Instant.ofEpochMilli(epochMillis), zoneId);
+        } catch (Exception ignore) {
+            return null;
+        }
+    }
+
+    private LocalDateTime maxTime(LocalDateTime a, LocalDateTime b) {
+        if (a == null) {
+            return b;
+        }
+        if (b == null) {
+            return a;
+        }
+        return a.isAfter(b) ? a : b;
     }
 
     @Override

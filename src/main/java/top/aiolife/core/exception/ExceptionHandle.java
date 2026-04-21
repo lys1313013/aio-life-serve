@@ -6,6 +6,7 @@ import top.aiolife.core.resq.ApiResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -23,6 +24,13 @@ public class ExceptionHandle {
     public ApiResponse<Object> handleException(Exception e) {
         log.error("发生异常：{}", e.getMessage(), e);
         return ApiResponse.error(ResponseCodeConst.RSCODE_COMMON_FAIL, e.getMessage());
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ApiResponse<Object> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
+        String message = e.getBindingResult().getFieldError().getDefaultMessage();
+        log.error("参数校验异常：{}", message);
+        return ApiResponse.error(ResponseCodeConst.RECODE_PARAM_FAIL, message);
     }
 
 

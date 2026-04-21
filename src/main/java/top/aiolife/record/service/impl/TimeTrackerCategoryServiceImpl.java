@@ -58,6 +58,7 @@ public class TimeTrackerCategoryServiceImpl extends ServiceImpl<ITimeTrackerCate
                 merged.setDescription(overrideRecord.getDescription() != null ? overrideRecord.getDescription() : publicCategory.getDescription());
                 merged.setIsTrackTime(overrideRecord.getIsTrackTime() != null ? overrideRecord.getIsTrackTime() : publicCategory.getIsTrackTime());
                 merged.setSort(overrideRecord.getSort() != null ? overrideRecord.getSort() : publicCategory.getSort());
+                merged.setTimeType(overrideRecord.getTimeType() != null ? overrideRecord.getTimeType() : publicCategory.getTimeType());
                 merged.setIsDeleted(0);
                 merged.setIsEnabled(1);
                 result.add(merged);

@@ -105,4 +105,57 @@ public class TaskDetailController {
         taskDetailService.remove(queryWrapper);
         return ApiResponse.success();
     }
+
+    /**
+     * 关注任务明细
+     *
+     * @param id 详情ID
+     * @return 是否成功
+     */
+    @PostMapping("/star/{id}")
+    public ApiResponse<Boolean> star(@PathVariable Long id) {
+        Long userId = StpUtil.getLoginIdAsLong();
+        LambdaQueryWrapper<TaskDetailEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(TaskDetailEntity::getId, id);
+        queryWrapper.eq(TaskDetailEntity::getUserId, userId);
+        TaskDetailEntity entity = new TaskDetailEntity();
+        entity.setIsStarred(1);
+        entity.fillUpdateCommonField(userId);
+        return ApiResponse.success(taskDetailService.update(entity, queryWrapper));
+    }
+
+    /**
+     * 取消关注任务明细
+     *
+     * @param id 详情ID
+     * @return 是否成功
+     */
+    @PostMapping("/unstar/{id}")
+    public ApiResponse<Boolean> unstar(@PathVariable Long id) {
+        Long userId = StpUtil.getLoginIdAsLong();
+        LambdaQueryWrapper<TaskDetailEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(TaskDetailEntity::getId, id);
+        queryWrapper.eq(TaskDetailEntity::getUserId, userId);
+        TaskDetailEntity entity = new TaskDetailEntity();
+        entity.setIsStarred(0);
+        entity.fillUpdateCommonField(userId);
+        return ApiResponse.success(taskDetailService.update(entity, queryWrapper));
+    }
+
+    /**
+     * 获取所有关注的明细
+     *
+     * @return 关注的明细列表
+     */
+    @GetMapping("/watched")
+    public ApiResponse<List<TaskDetailEntity>> getWatched() {
+        Long userId = StpUtil.getLoginIdAsLong();
+        LambdaQueryWrapper<TaskDetailEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(TaskDetailEntity::getUserId, userId);
+        queryWrapper.eq(TaskDetailEntity::getIsStarred, 1);
+        queryWrapper.eq(TaskDetailEntity::getIsCompleted, 0);
+        queryWrapper.orderByAsc(TaskDetailEntity::getPriority);
+        queryWrapper.orderByAsc(TaskDetailEntity::getSort, TaskDetailEntity::getId);
+        return ApiResponse.success(taskDetailService.list(queryWrapper));
+    }
 }

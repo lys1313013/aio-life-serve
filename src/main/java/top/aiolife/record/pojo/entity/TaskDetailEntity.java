@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 /**
  * 类功能描述
  *
@@ -26,4 +28,19 @@ public class TaskDetailEntity extends BaseEntity {
      * 优先级: 1-高, 10-中, 20-低
      */
     private Integer priority;
+
+    /**
+     * 是否关注: 0-未关注, 1-已关注
+     */
+    private Integer isStarred;
+
+    /**
+     * 开始时间
+     */
+    private LocalDateTime startTime;
+
+    /**
+     * 结束时间
+     */
+    private LocalDateTime endTime;
 }

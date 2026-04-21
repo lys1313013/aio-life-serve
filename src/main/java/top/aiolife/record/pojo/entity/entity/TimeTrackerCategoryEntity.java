@@ -53,5 +53,9 @@ public class TimeTrackerCategoryEntity extends BaseEntity {
      * 是否删除
      */
     private Integer isDeleted;
+    /**
+     * 时间类型：1-必须时间，2-积极时间，3-消极时间
+     */
+    private Integer timeType;
 }
 

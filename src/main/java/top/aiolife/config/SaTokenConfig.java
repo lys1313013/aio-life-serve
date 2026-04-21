@@ -10,12 +10,14 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import top.aiolife.sso.interceptor.ApiKeyInterceptor;
+import top.aiolife.sso.interceptor.UserLastActiveInterceptor;
 
 @Configuration
 @RequiredArgsConstructor
 public class SaTokenConfig implements WebMvcConfigurer {
 
     private final ApiKeyInterceptor apiKeyInterceptor;
+    private final UserLastActiveInterceptor userLastActiveInterceptor;
 
     @Override
     public void addInterceptors(@NonNull InterceptorRegistry registry) {
@@ -38,6 +40,14 @@ public class SaTokenConfig implements WebMvcConfigurer {
             }
             StpUtil.checkLogin();
         })).addPathPatterns("/**")
+                .excludePathPatterns("/auth/login", "/auth/register", "/auth/sendEmailCode", "/auth/sendResetPasswordCode",
+                        "/auth/resetPassword",
+                        "/actuator/**",
+                        "/file/preview/**");
+
+        // 记录最后活跃时间（仅 Token 请求），需在 Sa-Token 校验通过后执行
+        registry.addInterceptor(userLastActiveInterceptor)
+                .addPathPatterns("/**")
                 .excludePathPatterns("/auth/login", "/auth/register", "/auth/sendEmailCode", "/auth/sendResetPasswordCode",
                         "/auth/resetPassword",
                         "/actuator/**",
