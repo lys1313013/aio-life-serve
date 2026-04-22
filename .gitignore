@@ -32,11 +32,3 @@ replay_pid*
 
 # Docker volumes
 docker/volumes/*/data/
-
-# Sensitive config files
-docker/.env
-src/main/resources/application-local.yml
-src/main/resources/application-*.local.yml
-
-# Local Trae workspace artifacts
-/.trae/
