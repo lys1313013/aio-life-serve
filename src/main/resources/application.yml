@@ -46,8 +46,9 @@ spring:
             required: true
   data:
     redis:
-      host: 127.0.0.1
-      port: 6379
+      host: ${AIO_LIFE_REDIS_HOST:127.0.0.1}
+      port: ${AIO_LIFE_REDIS_PORT:6379}
+      password: ${AIO_LIFE_REDIS_PASSWORD:}
 
 logging:
   level:
