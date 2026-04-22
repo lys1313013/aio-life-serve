@@ -62,6 +62,14 @@ public class UserController {
     /**
      * 获取用户信息
      */
+    @GetMapping("/auth/info")
+    public ApiResponse<UserInfoVO> authInfo() {
+        return info();
+    }
+
+    /**
+     * 获取用户信息
+     */
     @GetMapping("/user/info")
     public ApiResponse<UserInfoVO> info() {
         long id = StpUtil.getLoginIdAsLong();
