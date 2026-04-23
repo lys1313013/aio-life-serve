@@ -32,7 +32,4 @@ replay_pid*
 
 # Docker volumes
 docker/volumes/*/data/
-<<<<<<< HEAD
-=======
 
->>>>>>> 9458428 (上传配置文件)
