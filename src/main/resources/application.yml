@@ -127,4 +127,4 @@ aio:
         bucket-name: ${AIO_LIFE_CBTI_BUCKET_NAME:}
         object-prefix: ${AIO_LIFE_CBTI_OBJECT_PREFIX:images/cbti/characters/}
         personalities-path: ${AIO_LIFE_CBTI_PERSONALITIES_PATH:}
-        characters-dir: ${AIO_LIFE_CBTI_CHARACTERS_DIR:D:/my_document/program_product/life_os/aio-life-serve-main/aio-life-serve-main/src/main/resources/cbti/characters}
+        characters-dir: ${AIO_LIFE_CBTI_CHARACTERS_DIR:src/main/resources/cbti/characters}

@@ -32,3 +32,4 @@ replay_pid*
 
 # Docker volumes
 docker/volumes/*/data/
+
