@@ -99,7 +99,7 @@ public class CbtiController {
      * @return 统一返回结构，data 为测试结果（人格、匹配度、维度结果、匹配排行等）
      */
     @PostMapping("/test")
-    public ApiResponse<Map<String, Object>> test(@RequestBody Map<String, Object> body) {
+    public ApiResponse<Map<String, Object>> test(@RequestBody Map<String, Object> body) throws Exception {
         long userId = StpUtil.getLoginIdAsLong();
 
         Map<Integer, Integer> answers = null;
@@ -116,18 +116,14 @@ public class CbtiController {
             });
         }
 
-        try {
-            Map<String, Object> result = cbtiService.testAndSave(userId, answers == null ? Map.of() : answers, hiddenAnswers);
+        Map<String, Object> result = cbtiService.testAndSave(userId, answers == null ? Map.of() : answers, hiddenAnswers);
 
-            Object personality = result.get("personality");
-            if (personality instanceof CbtiPersonalityEntity entity) {
-                result.put("personality", toPersonalityView(entity));
-            }
-
-            return ApiResponse.success(result);
-        } catch (Exception e) {
-            return ApiResponse.error(ResponseCodeConst.RSCODE_COMMON_FAIL, "计算测试结果失败: " + e.getMessage());
+        Object personality = result.get("personality");
+        if (personality instanceof CbtiPersonalityEntity entity) {
+            result.put("personality", toPersonalityView(entity));
         }
+
+        return ApiResponse.success(result);
     }
 
     /**

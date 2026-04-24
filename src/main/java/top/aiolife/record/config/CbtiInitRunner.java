@@ -1,8 +1,6 @@
 package top.aiolife.record.config;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
@@ -18,8 +16,6 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 
 /**
  * CBTI 初始化任务
@@ -32,8 +28,6 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class CbtiInitRunner implements CommandLineRunner {
 
-    private static final long SYSTEM_USER_ID = 0L;
-
     private final CbtiConfig cbtiConfig;
 
     private final MinioConfig minioConfig;
@@ -42,82 +36,28 @@ public class CbtiInitRunner implements CommandLineRunner {
 
     private final ICbtiPersonalityMapper cbtiPersonalityMapper;
 
-    private final ObjectMapper objectMapper;
-
     @Override
     public void run(String... args) throws Exception {
         if (!cbtiConfig.isEnabled() || !cbtiConfig.isInitOnStartup()) {
             return;
         }
-        if (!StringUtils.hasText(cbtiConfig.getPersonalitiesPath())) {
-            log.warn("CBTI 初始化跳过：未配置 aio.life.serve.cbti.personalities-path");
-            return;
-        }
 
-        List<Map<String, Object>> list = loadPersonalities(cbtiConfig.getPersonalitiesPath());
+        LambdaQueryWrapper<CbtiPersonalityEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(CbtiPersonalityEntity::getIsDeleted, 0);
+        List<CbtiPersonalityEntity> list = cbtiPersonalityMapper.selectList(wrapper);
+        
         if (list.isEmpty()) {
-            log.warn("CBTI 初始化跳过：未读取到人格数据");
+            log.warn("CBTI 初始化跳过：数据库未查询到人格数据");
             return;
         }
 
         String bucketName = resolveBucketName();
-        String prefix = normalizePrefix(cbtiConfig.getObjectPrefix());
 
-        for (Map<String, Object> item : list) {
-            String code = Objects.toString(item.get("code"), null);
-            if (!StringUtils.hasText(code)) {
-                continue;
-            }
-            CbtiPersonalityEntity entity = upsertPersonality(item, prefix);
+        for (CbtiPersonalityEntity entity : list) {
             uploadCharacterIfPresent(bucketName, entity.getImageObject());
         }
 
-        log.info("CBTI 初始化完成：共处理 {} 条人格数据", list.size());
-    }
-
-    private List<Map<String, Object>> loadPersonalities(String path) throws Exception {
-        String content = Files.readString(Path.of(path));
-        return objectMapper.readValue(content, new TypeReference<List<Map<String, Object>>>() {
-        });
-    }
-
-    private CbtiPersonalityEntity upsertPersonality(Map<String, Object> item, String prefix) throws Exception {
-        String code = Objects.toString(item.get("code"), "");
-
-        LambdaQueryWrapper<CbtiPersonalityEntity> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(CbtiPersonalityEntity::getIsDeleted, 0);
-        wrapper.eq(CbtiPersonalityEntity::getCode, code);
-        CbtiPersonalityEntity exist = cbtiPersonalityMapper.selectOne(wrapper);
-
-        String imageName = Objects.toString(item.get("image"), "");
-        String imageObject = StringUtils.hasText(imageName) ? prefix + imageName : null;
-
-        Integer isSpecial = Boolean.TRUE.equals(item.get("isSpecial")) ? 1 : 0;
-
-        CbtiPersonalityEntity entity = exist != null ? exist : new CbtiPersonalityEntity();
-        entity.setCode(code);
-        entity.setName(Objects.toString(item.get("name"), null));
-        entity.setMotto(Objects.toString(item.get("motto"), null));
-        entity.setColor(Objects.toString(item.get("color"), null));
-        entity.setDescription(Objects.toString(item.get("description"), null));
-        entity.setTechStack(Objects.toString(item.get("techStack"), null));
-        entity.setSpirit(Objects.toString(item.get("spirit"), null));
-        entity.setImageObject(imageObject);
-        entity.setIsSpecial(isSpecial);
-
-        entity.setVector(objectMapper.writeValueAsString(item.get("vector")));
-        entity.setStrengths(objectMapper.writeValueAsString(item.get("strengths")));
-        entity.setWeaknesses(objectMapper.writeValueAsString(item.get("weaknesses")));
-
-        if (exist == null) {
-            entity.fillCreateCommonField(SYSTEM_USER_ID);
-            cbtiPersonalityMapper.insert(entity);
-            return entity;
-        }
-
-        entity.fillUpdateCommonField(SYSTEM_USER_ID);
-        cbtiPersonalityMapper.updateById(entity);
-        return entity;
+        log.info("CBTI 初始化完成：共处理 {} 条人格图片上传检查", list.size());
     }
 
     private void uploadCharacterIfPresent(String bucketName, String imageObject) {
@@ -154,12 +94,6 @@ public class CbtiInitRunner implements CommandLineRunner {
             return minioConfig.getBucketName();
         }
         return "aiolife";
-    }
-
-    private String normalizePrefix(String prefix) {
-        String p = StringUtils.hasText(prefix) ? prefix : "images/cbti/characters/";
-        p = p.startsWith("/") ? p.substring(1) : p;
-        return p.endsWith("/") ? p : p + "/";
     }
 }
 

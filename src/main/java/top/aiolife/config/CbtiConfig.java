@@ -23,8 +23,6 @@ public class CbtiConfig {
 
     private String objectPrefix = "images/cbti/characters/";
 
-    private String personalitiesPath;
-
     private String charactersDir;
 }
 

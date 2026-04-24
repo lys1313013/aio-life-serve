@@ -126,5 +126,4 @@ aio:
         init-on-startup: ${AIO_LIFE_CBTI_INIT_ON_STARTUP:true}
         bucket-name: ${AIO_LIFE_CBTI_BUCKET_NAME:}
         object-prefix: ${AIO_LIFE_CBTI_OBJECT_PREFIX:images/cbti/characters/}
-        personalities-path: ${AIO_LIFE_CBTI_PERSONALITIES_PATH:}
         characters-dir: ${AIO_LIFE_CBTI_CHARACTERS_DIR:src/main/resources/cbti/characters}

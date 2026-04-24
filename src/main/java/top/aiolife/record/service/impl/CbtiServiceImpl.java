@@ -230,9 +230,8 @@ public class CbtiServiceImpl implements ICbtiService {
         if (entity == null || !Objects.equals(entity.getUserId(), userId) || !Objects.equals(entity.getIsDeleted(), 0)) {
             return false;
         }
-        entity.setIsDeleted(1);
         entity.fillUpdateCommonField(userId);
-        return cbtiResultMapper.updateById(entity) > 0;
+        return cbtiResultMapper.deleteById(entity) > 0;
     }
 
     private boolean isCoffeeAddict(Map<String, Object> hiddenAnswers) {
