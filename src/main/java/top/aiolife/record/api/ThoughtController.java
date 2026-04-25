@@ -5,9 +5,11 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import dev.langchain4j.agent.tool.Tool;
 import top.aiolife.core.query.CommonQuery;
 import top.aiolife.core.resq.ApiResponse;
 import top.aiolife.core.resq.PageResp;
+import top.aiolife.mcp.annotation.McpOperation;
 import top.aiolife.record.mapper.IRelaEventMapper;
 import top.aiolife.record.mapper.IThoughtMapper;
 import top.aiolife.record.pojo.entity.ThoughtRelaEventEntity;
@@ -74,15 +76,28 @@ public class ThoughtController {
     }
     
     @PostMapping("/save")
+    @Tool("保存一条想法，并可附带多个关联事件")
+    @McpOperation(
+            name = "thought_save",
+            description = "保存一条想法，并可附带多个关联事件",
+            ignoreInputFields = {
+                    "id", "userId", "createUser", "createTime", "updateTime", "updateUser", "isDeleted",
+                    "events[].id", "events[].thoughtId", "events[].createUser", "events[].createTime",
+                    "events[].updateTime", "events[].updateUser", "events[].isDeleted"
+            }
+    )
     public ApiResponse<Boolean> save(@RequestBody ThoughtEntity entity) {
         entity.setUserId(StpUtil.getLoginIdAsLong());
         entity.setCreateUser(StpUtil.getLoginIdAsLong());
         entity.setUpdateTime(LocalDateTime.now());
         getBaseMapper().insert(entity);
-        entity.getEvents().forEach(eventEntity -> {
-            eventEntity.setThoughtId(entity.getId());
-            relaEventMapper.insert(eventEntity);
-        });
+        List<ThoughtRelaEventEntity> events = entity.getEvents();
+        if (events != null) {
+            events.forEach(eventEntity -> {
+                eventEntity.setThoughtId(entity.getId());
+                relaEventMapper.insert(eventEntity);
+            });
+        }
         return ApiResponse.success(true);
     }
 

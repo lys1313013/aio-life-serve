@@ -1,8 +1,15 @@
 package top.aiolife.config;
 
 import cn.dev33.satoken.context.SaHolder;
+import cn.dev33.satoken.context.SaTokenContextForThreadLocal;
+import cn.dev33.satoken.context.model.SaRequest;
+import cn.dev33.satoken.context.model.SaResponse;
+import cn.dev33.satoken.context.model.SaStorage;
+import cn.dev33.satoken.context.second.SaTokenSecondContext;
 import cn.dev33.satoken.interceptor.SaInterceptor;
+import cn.dev33.satoken.SaManager;
 import cn.dev33.satoken.stp.StpUtil;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.lang.NonNull;
@@ -18,6 +25,37 @@ public class SaTokenConfig implements WebMvcConfigurer {
 
     private final ApiKeyInterceptor apiKeyInterceptor;
     private final UserLastActiveInterceptor userLastActiveInterceptor;
+
+    @PostConstruct
+    public void initSecondContext() {
+        SaTokenContextForThreadLocal threadLocalContext = new SaTokenContextForThreadLocal();
+        SaManager.setSaTokenSecondContext(new SaTokenSecondContext() {
+            @Override
+            public SaRequest getRequest() {
+                return threadLocalContext.getRequest();
+            }
+
+            @Override
+            public SaResponse getResponse() {
+                return threadLocalContext.getResponse();
+            }
+
+            @Override
+            public SaStorage getStorage() {
+                return threadLocalContext.getStorage();
+            }
+
+            @Override
+            public boolean matchPath(String pattern, String path) {
+                return threadLocalContext.matchPath(pattern, path);
+            }
+
+            @Override
+            public boolean isValid() {
+                return threadLocalContext.isValid();
+            }
+        });
+    }
 
     @Override
     public void addInterceptors(@NonNull InterceptorRegistry registry) {
