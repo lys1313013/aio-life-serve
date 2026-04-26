@@ -68,8 +68,8 @@ public class TimeRecordController {
      * 查询指定日期的记录
      * @param query 查询参数
      */
-    @PostMapping("/queryForWeek")
-    public ApiResponse<List<TimeRecordEntity>> queryForWeek(
+    @PostMapping("/queryByDateRange")
+    public ApiResponse<List<TimeRecordEntity>> queryByDateRange(
             @RequestBody CommonQuery<TimeWeekQuery> query) {
         long userId = StpUtil.getLoginIdAsLong();
         LambdaQueryWrapper<TimeRecordEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
