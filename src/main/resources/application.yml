@@ -7,6 +7,8 @@ spring:
     name: aio-life-serve
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
+    serialization:
+      write-dates-as-timestamps: false
   datasource:
     username: aio-life
     password: ${AIO_LIFE_DB_PASSWORD:root}

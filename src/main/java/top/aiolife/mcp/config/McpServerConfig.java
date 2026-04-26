@@ -24,9 +24,10 @@ public class McpServerConfig {
     public static final String LOGIN_ID_CONTEXT_KEY = "loginId";
 
     @Bean
-    public WebMvcStreamableServerTransportProvider webMvcStreamableServerTransportProvider() {
+    public WebMvcStreamableServerTransportProvider webMvcStreamableServerTransportProvider(McpJsonConfig mcpJsonConfig) {
         return WebMvcStreamableServerTransportProvider.builder()
                 .mcpEndpoint("/mcp")
+                .jsonMapper(mcpJsonConfig.get())
                 .contextExtractor(serverRequest -> {
                     java.util.Map<String, Object> context = new java.util.HashMap<>();
                     context.put(LOGIN_ID_CONTEXT_KEY, StpUtil.getLoginIdDefaultNull());
