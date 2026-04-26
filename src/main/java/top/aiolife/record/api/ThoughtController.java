@@ -15,6 +15,8 @@ import top.aiolife.record.mapper.IThoughtMapper;
 import top.aiolife.record.pojo.entity.ThoughtRelaEventEntity;
 import top.aiolife.record.pojo.entity.ThoughtEntity;
 import top.aiolife.record.pojo.req.CommonReq;
+import top.aiolife.record.pojo.req.ThoughtSaveEventReq;
+import top.aiolife.record.pojo.req.ThoughtSaveReq;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -79,22 +81,22 @@ public class ThoughtController {
     @Tool("保存一条想法，并可附带多个关联事件")
     @McpOperation(
             name = "thought_save",
-            description = "保存一条想法，并可附带多个关联事件",
-            ignoreInputFields = {
-                    "id", "userId", "createUser", "createTime", "updateTime", "updateUser", "isDeleted",
-                    "events[].id", "events[].thoughtId", "events[].createUser", "events[].createTime",
-                    "events[].updateTime", "events[].updateUser", "events[].isDeleted"
-            }
+            description = "保存一条想法，并可附带多个关联事件"
     )
-    public ApiResponse<Boolean> save(@RequestBody ThoughtEntity entity) {
-        entity.setUserId(StpUtil.getLoginIdAsLong());
-        entity.setCreateUser(StpUtil.getLoginIdAsLong());
+    public ApiResponse<Boolean> save(@RequestBody ThoughtSaveReq req) {
+        Long loginId = StpUtil.getLoginIdAsLong();
+        ThoughtEntity entity = new ThoughtEntity();
+        entity.setContent(req.getContent());
+        entity.setUserId(loginId);
+        entity.setCreateUser(loginId);
         entity.setUpdateTime(LocalDateTime.now());
         getBaseMapper().insert(entity);
-        List<ThoughtRelaEventEntity> events = entity.getEvents();
+        List<ThoughtSaveEventReq> events = req.getEvents();
         if (events != null) {
-            events.forEach(eventEntity -> {
+            events.forEach(eventReq -> {
+                ThoughtRelaEventEntity eventEntity = new ThoughtRelaEventEntity();
                 eventEntity.setThoughtId(entity.getId());
+                eventEntity.setContent(eventReq.getContent());
                 relaEventMapper.insert(eventEntity);
             });
         }
