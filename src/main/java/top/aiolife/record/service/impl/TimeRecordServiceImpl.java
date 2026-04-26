@@ -11,6 +11,7 @@ import top.aiolife.record.convertor.TimeRecordConvertor;
 import top.aiolife.record.mapper.ITimeRecordMapper;
 import top.aiolife.record.pojo.entity.ExerciseRecordEntity;
 import top.aiolife.record.pojo.entity.TimeRecordEntity;
+import top.aiolife.record.pojo.req.ExerciseRecordReq;
 import top.aiolife.record.pojo.req.TimeRecordReq;
 import top.aiolife.record.pojo.vo.RecommendNextVO;
 import top.aiolife.record.service.IExerciseRecordService;
@@ -42,7 +43,7 @@ public class TimeRecordServiceImpl extends ServiceImpl<ITimeRecordMapper, TimeRe
     @Transactional(rollbackFor = Exception.class)
     public void saveTimeRecord(TimeRecordReq timeRecordReq) {
         TimeRecordEntity entity = TimeRecordConvertor.INSTANCE.Req2Entity(timeRecordReq);
-        List<ExerciseRecordEntity> exerciseRecordEntities = timeRecordReq.getExercises();
+        List<ExerciseRecordReq> exerciseRecordReqs = timeRecordReq.getExercises();
 
         long userId = StpUtil.getLoginIdAsLong();
         entity.setUserId(userId);
@@ -60,16 +61,20 @@ public class TimeRecordServiceImpl extends ServiceImpl<ITimeRecordMapper, TimeRe
 
         this.save(entity);
 
-        if (exerciseRecordEntities != null && !exerciseRecordEntities.isEmpty()) {
+        if (exerciseRecordReqs != null && !exerciseRecordReqs.isEmpty()) {
             List<ExerciseRecordEntity> validExercises = new java.util.ArrayList<>();
-            for (ExerciseRecordEntity exercise : exerciseRecordEntities) {
-                if (SysUtil.isEmpty(exercise.getExerciseTypeId())) {
+            for (ExerciseRecordReq exerciseReq : exerciseRecordReqs) {
+                if (SysUtil.isEmpty(exerciseReq.getExerciseTypeId())) {
                     continue;
                 }
+                ExerciseRecordEntity exercise = new ExerciseRecordEntity();
                 exercise.setUserId(userId);
                 exercise.setTimeId(entity.getId());
                 exercise.fillCreateCommonField(userId);
                 exercise.setExerciseDate(entity.getDate());
+                exercise.setExerciseTypeId(exerciseReq.getExerciseTypeId());
+                exercise.setExerciseCount(exerciseReq.getExerciseCount());
+                exercise.setDescription(exerciseReq.getDescription());
                 validExercises.add(exercise);
             }
             if (!validExercises.isEmpty()) {
@@ -82,7 +87,7 @@ public class TimeRecordServiceImpl extends ServiceImpl<ITimeRecordMapper, TimeRe
     @Transactional(rollbackFor = Exception.class)
     public void updateTimeRecord(TimeRecordReq timeRecordReq) {
         TimeRecordEntity entity = TimeRecordConvertor.INSTANCE.Req2Entity(timeRecordReq);
-        List<ExerciseRecordEntity> exerciseRecordEntities = timeRecordReq.getExercises();
+        List<ExerciseRecordReq> exerciseRecordReqs = timeRecordReq.getExercises();
 
         long userId = StpUtil.getLoginIdAsLong();
         entity.setUserId(userId);
@@ -104,19 +109,21 @@ public class TimeRecordServiceImpl extends ServiceImpl<ITimeRecordMapper, TimeRe
                 .eq(ExerciseRecordEntity::getUserId, userId));
 
         // 添加新的运动记录
-        if (exerciseRecordEntities != null && !exerciseRecordEntities.isEmpty()) {
+        if (exerciseRecordReqs != null && !exerciseRecordReqs.isEmpty()) {
             List<ExerciseRecordEntity> validExercises = new java.util.ArrayList<>();
-            for (ExerciseRecordEntity exercise : exerciseRecordEntities) {
-                if (SysUtil.isEmpty(exercise.getExerciseTypeId())) {
+            for (ExerciseRecordReq exerciseReq : exerciseRecordReqs) {
+                if (SysUtil.isEmpty(exerciseReq.getExerciseTypeId())) {
                     continue;
                 }
+                ExerciseRecordEntity exercise = new ExerciseRecordEntity();
                 exercise.setUserId(userId);
                 exercise.setTimeId(entity.getId());
-
-                // 新增记录，设置创建信息
                 exercise.fillCreateCommonField(userId);
                 exercise.setId(null);
                 exercise.setExerciseDate(entity.getDate());
+                exercise.setExerciseTypeId(exerciseReq.getExerciseTypeId());
+                exercise.setExerciseCount(exerciseReq.getExerciseCount());
+                exercise.setDescription(exerciseReq.getDescription());
                 validExercises.add(exercise);
             }
             if (!validExercises.isEmpty()) {

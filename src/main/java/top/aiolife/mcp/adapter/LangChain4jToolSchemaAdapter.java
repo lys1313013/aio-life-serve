@@ -3,6 +3,8 @@ package top.aiolife.mcp.adapter;
 import dev.langchain4j.agent.tool.ToolSpecification;
 import io.modelcontextprotocol.spec.McpSchema;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
+import top.aiolife.mcp.annotation.McpField;
 import top.aiolife.mcp.annotation.McpOperation;
 
 import java.lang.reflect.Field;
@@ -118,7 +120,12 @@ public class LangChain4jToolSchemaAdapter {
             if (ignoreFields.contains(fieldPath)) {
                 continue;
             }
-            properties.put(field.getName(), buildSchema(field.getGenericType(), fieldPath, ignoreFields));
+            Map<String, Object> fieldSchema = buildSchema(field.getGenericType(), fieldPath, ignoreFields);
+            McpField mcpField = field.getAnnotation(McpField.class);
+            if (mcpField != null && StringUtils.hasText(mcpField.description())) {
+                fieldSchema.put("description", mcpField.description());
+            }
+            properties.put(field.getName(), fieldSchema);
             if (field.getType().isPrimitive()) {
                 required.add(field.getName());
             }

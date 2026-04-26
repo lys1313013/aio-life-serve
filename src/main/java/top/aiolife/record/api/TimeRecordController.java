@@ -218,6 +218,11 @@ public class TimeRecordController {
     }
 
     @PostMapping("/save")
+    @Tool("保存时间记录")
+    @McpOperation(
+            name = "time_record_save",
+            description = "保存时间记录"
+    )
     public ApiResponse<Boolean> save(@RequestBody TimeRecordReq timeRecordReq) {
         timeRecordService.saveTimeRecord(timeRecordReq);
         return ApiResponse.success();
