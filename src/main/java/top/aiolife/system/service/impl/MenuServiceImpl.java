@@ -281,8 +281,9 @@ public class MenuServiceImpl implements IMenuService {
         if (userRoles != null && userRoles.contains("admin")) {
             return true;
         }
+        // 没有指定角色，允许所有用户访问
         if (!StringUtils.hasText(menuRoles)) {
-            return false;
+            return true;
         }
         Set<String> allowed = parseRoles(menuRoles);
         if (allowed.isEmpty()) {
