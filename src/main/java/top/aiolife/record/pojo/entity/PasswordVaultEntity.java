@@ -37,7 +37,7 @@ public class PasswordVaultEntity extends BaseEntity {
     private String category;
 
     /**
-     * 账号（SM4加密存储）
+     * 账号
      */
     private String username;
 
