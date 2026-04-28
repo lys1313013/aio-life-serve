@@ -60,8 +60,8 @@ public class ApiKeyInterceptor implements HandlerInterceptor {
             throw new NotLoginException("API Key 已过期", "API_KEY", apiKeyStr);
         }
 
-        // 5. 自动登录 (仅限本次请求上下文)
-        StpUtil.login(apiKeyEntity.getUserId());
+        // 5. 临时身份切换 (仅限本次请求上下文，不产生真实会话)
+        StpUtil.switchTo(apiKeyEntity.getUserId());
         
         // 6. 将认证信息存入 SaStorage，以便后续 SaInterceptor 跳过校验
         SaHolder.getStorage().set("API_KEY_ID", apiKeyEntity.getId());
@@ -83,8 +83,8 @@ public class ApiKeyInterceptor implements HandlerInterceptor {
                     response.getStatus(),
                     getIpAddress(request)
             );
-            // 本次请求结束，注销登录，保持会话清洁
-            StpUtil.logout();
+            // 本次请求结束，结束身份切换，保持会话清洁
+            StpUtil.endSwitch();
         }
     }
 
