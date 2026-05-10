@@ -16,6 +16,7 @@ public class ThoughtVO {
     private Long id;
     private Long userId;
     private String content;
+    private Integer isPinned;
     private String createTime;
 
     private List<ThoughtRelaEventEntity> events;

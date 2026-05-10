@@ -15,5 +15,7 @@ public class ThoughtSaveReq {
 
     private String content;
 
+    private Integer isPinned;
+
     private List<ThoughtSaveEventReq> events;
 }

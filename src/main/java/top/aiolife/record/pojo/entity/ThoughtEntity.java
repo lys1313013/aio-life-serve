@@ -20,6 +20,8 @@ public class ThoughtEntity extends BaseEntity {
 
     private String content;
 
+    private Integer isPinned;
+
     @TableField(exist = false)
     private List<ThoughtRelaEventEntity> events;
 }

@@ -19,6 +19,7 @@ import top.aiolife.record.pojo.req.ThoughtSaveEventReq;
 import top.aiolife.record.pojo.req.ThoughtSaveReq;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -90,6 +91,9 @@ public class ThoughtController {
         entity.setUserId(loginId);
         entity.setCreateUser(loginId);
         entity.setUpdateTime(LocalDateTime.now());
+        if (req.getIsPinned() != null) {
+            entity.setIsPinned(req.getIsPinned());
+        }
         getBaseMapper().insert(entity);
         List<ThoughtSaveEventReq> events = req.getEvents();
         if (events != null) {
@@ -138,4 +142,32 @@ public class ThoughtController {
         return ApiResponse.success(true);
     }
 
+    /**
+     * 获取看板展示的闪念列表
+     */
+    @GetMapping("/dashboard")
+    public ApiResponse<List<ThoughtEntity>> dashboardThoughts() {
+        long userId = StpUtil.getLoginIdAsLong();
+        LambdaQueryWrapper<ThoughtEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(ThoughtEntity::getUserId, userId);
+        wrapper.eq(ThoughtEntity::getIsPinned, 1);
+        wrapper.orderByDesc(ThoughtEntity::getUpdateTime);
+        List<ThoughtEntity> list = getBaseMapper().selectList(wrapper);
+        
+        // 查询明细
+        List<Long> thoughtIdList = list.stream().map(ThoughtEntity::getId).toList();
+        if (!thoughtIdList.isEmpty()) {
+            LambdaQueryWrapper<ThoughtRelaEventEntity> relaEventLambdaQueryWrapper = new LambdaQueryWrapper<>();
+            relaEventLambdaQueryWrapper.in(ThoughtRelaEventEntity::getThoughtId, thoughtIdList);
+            List<ThoughtRelaEventEntity> thoughtRelaEventEntityList = relaEventMapper.selectList(relaEventLambdaQueryWrapper);
+            // 关联事件
+            list.forEach(thoughtVO -> {
+                List<ThoughtRelaEventEntity> eventEntityList = thoughtRelaEventEntityList.stream()
+                        .filter(eventEntity -> eventEntity.getThoughtId().equals(thoughtVO.getId())).toList();
+                thoughtVO.setEvents(eventEntityList);
+            });
+        }
+        
+        return ApiResponse.success(list);
+    }
 }
