@@ -22,6 +22,7 @@ import top.aiolife.record.service.ISysDictService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -79,23 +80,38 @@ public class ExpController {
         return ApiResponse.success(objectPageResp);
     }
 
-    @PostMapping("/insertOrUpdate")
-    public ApiResponse<Boolean> insertOrUpdate(@RequestBody ExpenseEntity entity) {
+    @PostMapping
+    public ApiResponse<Boolean> insert(@RequestBody ExpenseEntity entity) {
         Long userId = StpUtil.getLoginIdAsLong();
         entity.setUserId(userId);
         // 新增时，交易金额为空时，默认设置为记账金额
-        if (entity.getId() == null && entity.getTransactionAmt() == null) {
+        if (entity.getTransactionAmt() == null) {
             entity.setTransactionAmt(entity.getAmt());
         }
-        
-        if (entity.getId() == null) {
-            getBaseMapper().insert(entity);
-        } else {
-            LambdaQueryWrapper<ExpenseEntity> wrapper = new LambdaQueryWrapper<>();
-            wrapper.eq(ExpenseEntity::getId, entity.getId());
-            wrapper.eq(ExpenseEntity::getUserId, userId);
-            getBaseMapper().update(entity, wrapper);
+        // amt 为空的时候，默认transactionAmt
+        if (entity.getAmt() == null) {
+            entity.setAmt(entity.getTransactionAmt());
         }
+        getBaseMapper().insert(entity);
+        return ApiResponse.success(true);
+    }
+
+    @PutMapping
+    public ApiResponse<Boolean> update(@RequestBody ExpenseEntity entity) {
+        Long userId = StpUtil.getLoginIdAsLong();
+        entity.setUserId(userId);
+        // 更新时，交易金额为空时，默认设置为记账金额
+        if (entity.getTransactionAmt() == null) {
+            entity.setTransactionAmt(entity.getAmt());
+        }
+        // amt 为空的时候，默认transactionAmt
+        if (entity.getAmt() == null) {
+            entity.setAmt(entity.getTransactionAmt());
+        }
+        LambdaQueryWrapper<ExpenseEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(ExpenseEntity::getId, entity.getId());
+        wrapper.eq(ExpenseEntity::getUserId, userId);
+        getBaseMapper().update(entity, wrapper);
         return ApiResponse.success(true);
     }
 
