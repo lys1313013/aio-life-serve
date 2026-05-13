@@ -13,7 +13,6 @@ import top.aiolife.record.service.IPasswordVaultService;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * 密码库控制器
@@ -107,7 +106,19 @@ public class PasswordVaultController {
      */
     @GetMapping("/categories")
     public ApiResponse<List<String>> categories() {
-        List<String> categories = Arrays.asList("工作", "生活", "金融", "社交", "其他");
-        return ApiResponse.success(categories);
+        long userId = StpUtil.getLoginIdAsLong();
+        LambdaQueryWrapper<PasswordVaultEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(PasswordVaultEntity::getUserId, userId);
+        wrapper.select(PasswordVaultEntity::getCategory);
+        wrapper.groupBy(PasswordVaultEntity::getCategory);
+        List<PasswordVaultEntity> list = passwordVaultMapper.selectList(wrapper);
+
+        java.util.Set<String> categorySet = new java.util.LinkedHashSet<>(Arrays.asList("工作", "生活", "学习", "金融", "社交", "游戏", "其他"));
+        for (PasswordVaultEntity entity : list) {
+            if (entity.getCategory() != null && !entity.getCategory().isEmpty()) {
+                categorySet.add(entity.getCategory());
+            }
+        }
+        return ApiResponse.success(new java.util.ArrayList<>(categorySet));
     }
 }
