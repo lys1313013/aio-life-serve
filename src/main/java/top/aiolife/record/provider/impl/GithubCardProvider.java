@@ -13,6 +13,9 @@ import top.aiolife.record.pojo.vo.DashboardCardVO;
 import top.aiolife.record.provider.DashboardCardProvider;
 import top.aiolife.record.service.IUserBindService;
 
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -88,6 +91,15 @@ public class GithubCardProvider implements DashboardCardProvider {
 
                 // 计算今日提交数
                 int todayContributions = getTodayContributions(contributionCalendar);
+                
+                // GitHub 的 contributionCalendar 存在缓存延迟。如果日历显示今天为0，尝试通过 Events API 获取实时数据补偿
+                if (todayContributions == 0) {
+                    int realTimeContributions = getRealTimeTodayContributions(bind.getPlatformUsername(), bind.getAccessToken());
+                    if (realTimeContributions > 0) {
+                        todayContributions = realTimeContributions;
+                    }
+                }
+
                 card.setValue(todayContributions + "");
                 card.setValueColor(todayContributions > 0 ? "#3FB27F" : "red");
                 card.setTitleClickUrl("https://github.com/" + bind.getPlatformUsername());
@@ -127,7 +139,57 @@ public class GithubCardProvider implements DashboardCardProvider {
     }
 
     /**
+     * 通过 Events API 获取今日实时的活动数，用于补偿 contributionCalendar 的缓存延迟
+     */
+    private int getRealTimeTodayContributions(String username, String token) {
+        try (HttpResponse response = HttpRequest.get("https://api.github.com/users/" + username + "/events/public")
+                .header("Authorization", "Bearer " + token)
+                .execute()) {
+            if (response.isOk()) {
+                JSONArray events = JSON.parseArray(response.body());
+                int count = 0;
+                LocalDate today = LocalDate.now();
+                for (int i = 0; i < events.size(); i++) {
+                    JSONObject event = events.getJSONObject(i);
+                    String createdAt = event.getString("created_at");
+                    if (createdAt != null) {
+                        LocalDate eventDate = Instant.parse(createdAt).atZone(ZoneId.systemDefault()).toLocalDate();
+                        if (today.equals(eventDate)) {
+                            String type = event.getString("type");
+                            // 常见的计入 contribution 的事件类型
+                            if ("PushEvent".equals(type) || "IssuesEvent".equals(type) || "PullRequestEvent".equals(type) || "CreateEvent".equals(type)) {
+                                // 这里简化处理：只要有相关事件，就累加
+                                // 如果是 PushEvent，原本应按 commits 数量，但为了简单补偿直接按事件数或简单提取 size
+                                if ("PushEvent".equals(type)) {
+                                    JSONObject payload = event.getJSONObject("payload");
+                                    if (payload != null && payload.containsKey("size")) {
+                                        count += payload.getIntValue("size");
+                                    } else {
+                                        count++;
+                                    }
+                                } else {
+                                    count++;
+                                }
+                            }
+                        } else if (eventDate.isBefore(today)) {
+                            // 因为 events 是按时间倒序排列的，一旦遇到早于今天的事件，就可以提前结束循环
+                            break;
+                        }
+                    }
+                }
+                return count;
+            } else {
+                log.error("GitHub Events API error: status={}, body={}", response.getStatus(), response.body());
+            }
+        } catch (Exception e) {
+            log.error("获取 GitHub Events 实时数据失败", e);
+        }
+        return 0;
+    }
+
+    /**
      * 计算当前连续提交天数
+
      *
      * @param calendar 贡献日历
      * @return 连续提交天数
