@@ -103,6 +103,32 @@ public class MenuServiceImpl implements IMenuService {
         return toAdminVo(exist);
     }
 
+    @Override
+    public void delete(long id, long userId) {
+        SysMenuEntity exist = sysMenuMapper.selectById(id);
+        if (exist == null || !Objects.equals(exist.getIsDeleted(), 0)) {
+            throw new IllegalArgumentException("菜单不存在或已删除");
+        }
+
+        // 核心菜单保护（系统管理 / 权限菜单禁止删除）
+        if ("/system".equals(exist.getPath()) || "/system/menu".equals(exist.getPath())) {
+            throw new IllegalArgumentException("核心菜单不允许删除");
+        }
+
+        // 检查是否存在子菜单
+        LambdaQueryWrapper<SysMenuEntity> childWrapper = new LambdaQueryWrapper<>();
+        childWrapper.eq(SysMenuEntity::getParentId, id);
+        childWrapper.eq(SysMenuEntity::getIsDeleted, 0);
+        if (sysMenuMapper.selectCount(childWrapper) > 0) {
+            throw new IllegalArgumentException("该菜单下存在子菜单，请先删除或移走子菜单");
+        }
+
+        // 逻辑删除
+        exist.setIsDeleted(1);
+        exist.fillUpdateCommonField(userId);
+        sysMenuMapper.updateById(exist);
+    }
+
     private List<SysMenuEntity> listEnabledMenus() {
         LambdaQueryWrapper<SysMenuEntity> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(SysMenuEntity::getIsDeleted, 0);

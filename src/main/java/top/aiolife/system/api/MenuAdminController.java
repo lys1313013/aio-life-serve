@@ -88,13 +88,9 @@ public class MenuAdminController {
      * @return 统一返回结构，data 为新增后的菜单节点
      */
     @PostMapping
-    public ApiResponse<MenuAdminVO> create(@RequestBody MenuSaveReq req) {
+    public ApiResponse<MenuAdminVO> create(@RequestBody MenuSaveReq req) throws Exception {
         long userId = StpUtil.getLoginIdAsLong();
-        try {
-            return ApiResponse.success(menuService.create(req, userId));
-        } catch (Exception e) {
-            return ApiResponse.error(ResponseCodeConst.RSCODE_COMMON_FAIL, e.getMessage());
-        }
+        return ApiResponse.success(menuService.create(req, userId));
     }
 
     /**
@@ -105,13 +101,9 @@ public class MenuAdminController {
      * @return 统一返回结构，data 为更新后的菜单节点
      */
     @PutMapping("/{id}")
-    public ApiResponse<MenuAdminVO> update(@PathVariable long id, @RequestBody MenuSaveReq req) {
+    public ApiResponse<MenuAdminVO> update(@PathVariable long id, @RequestBody MenuSaveReq req) throws Exception {
         long userId = StpUtil.getLoginIdAsLong();
-        try {
-            return ApiResponse.success(menuService.update(id, req, userId));
-        } catch (Exception e) {
-            return ApiResponse.error(ResponseCodeConst.RSCODE_COMMON_FAIL, e.getMessage());
-        }
+        return ApiResponse.success(menuService.update(id, req, userId));
     }
 
     /**
@@ -122,17 +114,26 @@ public class MenuAdminController {
      * @return 统一返回结构，data 为更新后的菜单节点
      */
     @PutMapping("/{id}/status")
-    public ApiResponse<MenuAdminVO> updateStatus(@PathVariable long id, @RequestBody Map<String, Object> body) {
+    public ApiResponse<MenuAdminVO> updateStatus(@PathVariable long id, @RequestBody Map<String, Object> body) throws Exception {
         long userId = StpUtil.getLoginIdAsLong();
-        try {
-            Object statusObj = body == null ? null : body.get("status");
-            if (!(statusObj instanceof Number n)) {
-                return ApiResponse.error(ResponseCodeConst.RECODE_PARAM_FAIL, "status 不能为空");
-            }
-            return ApiResponse.success(menuService.updateStatus(id, n.intValue(), userId));
-        } catch (Exception e) {
-            return ApiResponse.error(ResponseCodeConst.RSCODE_COMMON_FAIL, e.getMessage());
+        Object statusObj = body == null ? null : body.get("status");
+        if (!(statusObj instanceof Number n)) {
+            return ApiResponse.error(ResponseCodeConst.RECODE_PARAM_FAIL, "status 不能为空");
         }
+        return ApiResponse.success(menuService.updateStatus(id, n.intValue(), userId));
+    }
+
+    /**
+     * 删除菜单节点。
+     *
+     * @param id 菜单ID
+     * @return 统一返回结构
+     */
+    @DeleteMapping("/{id}")
+    public ApiResponse<Void> delete(@PathVariable long id) {
+        long userId = StpUtil.getLoginIdAsLong();
+        menuService.delete(id, userId);
+        return ApiResponse.success();
     }
 
 }
