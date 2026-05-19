@@ -1,11 +1,9 @@
 package top.aiolife.mcp.adapter;
 
 import dev.langchain4j.agent.tool.ToolSpecification;
+import dev.langchain4j.model.output.structured.Description;
 import io.modelcontextprotocol.spec.McpSchema;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
-import top.aiolife.mcp.annotation.McpField;
-import top.aiolife.mcp.annotation.McpOperation;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.GenericArrayType;
@@ -37,10 +35,8 @@ public class LangChain4jToolSchemaAdapter {
     public McpSchema.Tool toMcpTool(String name,
                                     String description,
                                     java.lang.reflect.Method method,
-                                    ToolSpecification toolSpecification,
-                                    McpOperation operation) {
-        Set<String> ignoreFields = Set.of(operation.ignoreInputFields());
-        Map<String, Object> schemaMap = buildSchema(method.getGenericParameterTypes()[0], "", ignoreFields);
+                                    ToolSpecification toolSpecification) {
+        Map<String, Object> schemaMap = buildSchema(method.getGenericParameterTypes()[0], "");
         McpSchema.JsonSchema inputSchema = new McpSchema.JsonSchema(
                 stringValue(schemaMap.get("type")),
                 mapValue(schemaMap.get("properties")),
@@ -60,11 +56,11 @@ public class LangChain4jToolSchemaAdapter {
         );
     }
 
-    private Map<String, Object> buildSchema(Type type, String path, Set<String> ignoreFields) {
+    private Map<String, Object> buildSchema(Type type, String path) {
         if (type instanceof GenericArrayType genericArrayType) {
             Map<String, Object> schema = new LinkedHashMap<>();
             schema.put("type", "array");
-            schema.put("items", buildSchema(genericArrayType.getGenericComponentType(), appendArray(path), ignoreFields));
+            schema.put("items", buildSchema(genericArrayType.getGenericComponentType(), appendArray(path)));
             return schema;
         }
 
@@ -96,7 +92,7 @@ public class LangChain4jToolSchemaAdapter {
         if (rawClass.isArray()) {
             Map<String, Object> schema = new LinkedHashMap<>();
             schema.put("type", "array");
-            schema.put("items", buildSchema(rawClass.getComponentType(), appendArray(path), ignoreFields));
+            schema.put("items", buildSchema(rawClass.getComponentType(), appendArray(path)));
             return schema;
         }
         if (Collection.class.isAssignableFrom(rawClass)) {
@@ -106,7 +102,7 @@ public class LangChain4jToolSchemaAdapter {
             }
             Map<String, Object> schema = new LinkedHashMap<>();
             schema.put("type", "array");
-            schema.put("items", buildSchema(itemType, appendArray(path), ignoreFields));
+            schema.put("items", buildSchema(itemType, appendArray(path)));
             return schema;
         }
         if (Map.class.isAssignableFrom(rawClass) || Object.class.equals(rawClass)) {
@@ -117,13 +113,10 @@ public class LangChain4jToolSchemaAdapter {
         List<String> required = new ArrayList<>();
         for (Field field : collectFields(rawClass)) {
             String fieldPath = path.isEmpty() ? field.getName() : path + "." + field.getName();
-            if (ignoreFields.contains(fieldPath)) {
-                continue;
-            }
-            Map<String, Object> fieldSchema = buildSchema(field.getGenericType(), fieldPath, ignoreFields);
-            McpField mcpField = field.getAnnotation(McpField.class);
-            if (mcpField != null && StringUtils.hasText(mcpField.description())) {
-                fieldSchema.put("description", mcpField.description());
+            Map<String, Object> fieldSchema = buildSchema(field.getGenericType(), fieldPath);
+            Description desc = field.getAnnotation(Description.class);
+            if (desc != null && desc.value().length > 0) {
+                fieldSchema.put("description", String.join("\n", desc.value()));
             }
             properties.put(field.getName(), fieldSchema);
             if (field.getType().isPrimitive()) {

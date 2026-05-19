@@ -7,12 +7,10 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import dev.langchain4j.agent.tool.Tool;
 import org.springframework.web.bind.annotation.*;
 import top.aiolife.core.query.CommonQuery;
 import top.aiolife.core.resq.ApiResponse;
 import top.aiolife.core.resq.PageResp;
-import top.aiolife.mcp.annotation.McpOperation;
 import top.aiolife.record.pojo.entity.ExerciseRecordEntity;
 import top.aiolife.record.pojo.entity.TimeRecordEntity;
 import top.aiolife.record.pojo.query.TimeWeekQuery;
@@ -92,11 +90,6 @@ public class TimeRecordController {
      * @param req 查询参数（包含startDate和endDate）
      */
     @PostMapping("/queryByDateRangeForAI")
-    @Tool("查询指定日期范围内的所有时间记录")
-    @McpOperation(
-            name = "time_record_queryByDateRange",
-            description = "查询指定日期范围内的所有时间记录"
-    )
     public ApiResponse<List<TimeRecordDateRangeVO>> queryByDateRangeForAI(
             @RequestBody TimeRecordDateRangeReq req) {
         List<TimeRecordEntity> list = queryByDateRangeForAIList(req);
@@ -218,11 +211,6 @@ public class TimeRecordController {
     }
 
     @PostMapping("/save")
-    @Tool("保存时间记录")
-    @McpOperation(
-            name = "time_record_save",
-            description = "保存时间记录"
-    )
     public ApiResponse<Boolean> save(@RequestBody TimeRecordReq timeRecordReq) {
         timeRecordService.saveTimeRecord(timeRecordReq);
         return ApiResponse.success();

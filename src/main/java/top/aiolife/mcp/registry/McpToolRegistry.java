@@ -8,9 +8,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.RestController;
 import top.aiolife.mcp.adapter.LangChain4jToolSchemaAdapter;
-import top.aiolife.mcp.annotation.McpOperation;
+import top.aiolife.mcp.annotation.McpToolProvider;
 
 import jakarta.annotation.PostConstruct;
 import java.lang.reflect.Method;
@@ -20,15 +19,14 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * Controller MCP 工具注册表
+ * MCP 工具注册表
  *
  * @author Lys
- * @date 2026/04/25
  */
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class ControllerMcpToolRegistry {
+public class McpToolRegistry {
 
     private final org.springframework.context.ApplicationContext applicationContext;
     private final LangChain4jToolSchemaAdapter schemaAdapter;
@@ -37,8 +35,8 @@ public class ControllerMcpToolRegistry {
 
     @PostConstruct
     public void init() {
-        Map<String, Object> controllerBeans = applicationContext.getBeansWithAnnotation(RestController.class);
-        controllerBeans.values().forEach(this::registerControllerTools);
+        Map<String, Object> toolProviders = applicationContext.getBeansWithAnnotation(McpToolProvider.class);
+        toolProviders.values().forEach(this::registerTools);
         log.info("MCP 工具注册完成，共 {} 个", registeredTools.size());
     }
 
@@ -50,20 +48,19 @@ public class ControllerMcpToolRegistry {
         return registeredTools.get(name);
     }
 
-    private void registerControllerTools(Object bean) {
+    private void registerTools(Object bean) {
         Class<?> targetClass = AopUtils.getTargetClass(Objects.requireNonNull(bean));
         for (Method method : targetClass.getDeclaredMethods()) {
-            McpOperation mcpOperation = method.getAnnotation(McpOperation.class);
-            if (mcpOperation == null || method.getAnnotation(dev.langchain4j.agent.tool.Tool.class) == null) {
+            if (method.getAnnotation(dev.langchain4j.agent.tool.Tool.class) == null) {
                 continue;
             }
             if (method.getParameterCount() != 1) {
                 throw new IllegalStateException("MCP 工具目前仅支持单个入参方法: " + method);
             }
             ToolSpecification toolSpecification = ToolSpecifications.toolSpecificationFrom(method);
-            String toolName = StringUtils.hasText(mcpOperation.name()) ? mcpOperation.name() : toolSpecification.name();
-            String description = StringUtils.hasText(mcpOperation.description()) ? mcpOperation.description() : toolSpecification.description();
-            McpSchema.Tool mcpTool = schemaAdapter.toMcpTool(toolName, description, method, toolSpecification, mcpOperation);
+            String toolName = toolSpecification.name();
+            String description = toolSpecification.description();
+            McpSchema.Tool mcpTool = schemaAdapter.toMcpTool(toolName, description, method, toolSpecification);
             RegisteredMcpTool registeredMcpTool = new RegisteredMcpTool(
                     toolName,
                     description,
@@ -71,8 +68,7 @@ public class ControllerMcpToolRegistry {
                     method,
                     method.getParameterTypes()[0],
                     toolSpecification,
-                    mcpTool,
-                    mcpOperation
+                    mcpTool
             );
             RegisteredMcpTool existing = registeredTools.putIfAbsent(toolName, registeredMcpTool);
             if (existing != null) {
@@ -84,9 +80,6 @@ public class ControllerMcpToolRegistry {
 
     /**
      * 已注册的 MCP 工具
-     *
-     * @author Lys
-     * @date 2026/04/25
      */
     public record RegisteredMcpTool(
             String name,
@@ -95,7 +88,6 @@ public class ControllerMcpToolRegistry {
             Method method,
             Class<?> inputType,
             ToolSpecification toolSpecification,
-            McpSchema.Tool mcpTool,
-            McpOperation operation) {
+            McpSchema.Tool mcpTool) {
     }
 }

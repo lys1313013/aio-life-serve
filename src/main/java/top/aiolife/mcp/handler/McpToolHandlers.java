@@ -7,9 +7,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
-import top.aiolife.mcp.invoker.ControllerMcpToolInvoker;
+import top.aiolife.mcp.invoker.McpToolInvoker;
 import top.aiolife.mcp.config.McpServerConfig;
-import top.aiolife.mcp.registry.ControllerMcpToolRegistry;
+import top.aiolife.mcp.registry.McpToolRegistry;
 
 import java.util.List;
 
@@ -24,8 +24,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class McpToolHandlers {
 
-    private final ControllerMcpToolRegistry toolRegistry;
-    private final ControllerMcpToolInvoker toolInvoker;
+    private final McpToolRegistry toolRegistry;
+    private final McpToolInvoker toolInvoker;
 
     public List<McpServerFeatures.SyncToolSpecification> getToolSpecifications() {
         return toolRegistry.getAllTools().stream()

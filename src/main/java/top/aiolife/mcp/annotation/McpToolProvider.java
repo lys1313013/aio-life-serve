@@ -1,22 +1,21 @@
 package top.aiolife.mcp.annotation;
 
+import org.springframework.stereotype.Component;
+
+import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * MCP 字段描述注解
+ * 标记该类为 MCP 工具提供者
  *
  * @author Lys
- * @date 2026/04/26
  */
-@Target(ElementType.FIELD)
+@Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface McpField {
-
-    /**
-     * 字段描述
-     */
-    String description() default "";
+@Documented
+@Component
+public @interface McpToolProvider {
 }

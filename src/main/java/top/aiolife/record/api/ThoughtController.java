@@ -5,11 +5,9 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import dev.langchain4j.agent.tool.Tool;
 import top.aiolife.core.query.CommonQuery;
 import top.aiolife.core.resq.ApiResponse;
 import top.aiolife.core.resq.PageResp;
-import top.aiolife.mcp.annotation.McpOperation;
 import top.aiolife.record.mapper.IRelaEventMapper;
 import top.aiolife.record.mapper.IThoughtMapper;
 import top.aiolife.record.pojo.entity.ThoughtRelaEventEntity;
@@ -79,11 +77,6 @@ public class ThoughtController {
     }
     
     @PostMapping("/save")
-    @Tool("保存一条想法，并可附带多个关联事件")
-    @McpOperation(
-            name = "thought_save",
-            description = "保存一条想法，并可附带多个关联事件"
-    )
     public ApiResponse<Boolean> save(@RequestBody ThoughtSaveReq req) {
         Long loginId = StpUtil.getLoginIdAsLong();
         ThoughtEntity entity = new ThoughtEntity();

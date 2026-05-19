@@ -1,8 +1,8 @@
 package top.aiolife.record.pojo.req;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import dev.langchain4j.model.output.structured.Description;
 import lombok.Data;
-import top.aiolife.mcp.annotation.McpField;
 
 import java.time.LocalDate;
 
@@ -18,31 +18,31 @@ public class ExerciseRecordReq {
     /**
      * 主键ID
      */
-    @McpField(description = "主键ID，更新时必传")
+    @Description("主键ID，更新时必传")
     private String id;
 
     /**
      * 运动类型
      */
-    @McpField(description = "运动类型ID")
+    @Description("运动类型ID")
     private String exerciseTypeId;
 
     /**
      * 运动日期
      */
     @JsonFormat(pattern = "yyyy-MM-dd")
-    @McpField(description = "运动日期，格式：yyyy-MM-dd")
+    @Description("运动日期，格式：yyyy-MM-dd")
     private LocalDate exerciseDate;
 
     /**
      * 运动次数
      */
-    @McpField(description = "运动次数")
+    @Description("运动次数")
     private Integer exerciseCount;
 
     /**
      * 运动描述
      */
-    @McpField(description = "运动描述")
+    @Description("运动描述")
     private String description;
 }
