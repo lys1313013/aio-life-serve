@@ -17,8 +17,6 @@ public class CbtiConfig {
 
     private boolean enabled = true;
 
-    private boolean initOnStartup = true;
-
     private String bucketName;
 
     private String objectPrefix = "images/cbti/characters/";

@@ -3,7 +3,6 @@ package top.aiolife.record.config;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import top.aiolife.config.CbtiConfig;
@@ -18,7 +17,7 @@ import java.nio.file.Path;
 import java.util.List;
 
 /**
- * CBTI 初始化任务
+ * CBTI 图片初始化工具类（原本在启动时运行，现改为手动调用）
  *
  * @author Ethan
  * @date 2026/04/18
@@ -26,7 +25,7 @@ import java.util.List;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class CbtiInitRunner implements CommandLineRunner {
+public class CbtiImageInitUtil {
 
     private final CbtiConfig cbtiConfig;
 
@@ -36,9 +35,12 @@ public class CbtiInitRunner implements CommandLineRunner {
 
     private final ICbtiPersonalityMapper cbtiPersonalityMapper;
 
-    @Override
-    public void run(String... args) throws Exception {
-        if (!cbtiConfig.isEnabled() || !cbtiConfig.isInitOnStartup()) {
+    /**
+     * 手动触发初始化图片上传
+     */
+    public void initImages() {
+        if (!cbtiConfig.isEnabled()) {
+            log.warn("CBTI 未启用，跳过初始化");
             return;
         }
 
@@ -96,4 +98,3 @@ public class CbtiInitRunner implements CommandLineRunner {
         return "aiolife";
     }
 }
-

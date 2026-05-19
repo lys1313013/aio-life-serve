@@ -19,6 +19,7 @@ import top.aiolife.record.mapper.ICbtiPersonalityMapper;
 import top.aiolife.record.pojo.entity.CbtiPersonalityEntity;
 import top.aiolife.record.pojo.req.CbtiPersonalitySaveReq;
 import top.aiolife.record.pojo.vo.CbtiPersonalityAdminVO;
+import top.aiolife.record.config.CbtiImageInitUtil;
 
 import java.util.HashMap;
 import java.util.List;
@@ -48,6 +49,8 @@ public class CbtiAdminController {
     private final MinioConfig minioConfig;
 
     private final CbtiConfig cbtiConfig;
+
+    private final CbtiImageInitUtil cbtiImageInitUtil;
 
     @Value("${aio.life.serve.base-url}")
     private String serveBaseUrl;
@@ -198,6 +201,21 @@ public class CbtiAdminController {
             return ApiResponse.success(data);
         } catch (Exception e) {
             return ApiResponse.error(ResponseCodeConst.RSCODE_COMMON_FAIL, "上传失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 手动触发初始化 CBTI 人格图片。
+     *
+     * @return 统一返回结构，data 为是否触发成功
+     */
+    @PostMapping("/personalities/init-images")
+    public ApiResponse<Boolean> initImages() {
+        try {
+            cbtiImageInitUtil.initImages();
+            return ApiResponse.success(true);
+        } catch (Exception e) {
+            return ApiResponse.error(ResponseCodeConst.RSCODE_COMMON_FAIL, "初始化图片失败: " + e.getMessage());
         }
     }
 
