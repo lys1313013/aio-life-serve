@@ -125,7 +125,6 @@ aio:
         base-url: ${AIO_LIFE_MBTI_BASE_URL:https://api.devil.ai}
       cbti:
         enabled: ${AIO_LIFE_CBTI_ENABLED:true}
-        init-on-startup: ${AIO_LIFE_CBTI_INIT_ON_STARTUP:true}
         bucket-name: ${AIO_LIFE_CBTI_BUCKET_NAME:}
         object-prefix: ${AIO_LIFE_CBTI_OBJECT_PREFIX:images/cbti/characters/}
         characters-dir: ${AIO_LIFE_CBTI_CHARACTERS_DIR:src/main/resources/cbti/characters}
