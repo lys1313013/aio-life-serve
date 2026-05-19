@@ -36,7 +36,12 @@ public class LangChain4jToolSchemaAdapter {
                                     String description,
                                     java.lang.reflect.Method method,
                                     ToolSpecification toolSpecification) {
-        Map<String, Object> schemaMap = buildSchema(method.getGenericParameterTypes()[0], "");
+        Map<String, Object> schemaMap;
+        if (method.getParameterCount() == 0) {
+            schemaMap = objectSchema(Map.of(), List.of(), false);
+        } else {
+            schemaMap = buildSchema(method.getGenericParameterTypes()[0], "");
+        }
         McpSchema.JsonSchema inputSchema = new McpSchema.JsonSchema(
                 stringValue(schemaMap.get("type")),
                 mapValue(schemaMap.get("properties")),

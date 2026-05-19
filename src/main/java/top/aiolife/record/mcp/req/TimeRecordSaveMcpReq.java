@@ -36,6 +36,6 @@ public class TimeRecordSaveMcpReq {
     @Description("时长（分钟，必须是整数，不能使用数学表达式）")
     private Integer duration;
 
-    @Description("关联的练习记录列表")
+    @Description("关联的运动记录列表")
     private List<ExerciseRecordReq> exercises;
 }

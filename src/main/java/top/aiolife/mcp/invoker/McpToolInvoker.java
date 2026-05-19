@@ -43,8 +43,11 @@ public class McpToolInvoker {
 
     private Object invokeTool(McpToolRegistry.RegisteredMcpTool tool,
                               Map<String, Object> arguments) throws IllegalAccessException, InvocationTargetException {
-        Object input = objectMapper.convertValue(arguments, tool.inputType());
         tool.method().setAccessible(true);
+        if (tool.method().getParameterCount() == 0) {
+            return tool.method().invoke(tool.bean());
+        }
+        Object input = objectMapper.convertValue(arguments, tool.inputType());
         return tool.method().invoke(tool.bean(), input);
     }
 

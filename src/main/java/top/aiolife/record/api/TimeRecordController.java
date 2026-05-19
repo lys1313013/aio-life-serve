@@ -15,7 +15,7 @@ import top.aiolife.record.pojo.entity.ExerciseRecordEntity;
 import top.aiolife.record.pojo.entity.TimeRecordEntity;
 import top.aiolife.record.pojo.query.TimeWeekQuery;
 import top.aiolife.record.pojo.req.TimeRecordReq;
-import top.aiolife.record.pojo.req.TimeRecordDateRangeReq;
+import top.aiolife.record.mcp.req.TimeRecordDateRangeMcpReq;
 import top.aiolife.record.convertor.TimeRecordConvertor;
 import top.aiolife.record.pojo.vo.RecommendNextVO;
 import top.aiolife.record.pojo.vo.TimeRecordDateRangeVO;
@@ -91,7 +91,7 @@ public class TimeRecordController {
      */
     @PostMapping("/queryByDateRangeForAI")
     public ApiResponse<List<TimeRecordDateRangeVO>> queryByDateRangeForAI(
-            @RequestBody TimeRecordDateRangeReq req) {
+            @RequestBody TimeRecordDateRangeMcpReq req) {
         List<TimeRecordEntity> list = queryByDateRangeForAIList(req);
         List<TimeRecordDateRangeVO> voList = TimeRecordConvertor.INSTANCE.toDateRangeVOList(list);
 
@@ -133,7 +133,7 @@ public class TimeRecordController {
     /**
      * 根据日期范围查询记录（AI接口专用）
      */
-    private List<TimeRecordEntity> queryByDateRangeForAIList(TimeRecordDateRangeReq req) {
+    private List<TimeRecordEntity> queryByDateRangeForAIList(TimeRecordDateRangeMcpReq req) {
         long userId = StpUtil.getLoginIdAsLong();
         LambdaQueryWrapper<TimeRecordEntity> lambdaQueryWrapper = buildDateRangeForAIQueryWrapper(userId, req);
         return timeRecordService.list(lambdaQueryWrapper);
@@ -142,7 +142,7 @@ public class TimeRecordController {
     /**
      * 构建日期范围查询条件（AI接口专用）
      */
-    private LambdaQueryWrapper<TimeRecordEntity> buildDateRangeForAIQueryWrapper(long userId, TimeRecordDateRangeReq req) {
+    private LambdaQueryWrapper<TimeRecordEntity> buildDateRangeForAIQueryWrapper(long userId, TimeRecordDateRangeMcpReq req) {
         LambdaQueryWrapper<TimeRecordEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.select(TimeRecordEntity::getId,
                 TimeRecordEntity::getCategoryId,

@@ -5,8 +5,10 @@ import lombok.RequiredArgsConstructor;
 import top.aiolife.mcp.annotation.McpToolProvider;
 import top.aiolife.record.api.ThoughtController;
 import top.aiolife.record.api.TimeRecordController;
+import top.aiolife.record.api.TimeTrackerCategoryController;
+import top.aiolife.record.pojo.entity.entity.TimeTrackerCategoryEntity;
 import top.aiolife.record.pojo.req.ThoughtSaveReq;
-import top.aiolife.record.pojo.req.TimeRecordDateRangeReq;
+import top.aiolife.record.mcp.req.TimeRecordDateRangeMcpReq;
 import top.aiolife.record.pojo.req.TimeRecordReq;
 import top.aiolife.record.mcp.req.TimeRecordSaveMcpReq;
 import top.aiolife.record.pojo.vo.TimeRecordDateRangeVO;
@@ -20,9 +22,10 @@ public class RecordMcpTools {
 
     private final TimeRecordController timeRecordController;
     private final ThoughtController thoughtController;
+    private final TimeTrackerCategoryController timeTrackerCategoryController;
 
     @Tool("查询指定日期范围内的所有时间记录")
-    public List<TimeRecordDateRangeVO> time_record_queryByDateRange(TimeRecordDateRangeReq req) {
+    public List<TimeRecordDateRangeVO> time_record_queryByDateRange(TimeRecordDateRangeMcpReq req) {
         return timeRecordController.queryByDateRangeForAI(req).getData();
     }
 
@@ -38,5 +41,10 @@ public class RecordMcpTools {
     public boolean thought_save(ThoughtSaveReq req) {
         thoughtController.save(req);
         return true;
+    }
+
+    @Tool("查询用户的所有时迹分类（含合并的公共分类）")
+    public List<TimeTrackerCategoryEntity> time_tracker_category_list() {
+        return timeTrackerCategoryController.list().getData();
     }
 }

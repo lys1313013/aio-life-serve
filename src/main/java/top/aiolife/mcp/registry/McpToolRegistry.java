@@ -54,8 +54,8 @@ public class McpToolRegistry {
             if (method.getAnnotation(dev.langchain4j.agent.tool.Tool.class) == null) {
                 continue;
             }
-            if (method.getParameterCount() != 1) {
-                throw new IllegalStateException("MCP 工具目前仅支持单个入参方法: " + method);
+            if (method.getParameterCount() > 1) {
+                throw new IllegalStateException("MCP 工具目前最多支持单个入参方法: " + method);
             }
             ToolSpecification toolSpecification = ToolSpecifications.toolSpecificationFrom(method);
             String toolName = toolSpecification.name();
@@ -66,7 +66,7 @@ public class McpToolRegistry {
                     description,
                     bean,
                     method,
-                    method.getParameterTypes()[0],
+                    method.getParameterCount() > 0 ? method.getParameterTypes()[0] : null,
                     toolSpecification,
                     mcpTool
             );
