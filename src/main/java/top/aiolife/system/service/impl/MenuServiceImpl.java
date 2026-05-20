@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import top.aiolife.system.mapper.ISysMenuMapper;
 import top.aiolife.system.pojo.entity.SysMenuEntity;
@@ -104,6 +105,7 @@ public class MenuServiceImpl implements IMenuService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void delete(long id, long userId) {
         SysMenuEntity exist = sysMenuMapper.selectById(id);
         if (exist == null || !Objects.equals(exist.getIsDeleted(), 0)) {
@@ -124,9 +126,9 @@ public class MenuServiceImpl implements IMenuService {
         }
 
         // 逻辑删除
-        exist.setIsDeleted(1);
         exist.fillUpdateCommonField(userId);
         sysMenuMapper.updateById(exist);
+        sysMenuMapper.deleteById(id);
     }
 
     private List<SysMenuEntity> listEnabledMenus() {
