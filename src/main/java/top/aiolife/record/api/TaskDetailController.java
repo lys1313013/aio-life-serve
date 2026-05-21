@@ -6,9 +6,13 @@ import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import top.aiolife.core.resq.ApiResponse;
 import top.aiolife.record.pojo.entity.TaskDetailEntity;
+import top.aiolife.record.pojo.entity.TaskEntity;
 import top.aiolife.record.service.ITaskDetail;
+import top.aiolife.record.service.ITaskService;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 任务详情控制器
@@ -22,6 +26,7 @@ import java.util.List;
 public class TaskDetailController {
 
     private final ITaskDetail taskDetailService;
+    private final ITaskService taskService;
 
     /**
      * 获取任务详情列表
@@ -156,6 +161,17 @@ public class TaskDetailController {
         queryWrapper.eq(TaskDetailEntity::getIsCompleted, 0);
         queryWrapper.orderByAsc(TaskDetailEntity::getPriority);
         queryWrapper.orderByAsc(TaskDetailEntity::getSort, TaskDetailEntity::getId);
-        return ApiResponse.success(taskDetailService.list(queryWrapper));
+        List<TaskDetailEntity> list = taskDetailService.list(queryWrapper);
+        
+        if (!list.isEmpty()) {
+            List<Long> taskIds = list.stream().map(TaskDetailEntity::getTaskId).distinct().collect(Collectors.toList());
+            Map<Long, String> taskNameMap = taskService.listByIds(taskIds).stream()
+                    .collect(Collectors.toMap(TaskEntity::getId, TaskEntity::getContent, (v1, v2) -> v1));
+            for (TaskDetailEntity detail : list) {
+                detail.setTaskName(taskNameMap.get(detail.getTaskId()));
+            }
+        }
+        
+        return ApiResponse.success(list);
     }
 }

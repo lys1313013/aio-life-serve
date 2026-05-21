@@ -43,4 +43,10 @@ public class TaskDetailEntity extends BaseEntity {
      * 结束时间
      */
     private LocalDateTime endTime;
+
+    /**
+     * 冗余字段：所属任务名称
+     */
+    @com.baomidou.mybatisplus.annotation.TableField(exist = false)
+    private String taskName;
 }

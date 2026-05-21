@@ -1,5 +1,6 @@
 package top.aiolife.record.service;
 
+import com.baomidou.mybatisplus.extension.service.IService;
 import top.aiolife.record.pojo.entity.TaskEntity;
 
 import java.util.List;
@@ -10,6 +11,6 @@ import java.util.List;
  * @author Lys
  * @date 2025/04/12 21:01
  */
-public interface ITaskService {
+public interface ITaskService extends IService<TaskEntity> {
     void updateBatchById(List<TaskEntity> list);
 }
