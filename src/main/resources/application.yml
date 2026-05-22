@@ -9,6 +9,9 @@ spring:
     date-format: yyyy-MM-dd HH:mm:ss
     serialization:
       write-dates-as-timestamps: false
+  mvc:
+    async:
+      request-timeout: 300000
   datasource:
     username: aio-life
     password: ${AIO_LIFE_DB_PASSWORD:root}

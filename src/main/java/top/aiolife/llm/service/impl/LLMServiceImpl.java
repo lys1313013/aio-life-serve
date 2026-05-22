@@ -19,6 +19,7 @@ public class LLMServiceImpl implements LLMService {
                     .apiKey(apiKey)
                     .baseUrl(baseUrl)
                     .modelName(modelName)
+                    .timeout(java.time.Duration.ofSeconds(300))
                     .build();
         } catch (Exception e) {
             log.error("Failed to initialize chat model: {}", e.getMessage(), e);
@@ -33,6 +34,7 @@ public class LLMServiceImpl implements LLMService {
                     .apiKey(apiKey)
                     .baseUrl(baseUrl)
                     .modelName(modelName)
+                    .timeout(java.time.Duration.ofSeconds(300))
                     .build();
         } catch (Exception e) {
             log.error("Failed to initialize streaming chat model: {}", e.getMessage(), e);

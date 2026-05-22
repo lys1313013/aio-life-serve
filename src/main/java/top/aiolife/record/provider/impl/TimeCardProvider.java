@@ -30,7 +30,7 @@ public class TimeCardProvider implements DashboardCardProvider {
 
     @Override
     public String getTitle() {
-        return "当前状态";
+        return "专注时长";
     }
 
     @Override

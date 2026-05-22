@@ -49,7 +49,7 @@ public class LLMController {
             }
 
             String fullPrompt = context != null && !context.isEmpty() ? context + "\n" + prompt : prompt;
-            chatMessageService.saveMessage(userId, conversationId, "user", fullPrompt, llmKey.getModelName());
+            chatMessageService.saveMessage(userId, conversationId, "user", prompt, llmKey.getModelName());
 
             String response = llmService.generateResponse(
                     llmKey.getApiKey(),
@@ -69,7 +69,10 @@ public class LLMController {
     }
 
     @PostMapping(value = "/chat/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public SseEmitter chatStream(@RequestBody Map<String, Object> request) {
+    public SseEmitter chatStream(@RequestBody Map<String, Object> request, jakarta.servlet.http.HttpServletResponse response) {
+        response.setHeader("Cache-Control", "no-cache");
+        response.setHeader("X-Accel-Buffering", "no");
+        
         long userId = StpUtil.getLoginIdAsLong();
         String prompt = (String) request.get("prompt");
         String context = (String) request.get("context");
@@ -87,7 +90,7 @@ public class LLMController {
             }
 
             String fullPrompt = context != null && !context.isEmpty() ? context + "\n" + prompt : prompt;
-            chatMessageService.saveMessage(userId, conversationId, "user", fullPrompt, llmKey.getModelName());
+            chatMessageService.saveMessage(userId, conversationId, "user", prompt, llmKey.getModelName());
 
             var streamingModel = llmService.getStreamingChatModel(
                     llmKey.getApiKey(),
