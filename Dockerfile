@@ -5,10 +5,12 @@ FROM maven:3.9-eclipse-temurin-21-alpine AS builder
 
 WORKDIR /app
 
-# 只复制必要文件加速构建
+# 复制 pom.xml 并下载依赖（利用 Docker 层缓存，源码不变时跳过依赖下载）
 COPY pom.xml .
-COPY src ./src
+RUN mvn dependency:go-offline -B
 
+# 复制源码并构建
+COPY src ./src
 RUN mvn clean package -DskipTests
 
 # ================================
