@@ -20,6 +20,8 @@ public class LLMServiceImpl implements LLMService {
                     .baseUrl(baseUrl)
                     .modelName(modelName)
                     .timeout(java.time.Duration.ofSeconds(300))
+                    .logRequests(true)
+                    .logResponses(true)
                     .build();
         } catch (Exception e) {
             log.error("Failed to initialize chat model: {}", e.getMessage(), e);
@@ -35,6 +37,8 @@ public class LLMServiceImpl implements LLMService {
                     .baseUrl(baseUrl)
                     .modelName(modelName)
                     .timeout(java.time.Duration.ofSeconds(300))
+                    .logRequests(true)
+                    .logResponses(true)
                     .build();
         } catch (Exception e) {
             log.error("Failed to initialize streaming chat model: {}", e.getMessage(), e);
@@ -51,17 +55,6 @@ public class LLMServiceImpl implements LLMService {
         } catch (Exception e) {
             log.error("Failed to generate response: {}", e.getMessage(), e);
             throw new RuntimeException("Failed to generate response", e);
-        }
-    }
-
-    @Override
-    public String summarizeTimeRecords(String apiKey, String baseUrl, String modelName, String timeRecords) {
-        try {
-            String prompt = "请对以下时迹记录进行分析和总结，包括时间分配、活动类型分布、效率评价等方面，并给出合理的建议：\n" + timeRecords;
-            return generateResponse(apiKey, baseUrl, modelName, prompt, null);
-        } catch (Exception e) {
-            log.error("Failed to summarize time records: {}", e.getMessage(), e);
-            throw new RuntimeException("Failed to summarize time records", e);
         }
     }
 }
