@@ -33,3 +33,6 @@ replay_pid*
 # Docker volumes
 docker/volumes/*/data/
 
+
+# macOS
+.DS_Store
