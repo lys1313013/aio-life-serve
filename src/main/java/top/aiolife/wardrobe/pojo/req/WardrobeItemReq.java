@@ -1,0 +1,66 @@
+package top.aiolife.wardrobe.pojo.req;
+
+import lombok.Data;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
+
+/**
+ * 衣物请求 DTO
+ */
+@Data
+public class WardrobeItemReq {
+
+    private Long id;
+
+    /**
+     * 衣物名称
+     */
+    private String name;
+
+    /**
+     * 分类ID
+     */
+    private Long categoryId;
+
+    /**
+     * 颜色
+     */
+    private String color;
+
+    /**
+     * 品牌
+     */
+    private String brand;
+
+    /**
+     * 适用季节:春,夏,秋,冬
+     */
+    private List<String> season;
+
+    /**
+     * 购买日期
+     */
+    private LocalDate purchaseDate;
+
+    /**
+     * 价格
+     */
+    private BigDecimal price;
+
+    /**
+     * 照片URLs
+     */
+    private List<String> photoUrls;
+
+    /**
+     * 尺码
+     */
+    private String size;
+
+    /**
+     * 备注
+     */
+    private String memo;
+}
