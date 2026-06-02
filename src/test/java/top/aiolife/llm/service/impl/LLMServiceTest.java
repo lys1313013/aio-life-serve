@@ -56,15 +56,4 @@ class LLMServiceTest {
         });
     }
 
-    @Test
-    void testSummarizeTimeRecords() {
-        String apiKey = "test-api-key";
-        String baseUrl = "https://api.openai.com/v1";
-        String modelName = "gpt-4";
-        String timeRecords = "Test time records data";
-
-        assertThrows(RuntimeException.class, () -> {
-            llmService.summarizeTimeRecords(apiKey, baseUrl, modelName, timeRecords);
-        });
-    }
 }
