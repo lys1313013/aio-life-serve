@@ -33,14 +33,4 @@ public interface LLMService {
      * @return 响应内容
      */
     String generateResponse(String apiKey, String baseUrl, String modelName, String prompt, String context);
-
-    /**
-     * 总结时迹记录
-     * @param apiKey API密钥
-     * @param baseUrl 基础URL
-     * @param modelName 模型名称
-     * @param timeRecords 时迹记录
-     * @return 总结内容
-     */
-    String summarizeTimeRecords(String apiKey, String baseUrl, String modelName, String timeRecords);
 }

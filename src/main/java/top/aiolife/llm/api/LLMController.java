@@ -16,10 +16,8 @@ import top.aiolife.llm.service.ChatMessageService;
 import top.aiolife.llm.service.ConversationService;
 import top.aiolife.llm.service.LLMKeyService;
 import top.aiolife.llm.service.LLMService;
-import top.aiolife.record.service.ITimeRecordService;
 
 import java.io.IOException;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -31,7 +29,6 @@ public class LLMController {
 
     private final LLMService llmService;
     private final LLMKeyService llmKeyService;
-    private final ITimeRecordService timeRecordService;
     private final ChatMessageService chatMessageService;
     private final ConversationService chatSessionService;
 
@@ -40,7 +37,6 @@ public class LLMController {
         try {
             long userId = StpUtil.getLoginIdAsLong();
             String prompt = (String) request.get("prompt");
-            String context = (String) request.get("context");
             Long conversationId = request.get("conversationId") != null ? Long.valueOf(request.get("conversationId").toString()) : null;
 
             var llmKey = llmKeyService.getDefaultLLMKey(userId);
@@ -48,15 +44,18 @@ public class LLMController {
                 return ApiResponse.error(ResponseCodeConst.RSCODE_COMMON_FAIL, "请先配置大模型 API Key");
             }
 
-            String fullPrompt = context != null && !context.isEmpty() ? context + "\n" + prompt : prompt;
             chatMessageService.saveMessage(userId, conversationId, "user", prompt, llmKey.getModelName());
+
+            // 查询历史消息构建上下文
+            String context = buildContext(userId, conversationId);
+            String fullPrompt = context.isEmpty() ? prompt : context + "\n" + prompt;
 
             String response = llmService.generateResponse(
                     llmKey.getApiKey(),
                     llmKey.getBaseUrl(),
                     llmKey.getModelName(),
-                    prompt,
-                    context
+                    fullPrompt,
+                    null
             );
 
             chatMessageService.saveMessage(userId, conversationId, "assistant", response, llmKey.getModelName());
@@ -72,10 +71,9 @@ public class LLMController {
     public SseEmitter chatStream(@RequestBody Map<String, Object> request, jakarta.servlet.http.HttpServletResponse response) {
         response.setHeader("Cache-Control", "no-cache");
         response.setHeader("X-Accel-Buffering", "no");
-        
+
         long userId = StpUtil.getLoginIdAsLong();
         String prompt = (String) request.get("prompt");
-        String context = (String) request.get("context");
         Long conversationId = request.get("conversationId") != null ? Long.valueOf(request.get("conversationId").toString()) : null;
 
         SseEmitter emitter = new SseEmitter(300000L);
@@ -89,8 +87,11 @@ public class LLMController {
                 return emitter;
             }
 
-            String fullPrompt = context != null && !context.isEmpty() ? context + "\n" + prompt : prompt;
             chatMessageService.saveMessage(userId, conversationId, "user", prompt, llmKey.getModelName());
+
+            // 查询历史消息构建上下文
+            String context = buildContext(userId, conversationId);
+            String fullPrompt = context.isEmpty() ? prompt : context + "\n" + prompt;
 
             var streamingModel = llmService.getStreamingChatModel(
                     llmKey.getApiKey(),
@@ -154,46 +155,6 @@ public class LLMController {
         });
 
         return emitter;
-    }
-
-    @PostMapping("/summarize/time-records")
-    public ApiResponse<String> summarizeTimeRecords(@RequestBody Map<String, String> request) {
-        try {
-            long userId = StpUtil.getLoginIdAsLong();
-            String type = request.get("type");
-
-            LocalDate date = LocalDate.now();
-            var timeRecords = timeRecordService.list(
-                    new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<top.aiolife.record.pojo.entity.TimeRecordEntity>()
-                            .eq(top.aiolife.record.pojo.entity.TimeRecordEntity::getUserId, userId)
-                            .eq(top.aiolife.record.pojo.entity.TimeRecordEntity::getDate, date)
-                            .orderByDesc(top.aiolife.record.pojo.entity.TimeRecordEntity::getStartTime)
-            );
-
-            StringBuilder timeRecordsText = new StringBuilder();
-            for (var record : timeRecords) {
-                timeRecordsText.append(String.format("时间: %s-%s, 分类: %s, 标题: %s, 描述: %s\n",
-                        record.getStartTime(), record.getEndTime(), record.getCategoryId(),
-                        record.getTitle(), record.getDescription()));
-            }
-
-            var llmKey = llmKeyService.getDefaultLLMKey(userId);
-            if (llmKey == null) {
-                return ApiResponse.error(ResponseCodeConst.RSCODE_COMMON_FAIL, "请先配置大模型 API Key");
-            }
-
-            String summary = llmService.summarizeTimeRecords(
-                    llmKey.getApiKey(),
-                    llmKey.getBaseUrl(),
-                    llmKey.getModelName(),
-                    timeRecordsText.toString()
-            );
-
-            return ApiResponse.success(summary);
-        } catch (Exception e) {
-            log.error("Failed to summarize time records: {}", e.getMessage(), e);
-            return ApiResponse.error(ResponseCodeConst.RSCODE_COMMON_FAIL, e.getMessage());
-        }
     }
 
     @GetMapping("/chat/history")
@@ -275,5 +236,29 @@ public class LLMController {
             log.error("Failed to delete chat session: {}", e.getMessage(), e);
             return ApiResponse.error(ResponseCodeConst.RSCODE_COMMON_FAIL, e.getMessage());
         }
+    }
+
+    /**
+     * 构建对话上下文，查询历史消息并格式化为 LLM 可读的字符串
+     */
+    private String buildContext(Long userId, Long conversationId) {
+        if (conversationId == null) {
+            return "";
+        }
+        // 查询最近 10 条历史消息
+        List<ChatMessageEntity> history = chatMessageService.listByconversationId(userId, conversationId);
+        if (history == null || history.isEmpty()) {
+            return "";
+        }
+        // 只取最近 10 条
+        int start = Math.max(0, history.size() - 10);
+        List<ChatMessageEntity> recentHistory = history.subList(start, history.size());
+
+        StringBuilder context = new StringBuilder();
+        for (ChatMessageEntity msg : recentHistory) {
+            String roleLabel = "user".equals(msg.getRole()) ? "User" : "AI";
+            context.append(roleLabel).append(": ").append(msg.getContent()).append("\n");
+        }
+        return context.toString();
     }
 }
