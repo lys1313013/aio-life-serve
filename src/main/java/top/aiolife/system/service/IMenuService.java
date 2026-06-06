@@ -5,6 +5,8 @@ import top.aiolife.system.pojo.vo.MenuAdminVO;
 import top.aiolife.system.pojo.vo.MenuRouteVO;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * 菜单服务接口
@@ -21,6 +23,25 @@ public interface IMenuService {
      * @return 菜单路由树
      */
     List<MenuRouteVO> getAccessibleMenuTree(List<String> roles);
+
+    /**
+     * 获取当前用户可访问的菜单 ID 集合（用于权限校验）。
+     *
+     * @param roles 当前用户角色列表
+     * @return 菜单 ID 集合
+     */
+    Set<Long> getAccessibleMenuIds(List<String> roles);
+
+    /**
+     * 获取当前用户可访问的"叶子菜单"扁平列表。
+     *
+     * <p>叶子判定：component 非空、不是 BasicLayout/IFrameView、meta.hideInMenu != true。
+     * 返回的 Map 字段：menuId, title, icon, color, path, target。</p>
+     *
+     * @param roles 当前用户角色列表
+     * @return 叶子菜单信息列表
+     */
+    List<Map<String, Object>> listAccessibleLeaves(List<String> roles);
 
     /**
      * 获取菜单树（管理端）。

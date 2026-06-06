@@ -51,6 +51,66 @@ public class MenuServiceImpl implements IMenuService {
     }
 
     @Override
+    public Set<Long> getAccessibleMenuIds(List<String> roles) {
+        List<SysMenuEntity> list = listEnabledMenus();
+        List<String> roleList = roles == null ? List.of() : roles;
+        return list.stream()
+                .filter(m -> isRoleAllowed(m.getRoles(), roleList))
+                .map(SysMenuEntity::getId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toCollection(HashSet::new));
+    }
+
+    @Override
+    public List<Map<String, Object>> listAccessibleLeaves(List<String> roles) {
+        List<SysMenuEntity> all = listEnabledMenus();
+        List<String> roleList = roles == null ? List.of() : roles;
+        List<SysMenuEntity> accessible = all.stream()
+                .filter(m -> isRoleAllowed(m.getRoles(), roleList))
+                .toList();
+        Map<Long, SysMenuEntity> byId = accessible.stream()
+                .filter(m -> m.getId() != null)
+                .collect(Collectors.toMap(SysMenuEntity::getId, e -> e, (a, b) -> a));
+        return accessible.stream()
+                .filter(this::isLeaf)
+                .map(m -> toLeafMap(m, byId))
+                .toList();
+    }
+
+    private boolean isLeaf(SysMenuEntity m) {
+        String component = m.getComponent();
+        if (!StringUtils.hasText(component)) {
+            return false;
+        }
+        if (ALLOWED_LAYOUT_COMPONENTS.contains(component.trim())) {
+            return false;
+        }
+        Map<String, Object> meta = readMeta(m.getMeta());
+        if (Boolean.TRUE.equals(meta.get("hideInMenu"))) {
+            return false;
+        }
+        return true;
+    }
+
+    private Map<String, Object> toLeafMap(SysMenuEntity m, Map<Long, SysMenuEntity> byId) {
+        Map<String, Object> meta = readMeta(m.getMeta());
+        Map<String, Object> row = new HashMap<>();
+        row.put("menuId", m.getId());
+        row.put("title", meta.get("title"));
+        row.put("icon", meta.get("icon"));
+        row.put("color", meta.get("color"));
+        row.put("path", m.getPath());
+        row.put("target", meta.get("link") == null ? "self" : "blank");
+        row.put("parentId", m.getParentId());
+        SysMenuEntity parent = m.getParentId() == null ? null : byId.get(m.getParentId());
+        if (parent != null) {
+            Map<String, Object> parentMeta = readMeta(parent.getMeta());
+            row.put("parentTitle", parentMeta.get("title"));
+        }
+        return row;
+    }
+
+    @Override
     public List<MenuAdminVO> getAdminMenuTree() {
         List<SysMenuEntity> list = listAllMenus();
         return buildAdminTree(list);
