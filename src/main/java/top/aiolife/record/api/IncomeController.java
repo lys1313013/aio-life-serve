@@ -11,11 +11,11 @@ import top.aiolife.core.resq.PageResp;
 import top.aiolife.core.util.SysUtil;
 import top.aiolife.record.mapper.IIncomeMapper;
 import top.aiolife.record.pojo.entity.IncomeEntity;
-import top.aiolife.record.pojo.entity.SysDictDataEntity;
+import top.aiolife.record.pojo.entity.entity.UserDictDataEntity;
 import top.aiolife.record.pojo.query.IncomeQuery;
 import top.aiolife.record.pojo.vo.IncStaByYearVO;
 import top.aiolife.record.pojo.vo.IncStaticByYearVO;
-import top.aiolife.record.service.ISysDictService;
+import top.aiolife.record.service.UserDictDataService;
 import lombok.AllArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -41,7 +41,7 @@ public class IncomeController {
 
     private IIncomeMapper incomeMapper;
 
-    private ISysDictService sysDictService;
+    private UserDictDataService userDictDataService;
 
     public IIncomeMapper getBaseMapper() {
         return incomeMapper;
@@ -97,9 +97,9 @@ public class IncomeController {
         List<IncStaticByYearVO> ans = new ArrayList<>();
         
         // 获取收入类型字典数据
-        List<SysDictDataEntity> dictDataList = sysDictService.getDictDataByDictType("income_type");
+        List<UserDictDataEntity> dictDataList = userDictDataService.listUserVisibleDictData(userId, "income_type");
         Map<Long, String> dictMap = dictDataList.stream()
-                .collect(Collectors.toMap(SysDictDataEntity::getDictCode, SysDictDataEntity::getDictLabel));
+                .collect(Collectors.toMap(UserDictDataEntity::getId, UserDictDataEntity::getDictLabel));
 
         // 按照年度汇总
         Map<Integer, List<IncStaByYearVO>> collect = list.stream()
@@ -124,9 +124,9 @@ public class IncomeController {
         List<IncStaticByYearVO> ans = new ArrayList<>();
 
         // 获取收入类型字典数据
-        List<SysDictDataEntity> dictDataList = sysDictService.getDictDataByDictType("income_type");
+        List<UserDictDataEntity> dictDataList = userDictDataService.listUserVisibleDictData(userId, "income_type");
         Map<Long, String> dictMap = dictDataList.stream()
-                .collect(Collectors.toMap(SysDictDataEntity::getDictCode, SysDictDataEntity::getDictLabel));
+                .collect(Collectors.toMap(UserDictDataEntity::getId, UserDictDataEntity::getDictLabel));
 
         // 按照年月汇总
         Map<String, List<IncStaByYearVO>> collect = list.stream()

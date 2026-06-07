@@ -13,12 +13,13 @@ import top.aiolife.core.util.SysUtil;
 import top.aiolife.record.mapper.IExpenseMapper;
 import top.aiolife.record.pojo.entity.ExpenseEntity;
 import top.aiolife.record.pojo.entity.SysDictDataEntity;
+import top.aiolife.record.pojo.entity.entity.UserDictDataEntity;
 import top.aiolife.record.pojo.query.ExpenseQuery;
 import top.aiolife.record.pojo.req.CommonReq;
 import top.aiolife.record.pojo.vo.ExpStaByYearVO;
 import top.aiolife.record.pojo.vo.ExpStaticByYearVO;
 import top.aiolife.record.service.IExpenseService;
-import top.aiolife.record.service.ISysDictService;
+import top.aiolife.record.service.UserDictDataService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -44,7 +45,7 @@ import java.util.stream.Collectors;
 @RequestMapping("/expense")
 public class ExpController {
 
-    private ISysDictService sysDictService;
+    private UserDictDataService userDictDataService;
     
     private IExpenseService expenseService;
 
@@ -183,9 +184,9 @@ public class ExpController {
         List<ExpStaticByYearVO> ans = new ArrayList<>();
 
         // 获取收入类型字典数据
-        List<SysDictDataEntity> dictDataList = sysDictService.getDictDataByDictType("exp_type");
+        List<UserDictDataEntity> dictDataList = userDictDataService.listUserVisibleDictData(userId, "exp_type");
         Map<Long, String> dictMap = dictDataList.stream()
-                .collect(Collectors.toMap(SysDictDataEntity::getDictCode, SysDictDataEntity::getDictLabel));
+                .collect(Collectors.toMap(UserDictDataEntity::getId, UserDictDataEntity::getDictLabel));
 
         // 按照年度汇总
         Map<Integer, List<ExpStaByYearVO>> collect = list.stream()
@@ -213,9 +214,9 @@ public class ExpController {
         List<ExpStaticByYearVO> ans = new ArrayList<>();
 
         // 获取收入类型字典数据
-        List<SysDictDataEntity> dictDataList = sysDictService.getDictDataByDictType("exp_type");
+        List<UserDictDataEntity> dictDataList = userDictDataService.listUserVisibleDictData(userId, "exp_type");
         Map<Long, String> dictMap = dictDataList.stream()
-                .collect(Collectors.toMap(SysDictDataEntity::getDictCode, SysDictDataEntity::getDictLabel));
+                .collect(Collectors.toMap(UserDictDataEntity::getId, UserDictDataEntity::getDictLabel));
 
         // 按照年月汇总
         Map<String, List<ExpStaByYearVO>> collect = list.stream()

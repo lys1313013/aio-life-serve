@@ -43,6 +43,6 @@ public class IncomeEntity {
     /**
      * 收入类型ID
      */
-    private Integer incTypeId;
+    private Long incTypeId;
     private BigDecimal tax;
 }

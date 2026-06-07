@@ -18,7 +18,10 @@ import java.util.Map;
 public enum DictTypeEnum {
 
     EXERCISE_TYPE("exercise_type", "运动类型"),
-    DEVICE_TYPE("device_type", "设备类型");
+    DEVICE_TYPE("device_type", "设备类型"),
+    EXP_TYPE("exp_type", "支出类型"),
+    INCOME_TYPE("income_type", "收入类型"),
+    PAY_TYPE("pay_type", "支付类型");
 
     private final String value;
     private final String label;

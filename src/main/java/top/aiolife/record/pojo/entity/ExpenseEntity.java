@@ -31,14 +31,14 @@ public class ExpenseEntity {
      * 记账金额
      */
     private BigDecimal amt;
-    private Integer expTypeId;
+    private Long expTypeId;
 
     private Long userId;
 
     /**
      * 支付方式
      */
-    private Integer payTypeId;
+    private String payTypeId;
     /**
      * 交易对方
      */
