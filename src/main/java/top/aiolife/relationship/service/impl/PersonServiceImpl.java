@@ -58,14 +58,26 @@ public class PersonServiceImpl implements IPersonService {
 
     @Override
     public PersonRelationship updatePerson(Long userId, PersonRelationship person) {
+        PersonRelationship existing = personRepository.findById(person.getId())
+                .orElseThrow(() -> new RuntimeException("人物不存在"));
+        if (!existing.getUserId().equals(userId)) {
+            throw new RuntimeException("无权操作该人物");
+        }
+        person.setCreatedAt(existing.getCreatedAt());
         person.setUpdatedAt(LocalDateTime.now());
         return personRepository.save(person);
     }
 
     @Override
     public void deletePerson(Long userId, String personId) {
+        PersonRelationship existing = personRepository.findById(personId)
+                .orElseThrow(() -> new RuntimeException("人物不存在"));
+        if (!existing.getUserId().equals(userId)) {
+            throw new RuntimeException("无权操作该人物");
+        }
         try (Session session = driver.session()) {
-            session.run("MATCH (p:Person {id: $id})-[r:RELATES_TO]-() DELETE r", Map.of("id", personId));
+            session.run("MATCH (p:Person {id: $id, userId: $userId})-[r:RELATES_TO]-() DELETE r", 
+                        Map.of("id", personId, "userId", userId));
         }
         personRepository.deleteById(personId);
     }

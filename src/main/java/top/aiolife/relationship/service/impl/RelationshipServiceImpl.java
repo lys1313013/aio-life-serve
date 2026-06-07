@@ -84,6 +84,14 @@ public class RelationshipServiceImpl implements IRelationshipService {
     @Override
     public RelatesToRelationship updateRelationship(Long userId, Long relationshipId, RelatesToRelationship relationship) {
         try (Session session = driver.session()) {
+            var check = session.run(
+                "MATCH (p:Person {userId: $userId})-[r:RELATES_TO]-() WHERE id(r) = $id RETURN id(r)",
+                Map.of("id", relationshipId, "userId", userId)
+            );
+            if (!check.hasNext()) {
+                throw new RuntimeException("无权操作该关系或关系不存在");
+            }
+
             session.run(
                 """
                 MATCH ()-[r:RELATES_TO]->()
