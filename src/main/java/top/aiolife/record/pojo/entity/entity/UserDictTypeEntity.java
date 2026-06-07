@@ -1,6 +1,7 @@
 package top.aiolife.record.pojo.entity.entity;
 
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import top.aiolife.record.pojo.entity.BaseEntity;
@@ -13,6 +14,7 @@ import top.aiolife.record.pojo.entity.BaseEntity;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @TableName("user_dict_type")
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class UserDictTypeEntity extends BaseEntity {
 
     /**

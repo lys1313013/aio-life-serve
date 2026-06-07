@@ -54,13 +54,16 @@ public class UserDictDataServiceImpl extends ServiceImpl<UserDictDataMapper, Use
                 merged.setUserId(userId);
                 merged.setTemplateId(publicCategory.getId());
                 merged.setDictType(publicCategory.getDictType());
-                merged.setDictLabel(overrideRecord.getDictLabel() != null ? overrideRecord.getDictLabel() : publicCategory.getDictLabel());
-                merged.setDictValue(overrideRecord.getDictValue() != null ? overrideRecord.getDictValue() : publicCategory.getDictValue());
-                merged.setColor(overrideRecord.getColor() != null ? overrideRecord.getColor() : publicCategory.getColor());
-                merged.setIcon(overrideRecord.getIcon() != null ? overrideRecord.getIcon() : publicCategory.getIcon());
-                merged.setExtData(overrideRecord.getExtData() != null ? overrideRecord.getExtData() : publicCategory.getExtData());
-                merged.setDictSort(overrideRecord.getDictSort() != null ? overrideRecord.getDictSort() : publicCategory.getDictSort());
+                boolean readonly = "Y".equals(publicCategory.getIsReadonly());
+
+                merged.setDictLabel((!readonly && overrideRecord.getDictLabel() != null) ? overrideRecord.getDictLabel() : publicCategory.getDictLabel());
+                merged.setDictValue((!readonly && overrideRecord.getDictValue() != null) ? overrideRecord.getDictValue() : publicCategory.getDictValue());
+                merged.setColor((!readonly && overrideRecord.getColor() != null) ? overrideRecord.getColor() : publicCategory.getColor());
+                merged.setIcon((!readonly && overrideRecord.getIcon() != null) ? overrideRecord.getIcon() : publicCategory.getIcon());
+                merged.setExtData((!readonly && overrideRecord.getExtData() != null) ? overrideRecord.getExtData() : publicCategory.getExtData());
+                merged.setDictSort((!readonly && overrideRecord.getDictSort() != null) ? overrideRecord.getDictSort() : publicCategory.getDictSort());
                 merged.setStatus("0"); // 合并后视为启用状态
+                merged.setIsReadonly(publicCategory.getIsReadonly());
                 result.add(merged);
             } else {
                 // 如果公共分类本身被停用（status = "1"），并且没有被用户覆盖，也不展示
@@ -108,6 +111,13 @@ public class UserDictDataServiceImpl extends ServiceImpl<UserDictDataMapper, Use
 
         if (target.getUserId() == 0L) {
             // 目标是公共字典，生成或更新覆盖记录
+            if ("Y".equals(target.getIsReadonly())) {
+                // 如果是只读的，只允许用户修改状态，清空其他属性的修改
+                UserDictDataEntity onlyStatusUpdate = new UserDictDataEntity();
+                onlyStatusUpdate.setStatus(updates.getStatus());
+                updates = onlyStatusUpdate;
+            }
+
             UserDictDataEntity existingOverride = this.getOne(new LambdaQueryWrapper<UserDictDataEntity>()
                     .eq(UserDictDataEntity::getUserId, userId)
                     .eq(UserDictDataEntity::getTemplateId, id)

@@ -1,6 +1,7 @@
 package top.aiolife.record.pojo.entity.entity;
 
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import top.aiolife.record.pojo.entity.BaseEntity;
@@ -13,6 +14,7 @@ import top.aiolife.record.pojo.entity.BaseEntity;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @TableName("user_dict_data")
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class UserDictDataEntity extends BaseEntity {
 
     /**
@@ -69,6 +71,11 @@ public class UserDictDataEntity extends BaseEntity {
      * 状态（0正常 1停用）
      */
     private String status;
+
+    /**
+     * 是否只读（Y是 N否），用于限制普通用户修改公共分类
+     */
+    private String isReadonly;
 
     /**
      * 备注

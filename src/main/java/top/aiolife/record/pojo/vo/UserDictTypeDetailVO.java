@@ -1,5 +1,6 @@
 package top.aiolife.record.pojo.vo;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import top.aiolife.record.pojo.entity.entity.UserDictDataEntity;
 import top.aiolife.record.pojo.entity.entity.UserDictTypeEntity;
 import lombok.Getter;
@@ -14,6 +15,7 @@ import java.util.List;
  */
 @Getter
 @Setter
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class UserDictTypeDetailVO {
     private UserDictTypeEntity userDictTypeEntity;
 
