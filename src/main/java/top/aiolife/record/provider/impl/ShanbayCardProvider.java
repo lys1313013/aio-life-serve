@@ -42,7 +42,7 @@ public class ShanbayCardProvider implements DashboardCardProvider {
 
     @Override
     public String getTotalTitle() {
-        return "今日学习时间";
+        return "今日时长";
     }
 
     @Override
