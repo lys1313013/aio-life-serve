@@ -18,6 +18,13 @@ public interface UserDictDataService extends IService<UserDictDataEntity> {
     List<UserDictDataEntity> listUserVisibleDictData(Long userId, String dictType);
 
     /**
+     * 获取用户可见的字典数据
+     *
+     * @param includeDisabled 是否包含已停用记录。true 用于管理页（可查/可改停用项），false 用于业务页（仅展示启用项）
+     */
+    List<UserDictDataEntity> listUserVisibleDictData(Long userId, String dictType, boolean includeDisabled);
+
+    /**
      * 创建字典数据
      */
     void createDictData(UserDictDataEntity entity, Long userId);

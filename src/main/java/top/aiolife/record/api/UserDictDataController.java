@@ -33,12 +33,12 @@ public class UserDictDataController {
     @PostMapping("/query")
     public ApiResponse<PageResp<UserDictDataEntity>> query(@RequestBody CommonQuery<UserDictDataEntity> query) {
         Long userId = StpUtil.getLoginIdAsLong();
-        
+
         UserDictDataEntity condition = query.getCondition();
         String dictType = (condition != null) ? condition.getDictType() : null;
 
-        // 调用 Service 获取合并后的用户可见字典数据
-        List<UserDictDataEntity> dataList = userDictDataService.listUserVisibleDictData(userId, dictType);
+        // 管控页需要看到所有记录（含已停用），方便用户改回启用或删除
+        List<UserDictDataEntity> dataList = userDictDataService.listUserVisibleDictData(userId, dictType, true);
 
         // 如果有额外的查询条件，在内存中进行过滤
         if (condition != null) {

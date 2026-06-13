@@ -20,13 +20,18 @@ public class UserDictDataServiceImpl extends ServiceImpl<UserDictDataMapper, Use
 
     @Override
     public List<UserDictDataEntity> listUserVisibleDictData(Long userId, String dictType) {
-        // 1. 查询所有公共分类（userId = 0L，未删除且未停用）
+        return listUserVisibleDictData(userId, dictType, false);
+    }
+
+    @Override
+    public List<UserDictDataEntity> listUserVisibleDictData(Long userId, String dictType, boolean includeDisabled) {
+        // 1. 查询所有公共分类（userId = 0L，未删除）
         List<UserDictDataEntity> publicCategories = this.list(new LambdaQueryWrapper<UserDictDataEntity>()
                 .eq(UserDictDataEntity::getUserId, 0L)
                 .eq(UserDictDataEntity::getDictType, dictType)
                 .eq(UserDictDataEntity::getIsDeleted, 0));
 
-        // 2. 查询当前用户的所有记录（包含被禁用的，因为需要知道哪些公共分类被隐藏了）
+        // 2. 查询当前用户的所有记录（管理页需要看到停用项，业务页也需借此得知哪些公共分类被隐藏）
         List<UserDictDataEntity> userRecords = this.list(new LambdaQueryWrapper<UserDictDataEntity>()
                 .eq(UserDictDataEntity::getUserId, userId)
                 .eq(UserDictDataEntity::getDictType, dictType)
@@ -44,13 +49,13 @@ public class UserDictDataServiceImpl extends ServiceImpl<UserDictDataMapper, Use
             UserDictDataEntity overrideRecord = overrideMap.get(publicCategory.getId());
 
             if (overrideRecord != null) {
-                // 如果存在覆盖记录且被标记为禁用 (status = "1")，则隐藏该公共分类
-                if ("1".equals(overrideRecord.getStatus())) {
+                // 业务页（includeDisabled=false）：如果覆盖记录标记为停用，则隐藏该公共分类
+                if (!includeDisabled && "1".equals(overrideRecord.getStatus())) {
                     continue;
                 }
-                // 否则，应用覆盖属性
+                // 应用覆盖属性
                 UserDictDataEntity merged = new UserDictDataEntity();
-                merged.setId(publicCategory.getId()); // 注意：返回给前端的 ID 仍然是公共分类的 ID，便于前端统一更新
+                merged.setId(publicCategory.getId()); // 返回给前端的 ID 仍是公共分类 ID，便于前端统一更新
                 merged.setUserId(userId);
                 merged.setTemplateId(publicCategory.getId());
                 merged.setDictType(publicCategory.getDictType());
@@ -62,12 +67,13 @@ public class UserDictDataServiceImpl extends ServiceImpl<UserDictDataMapper, Use
                 merged.setIcon((!readonly && overrideRecord.getIcon() != null) ? overrideRecord.getIcon() : publicCategory.getIcon());
                 merged.setExtData((!readonly && overrideRecord.getExtData() != null) ? overrideRecord.getExtData() : publicCategory.getExtData());
                 merged.setDictSort((!readonly && overrideRecord.getDictSort() != null) ? overrideRecord.getDictSort() : publicCategory.getDictSort());
-                merged.setStatus("0"); // 合并后视为启用状态
+                // 保留真实状态：覆盖记录的 status 优先；管理页需要看到停用项
+                merged.setStatus(overrideRecord.getStatus() != null ? overrideRecord.getStatus() : publicCategory.getStatus());
                 merged.setIsReadonly(publicCategory.getIsReadonly());
                 result.add(merged);
             } else {
-                // 如果公共分类本身被停用（status = "1"），并且没有被用户覆盖，也不展示
-                if ("1".equals(publicCategory.getStatus())) {
+                // 没有覆盖记录
+                if (!includeDisabled && "1".equals(publicCategory.getStatus())) {
                     continue;
                 }
                 // 原样展示公共分类
@@ -75,9 +81,10 @@ public class UserDictDataServiceImpl extends ServiceImpl<UserDictDataMapper, Use
             }
         }
 
-        // 4. 添加用户纯原创的私有分类（未删除、未停用且没有 templateId）
+        // 4. 添加用户纯原创的私有分类
         List<UserDictDataEntity> privateCategories = userRecords.stream()
-                .filter(record -> record.getTemplateId() == null && "0".equals(record.getStatus()))
+                .filter(record -> record.getTemplateId() == null
+                        && (includeDisabled || "0".equals(record.getStatus())))
                 .collect(Collectors.toList());
         result.addAll(privateCategories);
 
