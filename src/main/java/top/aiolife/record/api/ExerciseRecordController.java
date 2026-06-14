@@ -12,6 +12,7 @@ import top.aiolife.record.mapper.IExerciseRecordMapper;
 import top.aiolife.record.pojo.dto.ExerciseStatisticsDTO;
 import top.aiolife.record.pojo.entity.ExerciseRecordEntity;
 import top.aiolife.record.pojo.req.CommonReq;
+import top.aiolife.record.pojo.vo.ExerciseDashboardSummaryVO;
 import top.aiolife.record.service.IExerciseRecordService;
 
 import java.time.LocalDate;
@@ -199,5 +200,28 @@ public class ExerciseRecordController {
         }).collect(Collectors.toList());
 
         return ApiResponse.success(dtos);
+    }
+
+    /**
+     * 首页运动汇总：按天 × 运动类型聚合，支持游标翻页（向下滚动加载历史）
+     *
+     * @param lastDate 上一页返回的最早日期的前一天；首次传 null 表示从今天（含）开始
+     * @param limit    每页返回的不重复日期数量上限（默认 7）
+     */
+    @GetMapping("/dashboardSummary")
+    public ApiResponse<ExerciseDashboardSummaryVO> getDashboardSummary(
+            @RequestParam(required = false) String lastDate,
+            @RequestParam(required = false, defaultValue = "7") Integer limit) {
+        long userId = StpUtil.getLoginIdAsLong();
+        LocalDate cursor = null;
+        if (SysUtil.isNotEmpty(lastDate)) {
+            try {
+                cursor = LocalDate.parse(lastDate);
+            } catch (Exception e) {
+                log.warn("解析 lastDate 失败，使用默认值: {}", lastDate, e);
+            }
+        }
+        int safeLimit = (limit == null || limit <= 0 || limit > 30) ? 7 : limit;
+        return ApiResponse.success(exerciseRecordService.getDashboardSummary(userId, cursor, safeLimit));
     }
 }
