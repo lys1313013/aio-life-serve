@@ -1,3 +1,4 @@
+
 -- 衣柜分类表
 CREATE TABLE IF NOT EXISTS `wardrobe_category` (
     `id` BIGINT NOT NULL COMMENT '主键ID',

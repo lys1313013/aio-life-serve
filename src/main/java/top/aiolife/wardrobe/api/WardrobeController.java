@@ -12,6 +12,11 @@ import top.aiolife.wardrobe.pojo.vo.WardrobeItemVO;
 import top.aiolife.wardrobe.pojo.vo.WardrobeStatsVO;
 import top.aiolife.wardrobe.service.IWardrobeCategoryService;
 import top.aiolife.wardrobe.service.IWardrobeItemService;
+import top.aiolife.config.MinioConfig;
+import top.aiolife.core.constant.ResponseCodeConst;
+import top.aiolife.core.util.MinioUtil;
+import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -26,6 +31,8 @@ public class WardrobeController {
 
     private final IWardrobeItemService wardrobeItemService;
     private final IWardrobeCategoryService wardrobeCategoryService;
+    private final MinioUtil minioUtil;
+    private final MinioConfig minioConfig;
 
     // ==================== 衣物接口 ====================
 
@@ -89,6 +96,29 @@ public class WardrobeController {
         Long userId = StpUtil.getLoginIdAsLong();
         WardrobeStatsVO stats = wardrobeItemService.getStats(userId);
         return ApiResponse.success(stats);
+    }
+
+    /**
+     * 上传衣物照片
+     *
+     * @param file 照片文件
+     * @return 照片的预览链接
+     */
+    @PostMapping("/upload-photo")
+    public ApiResponse<String> uploadPhoto(@RequestParam("file") MultipartFile file) {
+        try {
+            String fileName = minioUtil.generateUniqueFileName(file.getOriginalFilename());
+            String objectName = StpUtil.getLoginIdAsLong() + "/wardrobe/" + fileName;
+            
+            String bucketName = StringUtils.hasText(minioConfig.getBucketName()) ? minioConfig.getBucketName() : "aiolife";
+            
+            minioUtil.uploadFile(bucketName, file, objectName);
+            
+            String imageUrl = minioUtil.getPreviewUrl(bucketName, objectName);
+            return ApiResponse.success(imageUrl);
+        } catch (Exception e) {
+            return ApiResponse.error(ResponseCodeConst.RSCODE_COMMON_FAIL, "上传失败: " + e.getMessage());
+        }
     }
 
     // ==================== 分类接口 ====================
