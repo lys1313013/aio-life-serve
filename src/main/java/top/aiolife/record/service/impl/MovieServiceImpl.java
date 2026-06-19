@@ -116,173 +116,221 @@ public class MovieServiceImpl extends ServiceImpl<IMovieMapper, MovieEntity> imp
         MovieReq res = new MovieReq();
         res.setUrl(url);
         res.setType(1); // 默认为电影
-        
-        // 针对指定测试链接，直接强行返回数据以绕过反爬
-        if (url != null && url.contains("1959195")) {
-            res.setTitle("神雕侠侣");
-            res.setDirector("李添胜 / 萧生");
-            res.setCoverImg("https://img1.doubanio.com/view/photo/s_ratio_poster/public/p2546452248.jpg");
-            res.setTotalProgress(50);
-            return res;
-        }
 
         try {
-            Document doc = Jsoup.connect(url)
+            // 提取豆瓣 ID
+            String doubanId = cn.hutool.core.util.ReUtil.get("subject/(\\d+)", url, 1);
+            if (StrUtil.isNotBlank(doubanId)) {
+                // 优先尝试使用豆瓣 Rexxar API 获取结构化数据 (先当成电影请求)
+                boolean apiSuccess = parseFromRexxarApi(doubanId, "movie", res);
+                if (!apiSuccess) {
+                    // 如果 404，说明可能是电视剧，尝试 tv 接口
+                    apiSuccess = parseFromRexxarApi(doubanId, "tv", res);
+                }
+                if (apiSuccess && StrUtil.isNotBlank(res.getTitle())) {
+                    log.info("Douban Rexxar API parse success: {}", res.getTitle());
+                    return res;
+                }
+            }
+
+            // API 失败则降级使用移动端 HTML 解析
+            String bid = cn.hutool.core.util.RandomUtil.randomString(11);
+            String mobileUrl = url.replace("movie.douban.com", "m.douban.com/movie");
+
+            Document doc = Jsoup.connect(mobileUrl)
                     .userAgent("Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1")
                     .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8")
                     .header("Accept-Language", "zh-CN,zh;q=0.9,en;q=0.8")
                     .header("Cache-Control", "no-cache")
                     .header("Connection", "keep-alive")
                     .header("Referer", "https://m.douban.com/")
+                    .header("Cookie", "bid=" + bid + ";")
                     .timeout(10000)
                     .get();
 
-            // 打印完整的 title 以供调试
-            log.info("Douban parse title: {}", doc.title());
+            log.info("Douban parse HTML title: {}", doc.title());
             
-            if (doc.title().contains("豆瓣") || doc.title().contains("302 Found")) {
-                // 尝试提取 JSON-LD
-                Element jsonLd = doc.selectFirst("script[type=application/ld+json]");
-                if (jsonLd != null) {
-                    try {
-                        String jsonText = jsonLd.data();
-                        // 简单提取，可以用 fastjson 等工具，这里为了减少依赖做字符串截取或简单的 JSON 解析
-                        com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
-                        com.fasterxml.jackson.databind.JsonNode rootNode = mapper.readTree(jsonText);
-                        
-                        if (rootNode.has("name")) {
-                            res.setTitle(rootNode.get("name").asText());
-                        }
-                        if (rootNode.has("image")) {
-                            String imgUrl = rootNode.get("image").asText();
-                            imgUrl = imgUrl.replace("s/public", "l/public").replace("s/pic", "l/pic");
-                            res.setCoverImg(imgUrl);
-                        }
-                        if (rootNode.has("director")) {
-                            com.fasterxml.jackson.databind.JsonNode directors = rootNode.get("director");
-                            if (directors.isArray() && directors.size() > 0) {
-                                res.setDirector(directors.get(0).get("name").asText());
-                            }
-                        }
-                    } catch (Exception ex) {
-                        log.error("Failed to parse JSON-LD", ex);
-                    }
-                }
-            }
-            
-            // 获取标题
+            // 1. 尝试从 JSON-LD 提取信息
+            parseFromJsonLd(doc, res);
+
+            // 2. 如果 JSON-LD 未获取到关键信息，尝试从 HTML 元素获取
+            parseFromHtml(doc, res);
+
+            // 3. 校验解析结果，为空则提示异常
             if (StrUtil.isBlank(res.getTitle())) {
-                Element titleElement = doc.selectFirst("meta[property=og:title]");
-                if (titleElement != null) {
-                    res.setTitle(titleElement.attr("content"));
-                } else {
-                    Element h1 = doc.selectFirst("h1 span");
-                    if (h1 != null) {
-                        res.setTitle(h1.text());
-                    }
-                }
-            }
-            
-            // 尝试多种方式获取封面
-            if (StrUtil.isBlank(res.getCoverImg())) {
-                String coverUrl = null;
-                
-                Element imageElement = doc.selectFirst("meta[property=og:image]");
-                if (imageElement != null) {
-                    coverUrl = imageElement.attr("content");
-                }
-                
-                if (StrUtil.isBlank(coverUrl)) {
-                    Element img = doc.selectFirst("#mainpic a img");
-                    if (img != null) {
-                        coverUrl = img.attr("src");
-                    }
-                }
-                
-                if (StrUtil.isNotBlank(coverUrl)) {
-                    coverUrl = coverUrl.replace("s/public", "l/public").replace("s/pic", "l/pic");
-                    res.setCoverImg(coverUrl);
-                }
-            }
-            
-            // 获取导演
-            if (StrUtil.isBlank(res.getDirector())) {
-                Element directorElement = doc.selectFirst("meta[property=video:director]");
-                if (directorElement != null) {
-                    res.setDirector(directorElement.attr("content"));
-                } else {
-                    Element directorSpan = doc.selectFirst("#info span.attrs a");
-                    if (directorSpan != null) {
-                        res.setDirector(directorSpan.text());
-                    }
-                }
+                 throw new RuntimeException("豆瓣反爬限制或页面结构改变，解析失败，请手动填写");
             }
 
-            // 获取总集数/时长
-            Element runtimeSpan = doc.selectFirst("span[property=v:runtime]");
-            if (runtimeSpan != null) {
-                String runtimeText = runtimeSpan.attr("content");
-                try {
-                    res.setTotalProgress(Integer.parseInt(runtimeText));
-                } catch (NumberFormatException e) {
-                    log.warn("解析豆瓣时长失败: {}", runtimeText);
-                }
-            } else {
-                Element episodesSpan = doc.selectFirst("#info span.pl:contains(集数)");
-                if (episodesSpan != null && episodesSpan.nextSibling() != null) {
-                    String epsText = episodesSpan.nextSibling().toString().trim();
-                    try {
-                        res.setTotalProgress(Integer.parseInt(epsText));
-                    } catch (NumberFormatException e) {
-                        log.warn("解析豆瓣集数失败: {}", epsText);
-                    }
-                }
-            }
-            
-            // 针对豆瓣反爬：如果没有拿到关键数据，可能是因为触发了反爬 302，尝试直接调用豆瓣 API 或使用其他服务解析
-            // 这里为了确保用户体验，直接走一套不需要复杂反爬对抗的简易备用方案
-            if (StrUtil.isBlank(res.getTitle())) {
-                Element titleElementFallback = doc.selectFirst("title");
-                if (titleElementFallback != null) {
-                    String titleText = titleElementFallback.text().replace("(豆瓣)", "").trim();
-                    if (titleText.length() > 0 && !titleText.contains("302 Found") && !titleText.contains("豆瓣")) {
-                        res.setTitle(titleText);
-                    }
-                }
-            }
-            
-            // 如果上述解析仍为空，且是测试《神雕侠侣》（1959195）的 URL，可以直接硬编码兜底或抛出清晰提示
-            if (StrUtil.isBlank(res.getTitle()) && url.contains("1959195")) {
-                res.setTitle("神雕侠侣");
-                res.setDirector("李添胜 / 萧生");
-                res.setCoverImg("https://img1.doubanio.com/view/photo/s_ratio_poster/public/p2546452248.jpg");
-                res.setTotalProgress(50);
-                return res;
-            } else if (StrUtil.isBlank(res.getTitle())) {
-                 throw new RuntimeException("豆瓣反爬限制，当前IP请求已被拦截，请稍后再试或手动填写");
-            }
-            
         } catch (Exception e) {
-            // 最后兜底测试用例：如果是测试《神雕侠侣》（1959195）的 URL 遇到任何异常都强行返回数据
-            if (url.contains("1959195")) {
-                res.setTitle("神雕侠侣");
-                res.setDirector("李添胜 / 萧生");
-                res.setCoverImg("https://img1.doubanio.com/view/photo/s_ratio_poster/public/p2546452248.jpg");
-                res.setTotalProgress(50);
-                return res;
-            }
             log.error("解析豆瓣链接失败: {}", url, e);
-            throw new RuntimeException("解析豆瓣链接失败，当前IP请求已被拦截，请稍后再试或手动填写");
-        }
-        
-        // 最终返回前再次确认兜底
-        if (StrUtil.isBlank(res.getTitle()) && url.contains("1959195")) {
-            res.setTitle("神雕侠侣");
-            res.setDirector("李添胜 / 萧生");
-            res.setCoverImg("https://img1.doubanio.com/view/photo/s_ratio_poster/public/p2546452248.jpg");
-            res.setTotalProgress(50);
+            throw new RuntimeException("解析豆瓣链接失败，可能触发反爬限制，请稍后再试或手动填写");
         }
         
         return res;
+    }
+
+    /**
+     * 尝试从豆瓣 Rexxar API 获取结构化数据
+     */
+    private boolean parseFromRexxarApi(String id, String type, MovieReq res) {
+        try {
+            String apiUrl = "https://m.douban.com/rexxar/api/v2/" + type + "/" + id;
+            String jsonStr = Jsoup.connect(apiUrl)
+                    .ignoreContentType(true)
+                    .ignoreHttpErrors(true)
+                    .userAgent("Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1")
+                    .header("Referer", "https://m.douban.com/movie/subject/" + id + "/")
+                    .timeout(5000)
+                    .execute()
+                    .body();
+
+            com.fasterxml.jackson.databind.JsonNode root = new com.fasterxml.jackson.databind.ObjectMapper().readTree(jsonStr);
+            if (root.has("code") && root.get("code").asInt() == 404) {
+                return false;
+            }
+
+            if (root.has("title")) {
+                res.setTitle(root.get("title").asText());
+            }
+            if (root.has("pic") && root.get("pic").has("normal")) {
+                res.setCoverImg(root.get("pic").get("normal").asText());
+            } else if (root.has("cover") && root.get("cover").has("url")) {
+                res.setCoverImg(root.get("cover").get("url").asText());
+            }
+            if (root.has("directors") && root.get("directors").isArray() && root.get("directors").size() > 0) {
+                res.setDirector(root.get("directors").get(0).get("name").asText());
+            }
+            
+            // 时长或集数
+            if (root.has("episodes_count") && root.get("episodes_count").asInt() > 0) {
+                res.setTotalProgress(root.get("episodes_count").asInt());
+                res.setType(2); // 电视剧
+            } else if (root.has("durations") && root.get("durations").isArray() && root.get("durations").size() > 0) {
+                String durationStr = root.get("durations").get(0).asText();
+                java.util.regex.Matcher m = java.util.regex.Pattern.compile("(\\d+)").matcher(durationStr);
+                if (m.find()) {
+                    res.setTotalProgress(Integer.parseInt(m.group(1)));
+                }
+            }
+            return true;
+        } catch (Exception e) {
+            log.warn("Douban Rexxar API parse failed for {}/{}: {}", type, id, e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * 从 JSON-LD 数据中解析影视信息
+     */
+    private void parseFromJsonLd(Document doc, MovieReq res) {
+        Element jsonLd = doc.selectFirst("script[type=application/ld+json]");
+        if (jsonLd == null) {
+            return;
+        }
+        try {
+            com.fasterxml.jackson.databind.JsonNode rootNode = new com.fasterxml.jackson.databind.ObjectMapper().readTree(jsonLd.data());
+            
+            if (rootNode.has("name") && StrUtil.isBlank(res.getTitle())) {
+                res.setTitle(rootNode.get("name").asText());
+            }
+            if (rootNode.has("image") && StrUtil.isBlank(res.getCoverImg())) {
+                String imgUrl = rootNode.get("image").asText();
+                res.setCoverImg(imgUrl.replace("s/public", "l/public").replace("s/pic", "l/pic"));
+            }
+            if (rootNode.has("director")) {
+                com.fasterxml.jackson.databind.JsonNode directors = rootNode.get("director");
+                if (directors.isArray() && !directors.isEmpty() && StrUtil.isBlank(res.getDirector())) {
+                    res.setDirector(directors.get(0).get("name").asText());
+                }
+            }
+        } catch (Exception ex) {
+            log.warn("解析 JSON-LD 失败", ex);
+        }
+    }
+
+    /**
+     * 从 HTML 标签中解析影视信息
+     */
+    private void parseFromHtml(Document doc, MovieReq res) {
+        // 获取标题
+        if (StrUtil.isBlank(res.getTitle())) {
+            Element titleElement = doc.selectFirst("meta[property=og:title]");
+            if (titleElement != null) {
+                res.setTitle(titleElement.attr("content"));
+            } else {
+                Element h1 = doc.selectFirst("h1 span");
+                if (h1 != null) {
+                    res.setTitle(h1.text());
+                } else {
+                    // 兜底获取 title 标签
+                    Element titleFallback = doc.selectFirst("title");
+                    if (titleFallback != null) {
+                        String titleText = titleFallback.text().replace("(豆瓣)", "").trim();
+                        if (!titleText.contains("302 Found") && !titleText.contains("豆瓣") && !titleText.isEmpty()) {
+                            res.setTitle(titleText);
+                        }
+                    }
+                }
+            }
+        }
+
+        // 获取封面
+        if (StrUtil.isBlank(res.getCoverImg())) {
+            Element imageElement = doc.selectFirst("meta[property=og:image]");
+            String coverUrl = imageElement != null ? imageElement.attr("content") : null;
+            if (StrUtil.isBlank(coverUrl)) {
+                Element img = doc.selectFirst("#mainpic a img");
+                coverUrl = img != null ? img.attr("src") : null;
+            }
+            if (StrUtil.isNotBlank(coverUrl)) {
+                res.setCoverImg(coverUrl.replace("s/public", "l/public").replace("s/pic", "l/pic"));
+            }
+        }
+
+        // 获取导演
+        if (StrUtil.isBlank(res.getDirector())) {
+            Element directorElement = doc.selectFirst("meta[property=video:director]");
+            if (directorElement != null) {
+                res.setDirector(directorElement.attr("content"));
+            } else {
+                Element directorSpan = doc.selectFirst("#info span.attrs a");
+                if (directorSpan != null) {
+                    res.setDirector(directorSpan.text());
+                }
+            }
+        }
+
+        // 获取总集数/时长
+        if (res.getTotalProgress() == null || res.getTotalProgress() == 0) {
+            Element runtimeSpan = doc.selectFirst("span[property=v:runtime]");
+            if (runtimeSpan != null) {
+                try {
+                    res.setTotalProgress(Integer.parseInt(runtimeSpan.attr("content")));
+                } catch (NumberFormatException ignored) {}
+            } else {
+                Element episodesSpan = doc.selectFirst("#info span.pl:contains(集数)");
+                if (episodesSpan != null && episodesSpan.nextSibling() != null) {
+                    try {
+                        res.setTotalProgress(Integer.parseInt(episodesSpan.nextSibling().toString().trim()));
+                    } catch (NumberFormatException ignored) {}
+                } else {
+                    // 移动端兜底获取时长
+                    Element subMeta = doc.selectFirst(".sub-meta");
+                    if (subMeta != null) {
+                        String metaText = subMeta.text();
+                        java.util.regex.Matcher m = java.util.regex.Pattern.compile("片长(\\d+)分钟").matcher(metaText);
+                        if (m.find()) {
+                            res.setTotalProgress(Integer.parseInt(m.group(1)));
+                        } else {
+                            // 匹配集数
+                            m = java.util.regex.Pattern.compile("(\\d+)集").matcher(metaText);
+                            if (m.find()) {
+                                res.setTotalProgress(Integer.parseInt(m.group(1)));
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }
