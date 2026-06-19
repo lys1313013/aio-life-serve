@@ -4,61 +4,73 @@ import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import top.aiolife.config.MinioConfig;
 import top.aiolife.core.constant.ResponseCodeConst;
 import top.aiolife.core.resq.ApiResponse;
-import top.aiolife.config.MinioConfig;
 import top.aiolife.core.util.MinioUtil;
-import top.aiolife.record.pojo.query.ReadRecordQuery;
-import top.aiolife.record.pojo.req.ReadRecordReq;
-import top.aiolife.record.pojo.vo.ReadRecordVO;
-import top.aiolife.record.service.IReadRecordService;
-import org.springframework.util.StringUtils;
+import top.aiolife.record.pojo.query.MovieQuery;
+import top.aiolife.record.pojo.req.MovieReq;
+import top.aiolife.record.pojo.vo.MovieVO;
+import top.aiolife.record.service.IMovieService;
 
+/**
+ * 影视记录控制器
+ *
+ * @author Trae
+ * @date 2026/06/18
+ */
 @RestController
-@RequestMapping("/read-record")
+@RequestMapping("/movie")
 @RequiredArgsConstructor
 @SaCheckLogin
-public class ReadRecordController {
+public class MovieController {
 
-    private final IReadRecordService readRecordService;
     private final MinioUtil minioUtil;
     private final MinioConfig minioConfig;
+    private final IMovieService movieService;
 
     @PostMapping("/page")
-    public ApiResponse<Page<ReadRecordVO>> pageList(@RequestBody ReadRecordQuery query) {
-        return ApiResponse.success(readRecordService.pageList(query));
+    public ApiResponse<Page<MovieVO>> pageList(@RequestBody MovieQuery query) {
+        return ApiResponse.success(movieService.pageList(query));
     }
 
     @PostMapping
-    public ApiResponse<Void> save(@RequestBody ReadRecordReq req) {
-        readRecordService.saveRecord(req);
+    public ApiResponse<Void> save(@RequestBody MovieReq req) {
+        movieService.saveRecord(req);
         return ApiResponse.success();
     }
 
     @PutMapping
-    public ApiResponse<Void> update(@RequestBody ReadRecordReq req) {
-        readRecordService.updateRecord(req);
+    public ApiResponse<Void> update(@RequestBody MovieReq req) {
+        movieService.updateRecord(req);
         return ApiResponse.success();
     }
 
     @DeleteMapping("/{id}")
     public ApiResponse<Void> delete(@PathVariable Long id) {
-        readRecordService.deleteRecord(id);
+        movieService.deleteRecord(id);
         return ApiResponse.success();
     }
 
     @GetMapping("/parse-douban")
-    public ApiResponse<ReadRecordReq> parseDouban(@RequestParam String url) {
-        return ApiResponse.success(readRecordService.parseDouban(url));
+    public ApiResponse<MovieReq> parseDouban(@RequestParam String url) {
+        return ApiResponse.success(movieService.parseDouban(url));
     }
 
+    /**
+     * 上传影视封面图
+     *
+     * @param file 封面图片文件
+     * @return 封面图的预览链接
+     */
     @PostMapping("/upload-cover")
     public ApiResponse<String> uploadCover(@RequestParam("file") MultipartFile file) {
         try {
             String fileName = minioUtil.generateUniqueFileName(file.getOriginalFilename());
-            String objectName = StpUtil.getLoginIdAsLong() + "/read-record/" + fileName;
+            String objectName = StpUtil.getLoginIdAsLong() + "/movie/" + fileName;
             
             String bucketName = StringUtils.hasText(minioConfig.getBucketName()) ? minioConfig.getBucketName() : "aiolife";
             

@@ -1,0 +1,33 @@
+package top.aiolife.record.pojo.vo;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+import lombok.Data;
+
+import java.time.LocalDateTime;
+
+@Data
+public class MovieVO {
+    private String id;
+    private String title;
+    private Integer type;
+    private String director;
+    private String url;
+    private String coverImg;
+    private Integer status;
+    private Integer totalProgress;
+    private Integer currentProgress;
+    
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime startTime;
+    
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime finishTime;
+    
+    private String remark;
+
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime createTime;
+    
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime updateTime;
+}

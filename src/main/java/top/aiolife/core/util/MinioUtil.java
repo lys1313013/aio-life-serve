@@ -3,6 +3,7 @@ package top.aiolife.core.util;
 import io.minio.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 import top.aiolife.config.MinioConfig;
@@ -22,6 +23,21 @@ public class MinioUtil {
 
     @Autowired
     private MinioConfig minioConfig;
+
+    @Value("${aio.life.serve.base-url}")
+    private String serveBaseUrl;
+
+    /**
+     * 获取文件的预览 URL
+     *
+     * @param bucketName 桶名
+     * @param objectName 对象名
+     * @return 完整的预览 URL
+     */
+    public String getPreviewUrl(String bucketName, String objectName) {
+        String normalized = objectName.startsWith("/") ? objectName.substring(1) : objectName;
+        return serveBaseUrl + "/file/preview/" + bucketName + "/" + normalized;
+    }
 
     /**
      * 上传文件到 MinIO
