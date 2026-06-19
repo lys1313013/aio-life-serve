@@ -15,6 +15,12 @@ import top.aiolife.record.pojo.req.ExerciseRecordReq;
 import top.aiolife.record.pojo.req.TimeRecordReq;
 import top.aiolife.record.pojo.vo.RecommendNextVO;
 import top.aiolife.record.service.IExerciseRecordService;
+import top.aiolife.record.service.IReadRecordService;
+import top.aiolife.record.service.IMovieService;
+import top.aiolife.record.pojo.entity.ReadRecordEntity;
+import top.aiolife.record.pojo.entity.MovieEntity;
+import top.aiolife.record.pojo.enums.ProgressStatusEnum;
+import top.aiolife.record.pojo.enums.RelateTypeEnum;
 import top.aiolife.record.service.ITimeRecordService;
 import org.springframework.stereotype.Service;
 
@@ -36,8 +42,30 @@ import java.util.List;
 public class TimeRecordServiceImpl extends ServiceImpl<ITimeRecordMapper, TimeRecordEntity> implements ITimeRecordService {
 
     private final ITimeRecordMapper timeRecordMapper;
-
     private final IExerciseRecordService exerciseRecordService;
+    private final IReadRecordService readRecordService;
+    private final IMovieService movieService;
+
+    private void updateRelateStatusIfNecessary(TimeRecordEntity entity) {
+        if (entity.getRelateId() != null && entity.getRelateType() != null) {
+            log.info("Check relate status, type: {}, id: {}", entity.getRelateType(), entity.getRelateId());
+            if (entity.getRelateType().equals(RelateTypeEnum.READ.getValue())) {
+                ReadRecordEntity readRecord = readRecordService.getById(entity.getRelateId());
+                if (readRecord != null && readRecord.getStatus() != null && readRecord.getStatus().equals(ProgressStatusEnum.NOT_STARTED.getCode())) {
+                    readRecord.setStatus(ProgressStatusEnum.IN_PROGRESS.getCode());
+                    log.info("Updating read record {} status from NOT_STARTED to IN_PROGRESS", readRecord.getId());
+                    readRecordService.updateById(readRecord);
+                }
+            } else if (entity.getRelateType().equals(RelateTypeEnum.MOVIE.getValue())) {
+                MovieEntity movie = movieService.getById(entity.getRelateId());
+                if (movie != null && movie.getStatus() != null && movie.getStatus().equals(ProgressStatusEnum.NOT_STARTED.getCode())) {
+                    movie.setStatus(ProgressStatusEnum.IN_PROGRESS.getCode());
+                    log.info("Updating movie {} status from NOT_STARTED to IN_PROGRESS", movie.getId());
+                    movieService.updateById(movie);
+                }
+            }
+        }
+    }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -60,6 +88,7 @@ public class TimeRecordServiceImpl extends ServiceImpl<ITimeRecordMapper, TimeRe
         }
 
         this.save(entity);
+        updateRelateStatusIfNecessary(entity);
 
         if (exerciseRecordReqs != null && !exerciseRecordReqs.isEmpty()) {
             List<ExerciseRecordEntity> validExercises = new java.util.ArrayList<>();
@@ -102,6 +131,7 @@ public class TimeRecordServiceImpl extends ServiceImpl<ITimeRecordMapper, TimeRe
         }
 
         this.updateById(entity);
+        updateRelateStatusIfNecessary(entity);
 
         // 删除旧的运动记录
         exerciseRecordService.remove(new LambdaQueryWrapper<ExerciseRecordEntity>()

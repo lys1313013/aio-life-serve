@@ -54,6 +54,11 @@ public class ReadRecordController {
         return ApiResponse.success(readRecordService.parseDouban(url));
     }
 
+    @GetMapping("/active")
+    public ApiResponse<java.util.List<ReadRecordVO>> listActive() {
+        return ApiResponse.success(readRecordService.listActive());
+    }
+
     @PostMapping("/upload-cover")
     public ApiResponse<String> uploadCover(@RequestParam("file") MultipartFile file) {
         try {

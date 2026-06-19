@@ -18,4 +18,6 @@ public interface IMovieService extends IService<MovieEntity> {
     void deleteRecord(Long id);
 
     MovieReq parseDouban(String url);
+
+    java.util.List<MovieVO> listActive();
 }

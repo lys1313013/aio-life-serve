@@ -17,4 +17,6 @@ public interface IReadRecordService extends IService<ReadRecordEntity> {
     void deleteRecord(Long id);
 
     ReadRecordReq parseDouban(String url);
+
+    java.util.List<ReadRecordVO> listActive();
 }

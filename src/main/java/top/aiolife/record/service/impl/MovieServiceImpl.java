@@ -333,4 +333,21 @@ public class MovieServiceImpl extends ServiceImpl<IMovieMapper, MovieEntity> imp
             }
         }
     }
+
+    @Override
+    public List<MovieVO> listActive() {
+        Long userId = StpUtil.getLoginIdAsLong();
+        LambdaQueryWrapper<MovieEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(MovieEntity::getUserId, userId);
+        wrapper.in(MovieEntity::getStatus, 0, 1); // 未开始, 进行中
+        wrapper.orderByDesc(MovieEntity::getUpdateTime);
+        
+        List<MovieEntity> entities = this.list(wrapper);
+        return entities.stream().map(entity -> {
+            MovieVO vo = new MovieVO();
+            BeanUtil.copyProperties(entity, vo);
+            vo.setId(String.valueOf(entity.getId()));
+            return vo;
+        }).collect(Collectors.toList());
+    }
 }

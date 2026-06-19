@@ -60,6 +60,11 @@ public class MovieController {
         return ApiResponse.success(movieService.parseDouban(url));
     }
 
+    @GetMapping("/active")
+    public ApiResponse<java.util.List<MovieVO>> listActive() {
+        return ApiResponse.success(movieService.listActive());
+    }
+
     /**
      * 上传影视封面图
      *

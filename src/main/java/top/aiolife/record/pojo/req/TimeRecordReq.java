@@ -68,6 +68,18 @@ public class TimeRecordReq {
     private Integer duration;
 
     /**
+     * 关联业务类型，对应 RelateTypeEnum
+     */
+    @Description("关联业务类型：1-阅读，2-观影")
+    private Integer relateType;
+
+    /**
+     * 关联业务ID
+     */
+    @Description("关联业务ID")
+    private Long relateId;
+
+    /**
      * 关联的练习记录
      */
     @Description("关联的练习记录列表")

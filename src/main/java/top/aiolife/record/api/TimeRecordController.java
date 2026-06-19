@@ -13,6 +13,7 @@ import top.aiolife.core.resq.ApiResponse;
 import top.aiolife.core.resq.PageResp;
 import top.aiolife.record.pojo.entity.ExerciseRecordEntity;
 import top.aiolife.record.pojo.entity.TimeRecordEntity;
+import top.aiolife.record.pojo.enums.RelateTypeEnum;
 import top.aiolife.record.pojo.query.TimeWeekQuery;
 import top.aiolife.record.pojo.req.TimeRecordReq;
 import top.aiolife.record.mcp.req.TimeRecordDateRangeMcpReq;
@@ -287,5 +288,13 @@ public class TimeRecordController {
         recommend.setCategoryId(categoryId);
 
         return ApiResponse.success(result);
+    }
+
+    /**
+     * 获取关联业务类型列表
+     */
+    @GetMapping("/relateTypes")
+    public ApiResponse<List<Map<String, Object>>> getRelateTypes() {
+        return ApiResponse.success(RelateTypeEnum.toList());
     }
 }

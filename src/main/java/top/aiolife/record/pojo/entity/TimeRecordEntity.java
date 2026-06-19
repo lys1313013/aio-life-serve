@@ -38,6 +38,16 @@ public class TimeRecordEntity {
     private Integer duration;
 
     /**
+     * 关联业务类型，对应 RelateTypeEnum
+     */
+    private Integer relateType;
+
+    /**
+     * 关联业务ID
+     */
+    private Long relateId;
+
+    /**
      * 是否手动添加
      */
     private Long isManual;

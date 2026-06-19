@@ -192,4 +192,21 @@ public class ReadRecordServiceImpl extends ServiceImpl<ReadRecordMapper, ReadRec
         }
         return res;
     }
+
+    @Override
+    public java.util.List<ReadRecordVO> listActive() {
+        Long userId = cn.dev33.satoken.stp.StpUtil.getLoginIdAsLong();
+        com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<ReadRecordEntity> wrapper = new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<>();
+        wrapper.eq(ReadRecordEntity::getUserId, userId);
+        wrapper.in(ReadRecordEntity::getStatus, 0, 1); // 未开始, 进行中
+        wrapper.orderByDesc(ReadRecordEntity::getUpdateTime);
+        
+        java.util.List<ReadRecordEntity> entities = this.list(wrapper);
+        return entities.stream().map(entity -> {
+            ReadRecordVO vo = new ReadRecordVO();
+            cn.hutool.core.bean.BeanUtil.copyProperties(entity, vo);
+            vo.setId(String.valueOf(entity.getId()));
+            return vo;
+        }).collect(java.util.stream.Collectors.toList());
+    }
 }
