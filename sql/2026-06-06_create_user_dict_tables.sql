@@ -1,20 +1,3 @@
-CREATE TABLE IF NOT EXISTS `user_dict_type` (
-    `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '字典主键',
-    `user_id` bigint(20) NOT NULL COMMENT '所属用户ID',
-    `dict_name` varchar(100) DEFAULT '' COMMENT '字典名称',
-    `dict_type` varchar(100) DEFAULT '' COMMENT '字典类型',
-    `status` char(1) DEFAULT '0' COMMENT '状态（0正常 1停用）',
-    `create_user` bigint(20) DEFAULT NULL COMMENT '创建人ID',
-    `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    `update_user` bigint(20) DEFAULT NULL COMMENT '更新人ID',
-    `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-    `remark` varchar(500) DEFAULT NULL COMMENT '备注',
-    `is_deleted` tinyint(1) NOT NULL DEFAULT '0' COMMENT '是否删除 0-未删除 1-已删除',
-    PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_user_dict_type` (`user_id`, `dict_type`),
-    KEY `idx_user_id` (`user_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户字典类型表';
-
 CREATE TABLE IF NOT EXISTS `user_dict_data` (
     `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '字典主键',
     `user_id` bigint(20) NOT NULL COMMENT '所属用户ID',

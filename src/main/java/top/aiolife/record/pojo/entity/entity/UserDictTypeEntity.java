@@ -1,21 +1,21 @@
 package top.aiolife.record.pojo.entity.entity;
 
-import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import top.aiolife.record.pojo.entity.BaseEntity;
 
 /**
- * 用户字典类型实体类
+ * 用户字典类型实体类 (已转为虚拟实体)
  *
  * @author Lys
  */
 @Data
-@EqualsAndHashCode(callSuper = true)
-@TableName("user_dict_type")
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class UserDictTypeEntity extends BaseEntity {
+public class UserDictTypeEntity {
+
+    /**
+     * 字典主键
+     */
+    private Long id;
 
     /**
      * 所属用户ID

@@ -45,7 +45,8 @@ public class MovieServiceImpl extends ServiceImpl<IMovieMapper, MovieEntity> imp
         if (StrUtil.isNotBlank(query.getTitle())) {
             wrapper.like(MovieEntity::getTitle, query.getTitle());
         }
-        wrapper.orderByDesc(MovieEntity::getCreateTime);
+        wrapper.orderByAsc(MovieEntity::getStatus)
+               .orderByDesc(MovieEntity::getFinishTime);
 
         Page<MovieEntity> page = new Page<>(query.getCurrent() == null ? 1 : query.getCurrent(), query.getSize() == null ? 10 : query.getSize());
         Page<MovieEntity> entityPage = this.page(page, wrapper);

@@ -1,8 +1,4 @@
--- 1. 插入字典类型 (如果不存在)
-INSERT IGNORE INTO `user_dict_type` (`user_id`, `dict_name`, `dict_type`, `status`, `create_user`, `update_user`)
-VALUES (0, '支付方式', 'pay_type', '0', 0, 0);
-
--- 2. 插入字典数据
+-- 1. 插入字典数据
 INSERT IGNORE INTO `user_dict_data` (`user_id`, `dict_type`, `dict_sort`, `dict_label`, `dict_value`, `status`, `create_user`, `update_user`)
 VALUES 
 (0, 'pay_type', 1, '支付宝', '1', '0', 0, 0),

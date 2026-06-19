@@ -44,7 +44,8 @@ public class ReadRecordServiceImpl extends ServiceImpl<ReadRecordMapper, ReadRec
         if (StrUtil.isNotBlank(query.getTitle())) {
             wrapper.like(ReadRecordEntity::getTitle, query.getTitle());
         }
-        wrapper.orderByDesc(ReadRecordEntity::getCreateTime);
+        wrapper.orderByAsc(ReadRecordEntity::getStatus)
+               .orderByDesc(ReadRecordEntity::getFinishTime);
 
         Page<ReadRecordEntity> page = new Page<>(query.getCurrent() == null ? 1 : query.getCurrent(), query.getSize() == null ? 10 : query.getSize());
         Page<ReadRecordEntity> entityPage = this.page(page, wrapper);
