@@ -2,6 +2,49 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="top.aiolife.record.mapper.ITimeRecordMapper">
 
+    <select id="getMostFrequentNextCategory" resultType="java.lang.String">
+        SELECT next_record.category_id
+        FROM time_record prev_record
+        JOIN time_record next_record 
+          ON prev_record.user_id = next_record.user_id 
+          AND prev_record.date = next_record.date
+        WHERE prev_record.user_id = #{userId}
+          AND prev_record.category_id = #{previousCategoryId}
+          AND next_record.start_time = prev_record.end_time + 1
+          AND next_record.category_id != #{previousCategoryId}
+          AND prev_record.is_deleted = 0
+          AND next_record.is_deleted = 0
+          <if test="isWorkday">
+              AND DAYOFWEEK(prev_record.date) IN (2, 3, 4, 5, 6)
+          </if>
+          <if test="!isWorkday">
+              AND DAYOFWEEK(prev_record.date) IN (1, 7)
+          </if>
+        GROUP BY next_record.category_id
+        ORDER BY COUNT(*) DESC
+        LIMIT 1
+    </select>
+
+    <select id="getMostFrequentCategoryAtTime" resultType="java.lang.String">
+        SELECT category_id
+        FROM time_record
+        WHERE user_id = #{userId}
+          AND start_time &lt;= #{time} AND end_time &gt;= #{time}
+          AND is_deleted = 0
+          <if test="excludeCategoryId != null and excludeCategoryId != ''">
+              AND category_id != #{excludeCategoryId}
+          </if>
+          <if test="isWorkday">
+              AND DAYOFWEEK(date) IN (2, 3, 4, 5, 6)
+          </if>
+          <if test="!isWorkday">
+              AND DAYOFWEEK(date) IN (1, 7)
+          </if>
+        GROUP BY category_id
+        ORDER BY COUNT(*) DESC
+        LIMIT 1
+    </select>
+
     <select id="recommendType" resultType="top.aiolife.record.pojo.entity.TimeRecordEntity">
         SELECT *
         FROM time_record

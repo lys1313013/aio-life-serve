@@ -247,30 +247,17 @@ public class TimeRecordController {
      * 推荐分类
      * @param date 日期
      * @param time 时间
+     * @param previousCategoryId 紧邻的上一条记录分类id（可选）
      * @return 分类id
      */
     @GetMapping("/recommendType")
-    public ApiResponse<String> recommendType(String date, int time) {
+    public ApiResponse<String> recommendType(String date, int time, @RequestParam(required = false) String previousCategoryId) {
         long userId = StpUtil.getLoginIdAsLong();
-        // 周一取上周五，周六取上周日
-        // todo 按照工作日计算
-        int dayOfWeek = LocalDate.parse(date).getDayOfWeek().getValue();
-        if (dayOfWeek == 6) {
-            date = LocalDate.parse(date).minusDays(6).toString();
-        } else if (dayOfWeek == 1) {
-            date = LocalDate.parse(date).minusDays(3).toString();
-        } else  {
-            // date 转成昨天
-            LocalDate localDate = LocalDate.parse(date);
-            LocalDate yesterday = localDate.minusDays(1);
-            date = yesterday.toString();
-        }
-
-        TimeRecordEntity timeRecordEntity = timeRecordService.recommendType(userId, date, time);
-        if (timeRecordEntity == null) {
+        String categoryId = timeRecordService.recommendType(userId, date, time, previousCategoryId);
+        if (categoryId == null) {
             return ApiResponse.success("");
         }
-        return ApiResponse.success(timeRecordEntity.getCategoryId());
+        return ApiResponse.success(categoryId);
     }
 
     /**
@@ -284,7 +271,19 @@ public class TimeRecordController {
         
         // 获取推荐分类
         TimeRecordEntity recommend = result.getRecommend();
-        String categoryId = recommendType(date, recommend.getStartTime()).getData();
+        
+        // 寻找紧邻的上一条记录分类
+        String previousCategoryId = null;
+        if (result.getRecords() != null) {
+            for (TimeRecordEntity record : result.getRecords()) {
+                if (record.getEndTime() != null && record.getEndTime() == recommend.getStartTime() - 1) {
+                    previousCategoryId = record.getCategoryId();
+                    break;
+                }
+            }
+        }
+        
+        String categoryId = recommendType(date, recommend.getStartTime(), previousCategoryId).getData();
         recommend.setCategoryId(categoryId);
 
         return ApiResponse.success(result);

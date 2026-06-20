@@ -51,12 +51,13 @@ public interface ITimeRecordService extends IService<TimeRecordEntity> {
     /**
      * 推荐分类
      *
-     * @param userId 用户id
-     * @param date   日期
-     * @param time   时间
+     * @param userId             用户id
+     * @param date               日期
+     * @param time               时间
+     * @param previousCategoryId 紧邻的上一条记录的分类id（可为空）
      * @return 分类id
      */
-    TimeRecordEntity recommendType(long userId, String date, int time);
+    String recommendType(long userId, String date, int time, String previousCategoryId);
 
     /**
      * 推荐下一个时间块
