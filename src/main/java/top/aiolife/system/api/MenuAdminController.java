@@ -124,6 +124,23 @@ public class MenuAdminController {
     }
 
     /**
+     * 更新菜单排序。
+     *
+     * @param id 菜单ID
+     * @param body 请求体，包含 sort
+     * @return 统一返回结构，data 为更新后的菜单节点
+     */
+    @PutMapping("/{id}/sort")
+    public ApiResponse<MenuAdminVO> updateSort(@PathVariable long id, @RequestBody Map<String, Object> body) throws Exception {
+        long userId = StpUtil.getLoginIdAsLong();
+        Object sortObj = body == null ? null : body.get("sort");
+        if (!(sortObj instanceof Number n)) {
+            return ApiResponse.error(ResponseCodeConst.RECODE_PARAM_FAIL, "sort 不能为空");
+        }
+        return ApiResponse.success(menuService.updateSort(id, n.intValue(), userId));
+    }
+
+    /**
      * 删除菜单节点。
      *
      * @param id 菜单ID

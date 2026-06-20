@@ -165,6 +165,18 @@ public class MenuServiceImpl implements IMenuService {
     }
 
     @Override
+    public MenuAdminVO updateSort(long id, int sort, long userId) throws Exception {
+        SysMenuEntity exist = sysMenuMapper.selectById(id);
+        if (exist == null || !Objects.equals(exist.getIsDeleted(), 0)) {
+            throw new IllegalArgumentException("菜单不存在");
+        }
+        exist.setSort(sort);
+        exist.fillUpdateCommonField(userId);
+        sysMenuMapper.updateById(exist);
+        return toAdminVo(exist);
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public void delete(long id, long userId) {
         SysMenuEntity exist = sysMenuMapper.selectById(id);

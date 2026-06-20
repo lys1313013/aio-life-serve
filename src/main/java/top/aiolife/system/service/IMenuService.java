@@ -82,6 +82,8 @@ public interface IMenuService {
      */
     MenuAdminVO updateStatus(long id, int status, long userId) throws Exception;
 
+    MenuAdminVO updateSort(long id, int sort, long userId) throws Exception;
+
     /**
      * 删除菜单节点（逻辑删除）。
      *
