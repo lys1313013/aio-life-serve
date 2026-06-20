@@ -104,7 +104,11 @@ public class ThoughtController {
     public ApiResponse<Boolean> update(@RequestBody ThoughtEntity entity) {
         Long userId = StpUtil.getLoginIdAsLong();
         entity.setUserId(userId);
-        entity.setUpdateTime(LocalDateTime.now());
+        
+        // 只有在修改内容时才更新时间，单纯点击隐藏内容不更新时间
+        if (entity.getContent() != null) {
+            entity.setUpdateTime(LocalDateTime.now());
+        }
         
         LambdaQueryWrapper<ThoughtEntity> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(ThoughtEntity::getId, entity.getId());
@@ -114,10 +118,12 @@ public class ThoughtController {
         
         if (rows > 0) {
             // 更新事件
-            entity.getEvents().forEach(eventEntity -> {
-                eventEntity.setThoughtId(entity.getId());
-                relaEventMapper.insertOrUpdate(eventEntity);
-            });
+            if (entity.getEvents() != null) {
+                entity.getEvents().forEach(eventEntity -> {
+                    eventEntity.setThoughtId(entity.getId());
+                    relaEventMapper.insertOrUpdate(eventEntity);
+                });
+            }
             return ApiResponse.success(true);
         }
         return ApiResponse.error("无权操作或记录不存在");

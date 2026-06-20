@@ -29,4 +29,9 @@ public class MemoEntity extends BaseEntity {
      * 内容
      */
     private String content;
+
+    /**
+     * 是否隐藏内容
+     */
+    private Boolean hiddenContent;
 }

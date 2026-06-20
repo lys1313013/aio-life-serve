@@ -22,6 +22,8 @@ public class ThoughtEntity extends BaseEntity {
 
     private Integer isPinned;
 
+    private Boolean hiddenContent;
+
     @TableField(exist = false)
     private List<ThoughtRelaEventEntity> events;
 }

@@ -75,7 +75,11 @@ public class MemoController {
         Long userId = StpUtil.getLoginIdAsLong();
         entity.setUserId(userId);
         entity.setUpdateUser(userId);
-        entity.setUpdateTime(LocalDateTime.now());
+        
+        // 只有在修改内容/标题时才更新时间，如果是单纯点击隐藏内容则不更新时间
+        if (entity.getContent() != null || entity.getTitle() != null) {
+            entity.setUpdateTime(LocalDateTime.now());
+        }
         
         LambdaQueryWrapper<MemoEntity> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(MemoEntity::getId, entity.getId());
