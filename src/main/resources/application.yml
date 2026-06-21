@@ -55,7 +55,7 @@ spring:
       port: ${AIO_LIFE_REDIS_PORT:6379}
       password: ${AIO_LIFE_REDIS_PASSWORD:}
   neo4j:
-    uri: ${AIO_LIFE_NEO4J_URI:bolt://localhost:7689}
+    uri: ${AIO_LIFE_NEO4J_URI:bolt://localhost:7687}
     authentication:
       username: ${AIO_LIFE_NEO4J_USERNAME:neo4j}
       password: ${AIO_LIFE_NEO4J_PASSWORD:neo4j123456}
