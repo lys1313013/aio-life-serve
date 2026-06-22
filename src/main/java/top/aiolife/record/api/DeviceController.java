@@ -10,8 +10,13 @@ import top.aiolife.core.resq.PageResp;
 import top.aiolife.core.util.SysUtil;
 import top.aiolife.record.mapper.IDeviceMapper;
 import top.aiolife.record.pojo.entity.DeviceEntity;
+import top.aiolife.config.MinioConfig;
+import top.aiolife.core.constant.ResponseCodeConst;
+import top.aiolife.core.util.MinioUtil;
 import lombok.AllArgsConstructor;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * 类功能描述
@@ -24,6 +29,8 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/device")
 public class DeviceController {
     private IDeviceMapper eleDeviceMapper;
+    private final MinioUtil minioUtil;
+    private final MinioConfig minioConfig;
 
     public IDeviceMapper getBaseMapper() {
         return eleDeviceMapper;
@@ -56,6 +63,23 @@ public class DeviceController {
         entity.setUserId(StpUtil.getLoginIdAsLong());
 
         return ApiResponse.success(getBaseMapper().insertOrUpdate(entity));
+    }
+
+    /**
+     * 上传设备图片
+     */
+    @PostMapping("/upload-image")
+    public ApiResponse<String> uploadImage(@RequestParam("file") MultipartFile file) {
+        try {
+            String fileName = minioUtil.generateUniqueFileName(file.getOriginalFilename());
+            String objectName = StpUtil.getLoginIdAsLong() + "/device/" + fileName;
+            String bucketName = StringUtils.hasText(minioConfig.getBucketName()) ? minioConfig.getBucketName() : "aiolife";
+            minioUtil.uploadFile(bucketName, file, objectName);
+            String imageUrl = minioUtil.getPreviewUrl(bucketName, objectName);
+            return ApiResponse.success(imageUrl);
+        } catch (Exception e) {
+            return ApiResponse.error(ResponseCodeConst.RSCODE_COMMON_FAIL, "上传失败: " + e.getMessage());
+        }
     }
 
     /**
