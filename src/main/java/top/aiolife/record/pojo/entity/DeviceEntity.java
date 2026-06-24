@@ -1,6 +1,7 @@
 package top.aiolife.record.pojo.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Getter;
@@ -70,9 +71,9 @@ public class DeviceEntity {
     private String purchasePlace;
 
     /**
-     * 设备的图片链接或存储路径
+     * 图片文件ID
      */
-    private String image;
+    private String fileId;
 
     /**
      * 设备的结束日期（用于计算日均费用）

@@ -116,6 +116,38 @@ public class MinioUtil {
     }
 
     /**
+     * 删除文件
+     * @param bucketName 桶名
+     * @param objectName 文件对象名
+     */
+    public void removeObject(String bucketName, String objectName) throws Exception {
+        minioClient.removeObject(
+                RemoveObjectArgs.builder()
+                        .bucket(bucketName)
+                        .object(objectName)
+                        .build()
+        );
+    }
+
+    /**
+     * 复制文件
+     * @param sourceBucket 源桶名
+     * @param sourceObject 源对象名
+     * @param targetBucket 目标桶名
+     * @param targetObject 目标对象名
+     */
+    public void copyObject(String sourceBucket, String sourceObject, String targetBucket, String targetObject) throws Exception {
+        ensureBucketExists(targetBucket);
+        minioClient.copyObject(
+                CopyObjectArgs.builder()
+                        .source(CopySource.builder().bucket(sourceBucket).object(sourceObject).build())
+                        .bucket(targetBucket)
+                        .object(targetObject)
+                        .build()
+        );
+    }
+
+    /**
      * 确保桶存在，如果不存在则创建
      * @param bucketName 桶名
      */

@@ -12,7 +12,7 @@ public class ReadRecordVO {
     private Integer type;
     private String author;
     private String url;
-    private String coverImg;
+    private String fileId;
     private Integer status;
     private Integer totalProgress;
     private Integer currentProgress;

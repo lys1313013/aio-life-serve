@@ -15,9 +15,12 @@ import top.aiolife.record.pojo.query.ReadRecordQuery;
 import top.aiolife.record.pojo.req.ReadRecordReq;
 import top.aiolife.record.pojo.vo.ReadRecordVO;
 import top.aiolife.record.service.IReadRecordService;
+import top.aiolife.record.service.IFileService;
+import top.aiolife.record.pojo.entity.FileEntity;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.jsoup.Jsoup;
@@ -28,6 +31,8 @@ import org.jsoup.nodes.Element;
 @Service
 @RequiredArgsConstructor
 public class ReadRecordServiceImpl extends ServiceImpl<ReadRecordMapper, ReadRecordEntity> implements IReadRecordService {
+
+    private final IFileService fileService;
 
     @Override
     public Page<ReadRecordVO> pageList(ReadRecordQuery query) {
@@ -51,6 +56,7 @@ public class ReadRecordServiceImpl extends ServiceImpl<ReadRecordMapper, ReadRec
         Page<ReadRecordEntity> entityPage = this.page(page, wrapper);
 
         Page<ReadRecordVO> voPage = new Page<>(entityPage.getCurrent(), entityPage.getSize(), entityPage.getTotal());
+
         List<ReadRecordVO> voList = entityPage.getRecords().stream().map(entity -> {
             ReadRecordVO vo = new ReadRecordVO();
             BeanUtil.copyProperties(entity, vo);
@@ -162,7 +168,7 @@ public class ReadRecordServiceImpl extends ServiceImpl<ReadRecordMapper, ReadRec
                 // 如果是豆瓣图片，尝试替换为更高清的版本
                 coverUrl = coverUrl.replace("s/public", "l/public")
                                  .replace("s/pic", "l/pic");
-                res.setCoverImg(coverUrl);
+                res.setCoverImgUrl(coverUrl);
             }
             
             // 获取作者

@@ -12,7 +12,16 @@ import top.aiolife.record.pojo.req.CommonReq;
 import top.aiolife.record.service.IHonorRecordService;
 
 import java.time.LocalDateTime;
+import top.aiolife.record.pojo.vo.FileVO;
+import top.aiolife.record.pojo.entity.FileEntity;
+import top.aiolife.record.service.IFileService;
+import top.aiolife.config.MinioConfig;
+import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
+import top.aiolife.core.constant.ResponseCodeConst;
+
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 荣誉记录控制器
@@ -27,6 +36,8 @@ public class HonorRecordController {
     private final IHonorRecordMapper honorRecordMapper;
 
     private final IHonorRecordService honorRecordService;
+    private final IFileService fileService;
+    private final MinioConfig minioConfig;
 
 
     @GetMapping
@@ -36,9 +47,29 @@ public class HonorRecordController {
         queryWrapper.eq(HonorRecordEntity::getUserId, userId);
         queryWrapper.orderByDesc(HonorRecordEntity::getIsTop);
         queryWrapper.orderByDesc(HonorRecordEntity::getHonorDate);
-        return ApiResponse.success(honorRecordService.list(queryWrapper));
+        List<HonorRecordEntity> list = honorRecordService.list(queryWrapper);
+        if (list != null && !list.isEmpty()) {
+            for (HonorRecordEntity entity : list) {
+                entity.setFiles(fileService.getByBiz("honor_record", entity.getId()));
+            }
+        }
+        return ApiResponse.success(list);
     }
 
+    @PostMapping("/upload-attachment")
+    public ApiResponse<FileVO> uploadAttachment(@RequestParam("file") MultipartFile file) {
+        try {
+            String fileName = file.getOriginalFilename();
+            String extension = fileName != null && fileName.contains(".") ? fileName.substring(fileName.lastIndexOf('.')) : "";
+            String objectName = StpUtil.getLoginIdAsLong() + "/honor/" + java.util.UUID.randomUUID().toString() + extension;
+            String bucketName = StringUtils.hasText(minioConfig.getBucketName()) ? minioConfig.getBucketName() : "aiolife";
+            
+            FileEntity fileEntity = fileService.uploadAndSave(file, "honor_record", bucketName, objectName, 0);
+            return ApiResponse.success(fileService.toVO(fileEntity));
+        } catch (Exception e) {
+            return ApiResponse.error(ResponseCodeConst.RSCODE_COMMON_FAIL, "上传失败: " + e.getMessage());
+        }
+    }
 
     @GetMapping("/{id}")
     public ApiResponse<HonorRecordEntity> getHonorRecord(@PathVariable Long id) {
@@ -46,7 +77,11 @@ public class HonorRecordController {
         LambdaQueryWrapper<HonorRecordEntity> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(HonorRecordEntity::getId, id);
         queryWrapper.eq(HonorRecordEntity::getUserId, userId);
-        return ApiResponse.success(honorRecordService.getOne(queryWrapper));
+        HonorRecordEntity entity = honorRecordService.getOne(queryWrapper);
+        if (entity != null) {
+            entity.setFiles(fileService.getByBiz("honor_record", entity.getId()));
+        }
+        return ApiResponse.success(entity);
     }
 
 
@@ -56,6 +91,9 @@ public class HonorRecordController {
         honorRecordEntity.setUserId(userId);
         honorRecordEntity.fillCreateCommonField(userId);
         honorRecordMapper.insert(honorRecordEntity);
+        if (honorRecordEntity.getFileIds() != null && !honorRecordEntity.getFileIds().isEmpty()) {
+            fileService.bindBizId(honorRecordEntity.getFileIds(), "honor_record", honorRecordEntity.getId());
+        }
         return ApiResponse.success(honorRecordEntity);
     }
 
@@ -69,6 +107,9 @@ public class HonorRecordController {
         lambdaUpdateWrapper.eq(HonorRecordEntity::getId, honorRecordEntity.getId());
         lambdaUpdateWrapper.eq(HonorRecordEntity::getUserId, userId);
         honorRecordService.update(honorRecordEntity, lambdaUpdateWrapper);
+        if (honorRecordEntity.getFileIds() != null && !honorRecordEntity.getFileIds().isEmpty()) {
+            fileService.bindBizId(honorRecordEntity.getFileIds(), "honor_record", honorRecordEntity.getId());
+        }
         return ApiResponse.success(honorRecordEntity);
     }
 

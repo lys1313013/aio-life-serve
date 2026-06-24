@@ -15,6 +15,9 @@ import top.aiolife.record.pojo.query.MovieQuery;
 import top.aiolife.record.pojo.req.MovieReq;
 import top.aiolife.record.pojo.vo.MovieVO;
 import top.aiolife.record.service.IMovieService;
+import top.aiolife.record.pojo.entity.FileEntity;
+import top.aiolife.record.pojo.vo.FileVO;
+import top.aiolife.record.service.IFileService;
 
 /**
  * 影视记录控制器
@@ -31,6 +34,7 @@ public class MovieController {
     private final MinioUtil minioUtil;
     private final MinioConfig minioConfig;
     private final IMovieService movieService;
+    private final IFileService fileService;
 
     @PostMapping("/page")
     public ApiResponse<Page<MovieVO>> pageList(@RequestBody MovieQuery query) {
@@ -69,20 +73,18 @@ public class MovieController {
      * 上传影视封面图
      *
      * @param file 封面图片文件
-     * @return 封面图的预览链接
+     * @return 封面图的信息
      */
     @PostMapping("/upload-cover")
-    public ApiResponse<String> uploadCover(@RequestParam("file") MultipartFile file) {
+    public ApiResponse<FileVO> uploadCover(@RequestParam("file") MultipartFile file) {
         try {
-            String fileName = minioUtil.generateUniqueFileName(file.getOriginalFilename());
-            String objectName = StpUtil.getLoginIdAsLong() + "/movie/" + fileName;
-            
+            String fileName = file.getOriginalFilename();
+            String extension = fileName != null && fileName.contains(".") ? fileName.substring(fileName.lastIndexOf('.')) : "";
+            String objectName = StpUtil.getLoginIdAsLong() + "/movie/" + java.util.UUID.randomUUID().toString() + extension;
             String bucketName = StringUtils.hasText(minioConfig.getBucketName()) ? minioConfig.getBucketName() : "aiolife";
             
-            minioUtil.uploadFile(bucketName, file, objectName);
-            
-            String imageUrl = minioUtil.getPreviewUrl(bucketName, objectName);
-            return ApiResponse.success(imageUrl);
+            FileEntity fileEntity = fileService.uploadAndSave(file, "movie", bucketName, objectName, 0);
+            return ApiResponse.success(fileService.toVO(fileEntity));
         } catch (Exception e) {
             return ApiResponse.error(ResponseCodeConst.RSCODE_COMMON_FAIL, "上传失败: " + e.getMessage());
         }

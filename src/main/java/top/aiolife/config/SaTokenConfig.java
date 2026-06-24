@@ -81,7 +81,10 @@ public class SaTokenConfig implements WebMvcConfigurer {
                 .excludePathPatterns("/auth/login", "/auth/register", "/auth/sendEmailCode", "/auth/sendResetPasswordCode",
                         "/auth/resetPassword",
                         "/actuator/**",
-                        "/file/preview/**");
+                        "/file/preview/**",
+                        "/file/download/**",
+                        "/file/migrate/run",
+                        "/test-token");
 
         // 记录最后活跃时间（仅 Token 请求），需在 Sa-Token 校验通过后执行
         registry.addInterceptor(userLastActiveInterceptor)
@@ -89,6 +92,8 @@ public class SaTokenConfig implements WebMvcConfigurer {
                 .excludePathPatterns("/auth/login", "/auth/register", "/auth/sendEmailCode", "/auth/sendResetPasswordCode",
                         "/auth/resetPassword",
                         "/actuator/**",
-                        "/file/preview/**");
+                        "/file/preview/**",
+                        "/file/download/**",
+                        "/file/migrate/run");
     }
 }

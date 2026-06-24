@@ -12,7 +12,8 @@ public class MovieVO {
     private Integer type;
     private String director;
     private String url;
-    private String coverImg;
+    private String fileId;
+    private String name;
     private Integer status;
     private Integer totalProgress;
     private Integer currentProgress;

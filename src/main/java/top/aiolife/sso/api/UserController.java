@@ -8,7 +8,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import top.aiolife.core.constant.ResponseCodeConst;
 import top.aiolife.core.resq.ApiResponse;
-import top.aiolife.core.util.MinioUtil;
+import top.aiolife.record.pojo.entity.FileEntity;
+import top.aiolife.record.service.IFileService;
 import top.aiolife.sso.pojo.entity.UserEntity;
 import top.aiolife.sso.pojo.req.ChangePasswordReq;
 import top.aiolife.sso.pojo.req.LoginReq;
@@ -32,7 +33,7 @@ import java.util.Map;
 public class UserController {
 
     private final IUserService userService;
-    private final MinioUtil minioUtil;
+    private final IFileService fileService;
 
     @Value("${aio.life.serve.base-url}")
     private String serveBaseUrl;
@@ -138,14 +139,16 @@ public class UserController {
     @PostMapping("/users/avatar/upload")
     public ApiResponse<String> uploadAvatar(@RequestParam("file") MultipartFile file) {
         try {
-            // 生成唯一文件名
-            String fileName = minioUtil.generateUniqueFileName(file.getOriginalFilename());
-            String objectName = StpUtil.getLoginIdAsLong() + "/" + fileName;
-            String bucketName = "avatar";
-            minioUtil.uploadFile(bucketName, file, objectName);
+            String fileName = file.getOriginalFilename();
+            String extension = fileName != null && fileName.contains(".") ? fileName.substring(fileName.lastIndexOf('.')) : "";
+            String objectName = StpUtil.getLoginIdAsLong() + "/avatar/" + java.util.UUID.randomUUID().toString() + extension;
+            String bucketName = "aiolife";
             
-            // 构建完整的文件访问URL
-            String imageUrl = serveBaseUrl + "/file/preview/" + bucketName + "/" + objectName;
+            // 头像必须设置为公开可见 (isPublic = 1)
+            FileEntity fileEntity = fileService.uploadAndSave(file, "avatar", bucketName, objectName, 1);
+            
+            // 返回文件预览URL (前端也可以直接用这个URL)
+            String imageUrl = serveBaseUrl + "/file/preview/" + fileEntity.getId();
                     
             return ApiResponse.success(imageUrl);
         } catch (Exception e) {

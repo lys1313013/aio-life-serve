@@ -1,5 +1,6 @@
 package top.aiolife.wardrobe.pojo.entity;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
@@ -53,10 +54,8 @@ public class WardrobeItemEntity extends BaseEntity {
      */
     private BigDecimal price;
 
-    /**
-     * 照片URLs(JSON数组)
-     */
-    private String photoUrls;
+    @TableField(exist = false)
+    private java.util.List<top.aiolife.record.pojo.vo.FileVO> files;
 
     /**
      * 尺码

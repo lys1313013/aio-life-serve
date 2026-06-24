@@ -12,7 +12,8 @@ public class MovieReq {
     private Integer type;
     private String director;
     private String url;
-    private String coverImg;
+    private String fileId;
+    private String coverImgUrl;
     private Integer status;
     private Integer totalProgress;
     private Integer currentProgress;

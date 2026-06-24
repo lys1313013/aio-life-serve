@@ -1,5 +1,6 @@
 package top.aiolife.record.pojo.entity;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
@@ -35,7 +36,11 @@ public class HonorRecordEntity extends BaseEntity {
 
     private String tags;
 
-    private String attachments;
+    @TableField(exist = false)
+    private java.util.List<String> fileIds;
+
+    @TableField(exist = false)
+    private java.util.List<top.aiolife.record.pojo.vo.FileVO> files;
 
     private Integer isTop;
 

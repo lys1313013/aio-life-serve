@@ -18,6 +18,8 @@ import top.aiolife.wardrobe.pojo.req.WardrobeItemReq;
 import top.aiolife.wardrobe.pojo.vo.WardrobeItemVO;
 import top.aiolife.wardrobe.pojo.vo.WardrobeStatsVO;
 import top.aiolife.wardrobe.service.IWardrobeItemService;
+import top.aiolife.record.service.IFileService;
+import top.aiolife.record.pojo.vo.FileVO;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -33,6 +35,7 @@ public class WardrobeItemServiceImpl extends ServiceImpl<WardrobeItemMapper, War
 
     private final WardrobeCategoryMapper categoryMapper;
     private final ObjectMapper objectMapper;
+    private final IFileService fileService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -42,8 +45,11 @@ public class WardrobeItemServiceImpl extends ServiceImpl<WardrobeItemMapper, War
         entity.setUserId(userId);
         entity.fillCreateCommonField(userId);
         entity.setSeason(joinSeason(req.getSeason()));
-        entity.setPhotoUrls(toJson(req.getPhotoUrls()));
         this.save(entity);
+
+        if (req.getFileIds() != null && !req.getFileIds().isEmpty()) {
+            fileService.bindBizId(req.getFileIds(), "wardrobe_item", entity.getId());
+        }
     }
 
     @Override
@@ -54,8 +60,11 @@ public class WardrobeItemServiceImpl extends ServiceImpl<WardrobeItemMapper, War
         Long userId = StpUtil.getLoginIdAsLong();
         entity.fillUpdateCommonField(userId);
         entity.setSeason(joinSeason(req.getSeason()));
-        entity.setPhotoUrls(toJson(req.getPhotoUrls()));
         this.updateById(entity);
+
+        if (req.getFileIds() != null && !req.getFileIds().isEmpty()) {
+            fileService.bindBizId(req.getFileIds(), "wardrobe_item", entity.getId());
+        }
     }
 
     @Override
@@ -176,7 +185,7 @@ public class WardrobeItemServiceImpl extends ServiceImpl<WardrobeItemMapper, War
         vo.setSeason(entity.getSeason());
         vo.setPurchaseDate(entity.getPurchaseDate());
         vo.setPrice(entity.getPrice());
-        vo.setPhotoUrls(fromJson(entity.getPhotoUrls()));
+        vo.setFiles(fileService.getByBiz("wardrobe_item", entity.getId()));
         vo.setSize(entity.getSize());
         vo.setMemo(entity.getMemo());
         vo.setCreateTime(entity.getCreateTime());
@@ -196,27 +205,4 @@ public class WardrobeItemServiceImpl extends ServiceImpl<WardrobeItemMapper, War
         return String.join(",", season);
     }
 
-    private String toJson(List<String> list) {
-        if (list == null || list.isEmpty()) {
-            return null;
-        }
-        try {
-            return objectMapper.writeValueAsString(list);
-        } catch (JsonProcessingException e) {
-            log.error("JSON序列化失败", e);
-            return null;
-        }
-    }
-
-    private List<String> fromJson(String json) {
-        if (json == null || json.isEmpty()) {
-            return Collections.emptyList();
-        }
-        try {
-            return objectMapper.readValue(json, new TypeReference<List<String>>() {});
-        } catch (JsonProcessingException e) {
-            log.error("JSON反序列化失败", e);
-            return Collections.emptyList();
-        }
-    }
 }

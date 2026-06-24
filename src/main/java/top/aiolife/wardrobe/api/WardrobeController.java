@@ -1,7 +1,7 @@
 package top.aiolife.wardrobe.api;
 
 import cn.dev33.satoken.stp.StpUtil;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import top.aiolife.core.resq.ApiResponse;
@@ -14,9 +14,11 @@ import top.aiolife.wardrobe.service.IWardrobeCategoryService;
 import top.aiolife.wardrobe.service.IWardrobeItemService;
 import top.aiolife.config.MinioConfig;
 import top.aiolife.core.constant.ResponseCodeConst;
-import top.aiolife.core.util.MinioUtil;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
+import top.aiolife.record.pojo.vo.FileVO;
+import top.aiolife.record.pojo.entity.FileEntity;
+import top.aiolife.record.service.IFileService;
 
 import java.util.List;
 
@@ -26,12 +28,12 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequestMapping("/wardrobe")
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class WardrobeController {
 
     private final IWardrobeItemService wardrobeItemService;
     private final IWardrobeCategoryService wardrobeCategoryService;
-    private final MinioUtil minioUtil;
+    private final IFileService fileService;
     private final MinioConfig minioConfig;
 
     // ==================== 衣物接口 ====================
@@ -105,17 +107,16 @@ public class WardrobeController {
      * @return 照片的预览链接
      */
     @PostMapping("/upload-photo")
-    public ApiResponse<String> uploadPhoto(@RequestParam("file") MultipartFile file) {
+    public ApiResponse<FileVO> uploadPhoto(@RequestParam("file") MultipartFile file) {
         try {
-            String fileName = minioUtil.generateUniqueFileName(file.getOriginalFilename());
-            String objectName = StpUtil.getLoginIdAsLong() + "/wardrobe/" + fileName;
+            String fileName = file.getOriginalFilename();
+            String extension = fileName != null && fileName.contains(".") ? fileName.substring(fileName.lastIndexOf('.')) : "";
+            String objectName = StpUtil.getLoginIdAsLong() + "/wardrobe/" + java.util.UUID.randomUUID().toString() + extension;
             
             String bucketName = StringUtils.hasText(minioConfig.getBucketName()) ? minioConfig.getBucketName() : "aiolife";
             
-            minioUtil.uploadFile(bucketName, file, objectName);
-            
-            String imageUrl = minioUtil.getPreviewUrl(bucketName, objectName);
-            return ApiResponse.success(imageUrl);
+            FileEntity fileEntity = fileService.uploadAndSave(file, "wardrobe_item", bucketName, objectName, 0);
+            return ApiResponse.success(fileService.toVO(fileEntity));
         } catch (Exception e) {
             return ApiResponse.error(ResponseCodeConst.RSCODE_COMMON_FAIL, "上传失败: " + e.getMessage());
         }

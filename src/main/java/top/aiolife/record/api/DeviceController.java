@@ -13,10 +13,15 @@ import top.aiolife.record.pojo.entity.DeviceEntity;
 import top.aiolife.config.MinioConfig;
 import top.aiolife.core.constant.ResponseCodeConst;
 import top.aiolife.core.util.MinioUtil;
+import top.aiolife.record.pojo.entity.FileEntity;
+import top.aiolife.record.pojo.vo.FileVO;
+import top.aiolife.record.service.IFileService;
 import lombok.AllArgsConstructor;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 类功能描述
@@ -29,8 +34,8 @@ import org.springframework.web.multipart.MultipartFile;
 @RequestMapping("/device")
 public class DeviceController {
     private IDeviceMapper eleDeviceMapper;
-    private final MinioUtil minioUtil;
     private final MinioConfig minioConfig;
+    private final IFileService fileService;
 
     public IDeviceMapper getBaseMapper() {
         return eleDeviceMapper;
@@ -69,14 +74,15 @@ public class DeviceController {
      * 上传设备图片
      */
     @PostMapping("/upload-image")
-    public ApiResponse<String> uploadImage(@RequestParam("file") MultipartFile file) {
+    public ApiResponse<FileVO> uploadImage(@RequestParam("file") MultipartFile file) {
         try {
-            String fileName = minioUtil.generateUniqueFileName(file.getOriginalFilename());
-            String objectName = StpUtil.getLoginIdAsLong() + "/device/" + fileName;
+            String fileName = file.getOriginalFilename();
+            String extension = fileName != null && fileName.contains(".") ? fileName.substring(fileName.lastIndexOf('.')) : "";
+            String objectName = StpUtil.getLoginIdAsLong() + "/device/" + java.util.UUID.randomUUID().toString() + extension;
             String bucketName = StringUtils.hasText(minioConfig.getBucketName()) ? minioConfig.getBucketName() : "aiolife";
-            minioUtil.uploadFile(bucketName, file, objectName);
-            String imageUrl = minioUtil.getPreviewUrl(bucketName, objectName);
-            return ApiResponse.success(imageUrl);
+            
+            FileEntity fileEntity = fileService.uploadAndSave(file, "device", bucketName, objectName, 0);
+            return ApiResponse.success(fileService.toVO(fileEntity));
         } catch (Exception e) {
             return ApiResponse.error(ResponseCodeConst.RSCODE_COMMON_FAIL, "上传失败: " + e.getMessage());
         }
@@ -95,4 +101,15 @@ public class DeviceController {
         wrapper.eq(DeviceEntity::getUserId, StpUtil.getLoginIdAsLong());
         return ApiResponse.success(getBaseMapper().delete(wrapper) > 0);
     }
+
+    @GetMapping("/{id}")
+    public ApiResponse<DeviceEntity> getDevice(@PathVariable("id") Integer id) {
+        long userId = StpUtil.getLoginIdAsLong();
+        LambdaQueryWrapper<DeviceEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(DeviceEntity::getId, id);
+        queryWrapper.eq(DeviceEntity::getUserId, userId);
+        DeviceEntity entity = getBaseMapper().selectOne(queryWrapper);
+        return ApiResponse.success(entity);
+    }
+
 }

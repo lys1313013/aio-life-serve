@@ -103,6 +103,16 @@ public class UserServiceImpl implements IUserService {
         StpUtil.login(userEntity.getId());
         String token = StpUtil.getTokenValue();
 
+        // 为了兼容前端 img 标签直接使用 Cookie 访问带鉴权的图片
+        // 需要在写入浏览器的 Cookie 时，手动加上配置的 token-prefix (Bearer)
+        // 这样浏览器发起的 Cookie 中就包含了完整的 "Bearer xxxx" 格式，完美通过 Sa-Token 校验
+        String tokenName = StpUtil.getTokenName();
+        String tokenPrefix = cn.dev33.satoken.SaManager.getConfig().getTokenPrefix();
+        String cookieValue = (tokenPrefix != null ? tokenPrefix + " " : "") + token;
+        // 获取默认的 Cookie 超时时间配置
+        int timeout = (int) cn.dev33.satoken.SaManager.getConfig().getTimeout();
+        cn.dev33.satoken.context.SaHolder.getResponse().addCookie(tokenName, cookieValue, "/", null, timeout);
+
         UserLoginVO userLoginVO = new UserLoginVO();
         userLoginVO.setId(userEntity.getId());
         userLoginVO.setRealName(userEntity.getNickname());

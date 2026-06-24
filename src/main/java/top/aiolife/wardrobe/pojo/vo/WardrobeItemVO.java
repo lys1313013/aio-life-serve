@@ -31,7 +31,7 @@ public class WardrobeItemVO {
 
     private BigDecimal price;
 
-    private List<String> photoUrls;
+    private java.util.List<top.aiolife.record.pojo.vo.FileVO> files;
 
     private String size;
 

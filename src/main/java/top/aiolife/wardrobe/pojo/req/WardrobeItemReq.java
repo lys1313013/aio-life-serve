@@ -52,7 +52,7 @@ public class WardrobeItemReq {
     /**
      * 照片URLs
      */
-    private List<String> photoUrls;
+    private List<String> fileIds;
 
     /**
      * 尺码

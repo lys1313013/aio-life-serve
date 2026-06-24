@@ -3,6 +3,7 @@ package top.aiolife.record.pojo.entity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableLogic;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -25,7 +26,16 @@ public class ReadRecordEntity {
     
     private String url;
     
-    private String coverImg;
+    /**
+     * 图片文件ID
+     */
+    private String fileId;
+
+    /**
+     * 临时图片链接，仅供前端显示，不持久化
+     */
+    @TableField(exist = false)
+    private String coverImgUrl;
     
     private Integer status;
     

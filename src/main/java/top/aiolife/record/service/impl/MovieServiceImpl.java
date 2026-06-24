@@ -20,15 +20,20 @@ import top.aiolife.record.pojo.query.MovieQuery;
 import top.aiolife.record.pojo.req.MovieReq;
 import top.aiolife.record.pojo.vo.MovieVO;
 import top.aiolife.record.service.IMovieService;
+import top.aiolife.record.service.IFileService;
+import top.aiolife.record.pojo.entity.FileEntity;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class MovieServiceImpl extends ServiceImpl<IMovieMapper, MovieEntity> implements IMovieService {
+
+    private final IFileService fileService;
 
     @Override
     public Page<MovieVO> pageList(MovieQuery query) {
@@ -52,6 +57,7 @@ public class MovieServiceImpl extends ServiceImpl<IMovieMapper, MovieEntity> imp
         Page<MovieEntity> entityPage = this.page(page, wrapper);
 
         Page<MovieVO> voPage = new Page<>(entityPage.getCurrent(), entityPage.getSize(), entityPage.getTotal());
+
         List<MovieVO> voList = entityPage.getRecords().stream().map(entity -> {
             MovieVO vo = new MovieVO();
             BeanUtil.copyProperties(entity, vo);
@@ -194,9 +200,9 @@ public class MovieServiceImpl extends ServiceImpl<IMovieMapper, MovieEntity> imp
                 res.setTitle(root.get("title").asText());
             }
             if (root.has("pic") && root.get("pic").has("normal")) {
-                res.setCoverImg(root.get("pic").get("normal").asText());
+                res.setCoverImgUrl(root.get("pic").get("normal").asText());
             } else if (root.has("cover") && root.get("cover").has("url")) {
-                res.setCoverImg(root.get("cover").get("url").asText());
+                res.setCoverImgUrl(root.get("cover").get("url").asText());
             }
             if (root.has("directors") && root.get("directors").isArray() && root.get("directors").size() > 0) {
                 res.setDirector(root.get("directors").get(0).get("name").asText());
@@ -234,9 +240,9 @@ public class MovieServiceImpl extends ServiceImpl<IMovieMapper, MovieEntity> imp
             if (rootNode.has("name") && StrUtil.isBlank(res.getTitle())) {
                 res.setTitle(rootNode.get("name").asText());
             }
-            if (rootNode.has("image") && StrUtil.isBlank(res.getCoverImg())) {
+            if (rootNode.has("image") && StrUtil.isBlank(res.getCoverImgUrl())) {
                 String imgUrl = rootNode.get("image").asText();
-                res.setCoverImg(imgUrl.replace("s/public", "l/public").replace("s/pic", "l/pic"));
+                res.setCoverImgUrl(imgUrl.replace("s/public", "l/public").replace("s/pic", "l/pic"));
             }
             if (rootNode.has("director")) {
                 com.fasterxml.jackson.databind.JsonNode directors = rootNode.get("director");
@@ -276,7 +282,7 @@ public class MovieServiceImpl extends ServiceImpl<IMovieMapper, MovieEntity> imp
         }
 
         // 获取封面
-        if (StrUtil.isBlank(res.getCoverImg())) {
+        if (StrUtil.isBlank(res.getCoverImgUrl())) {
             Element imageElement = doc.selectFirst("meta[property=og:image]");
             String coverUrl = imageElement != null ? imageElement.attr("content") : null;
             if (StrUtil.isBlank(coverUrl)) {
@@ -284,7 +290,7 @@ public class MovieServiceImpl extends ServiceImpl<IMovieMapper, MovieEntity> imp
                 coverUrl = img != null ? img.attr("src") : null;
             }
             if (StrUtil.isNotBlank(coverUrl)) {
-                res.setCoverImg(coverUrl.replace("s/public", "l/public").replace("s/pic", "l/pic"));
+                res.setCoverImgUrl(coverUrl.replace("s/public", "l/public").replace("s/pic", "l/pic"));
             }
         }
 
