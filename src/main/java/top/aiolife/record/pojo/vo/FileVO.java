@@ -12,4 +12,6 @@ public class FileVO {
     private Long fileSize;
 
     private String fileType;
+
+    private String fileUrl;
 }

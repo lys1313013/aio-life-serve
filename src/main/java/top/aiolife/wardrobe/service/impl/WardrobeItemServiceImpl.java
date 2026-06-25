@@ -3,9 +3,6 @@ package top.aiolife.wardrobe.service.impl;
 import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -18,8 +15,6 @@ import top.aiolife.wardrobe.pojo.req.WardrobeItemReq;
 import top.aiolife.wardrobe.pojo.vo.WardrobeItemVO;
 import top.aiolife.wardrobe.pojo.vo.WardrobeStatsVO;
 import top.aiolife.wardrobe.service.IWardrobeItemService;
-import top.aiolife.record.service.IFileService;
-import top.aiolife.record.pojo.vo.FileVO;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -34,8 +29,6 @@ import java.util.stream.Collectors;
 public class WardrobeItemServiceImpl extends ServiceImpl<WardrobeItemMapper, WardrobeItemEntity> implements IWardrobeItemService {
 
     private final WardrobeCategoryMapper categoryMapper;
-    private final ObjectMapper objectMapper;
-    private final IFileService fileService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -46,10 +39,6 @@ public class WardrobeItemServiceImpl extends ServiceImpl<WardrobeItemMapper, War
         entity.fillCreateCommonField(userId);
         entity.setSeason(joinSeason(req.getSeason()));
         this.save(entity);
-
-        if (req.getFileIds() != null && !req.getFileIds().isEmpty()) {
-            fileService.bindBizId(req.getFileIds(), "wardrobe_item", entity.getId());
-        }
     }
 
     @Override
@@ -61,10 +50,6 @@ public class WardrobeItemServiceImpl extends ServiceImpl<WardrobeItemMapper, War
         entity.fillUpdateCommonField(userId);
         entity.setSeason(joinSeason(req.getSeason()));
         this.updateById(entity);
-
-        if (req.getFileIds() != null && !req.getFileIds().isEmpty()) {
-            fileService.bindBizId(req.getFileIds(), "wardrobe_item", entity.getId());
-        }
     }
 
     @Override
@@ -169,6 +154,7 @@ public class WardrobeItemServiceImpl extends ServiceImpl<WardrobeItemMapper, War
         entity.setBrand(req.getBrand());
         entity.setPurchaseDate(req.getPurchaseDate());
         entity.setPrice(req.getPrice());
+        entity.setFileId(req.getFileId());
         entity.setSize(req.getSize());
         entity.setMemo(req.getMemo());
         return entity;
@@ -185,7 +171,7 @@ public class WardrobeItemServiceImpl extends ServiceImpl<WardrobeItemMapper, War
         vo.setSeason(entity.getSeason());
         vo.setPurchaseDate(entity.getPurchaseDate());
         vo.setPrice(entity.getPrice());
-        vo.setFiles(fileService.getByBiz("wardrobe_item", entity.getId()));
+        vo.setFileId(entity.getFileId());
         vo.setSize(entity.getSize());
         vo.setMemo(entity.getMemo());
         vo.setCreateTime(entity.getCreateTime());

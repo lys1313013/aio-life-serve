@@ -5,11 +5,11 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
+import top.aiolife.config.MinioConfig;
 import top.aiolife.core.util.MinioUtil;
 import top.aiolife.record.mapper.IFileMapper;
 import top.aiolife.record.pojo.entity.FileEntity;
@@ -24,12 +24,11 @@ import java.util.stream.Collectors;
 public class FileServiceImpl extends ServiceImpl<IFileMapper, FileEntity> implements IFileService {
 
     private final MinioUtil minioUtil;
+    private final MinioConfig minioConfig;
 
-    @Value("${aio.life.serve.base-url}")
-    private String serveBaseUrl;
-
-    public FileServiceImpl(MinioUtil minioUtil) {
+    public FileServiceImpl(MinioUtil minioUtil, MinioConfig minioConfig) {
         this.minioUtil = minioUtil;
+        this.minioConfig = minioConfig;
     }
 
     @Override
@@ -95,6 +94,9 @@ public class FileServiceImpl extends ServiceImpl<IFileMapper, FileEntity> implem
         FileVO vo = new FileVO();
         BeanUtils.copyProperties(entity, vo);
         vo.setId(entity.getId());
+        // 构造文件预览 URL
+        String bucketName = minioConfig.getBucketName() != null ? minioConfig.getBucketName() : "aiolife";
+        vo.setFileUrl(minioUtil.getPreviewUrl(bucketName, entity.getFileName()));
         return vo;
     }
 }

@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS `wardrobe_item` (
     `season` VARCHAR(20) COMMENT '适用季节:春,夏,秋,冬',
     `purchase_date` DATE COMMENT '购买日期',
     `price` DECIMAL(10,2) COMMENT '价格',
-    `photo_urls` TEXT COMMENT '照片URLs(JSON数组)',
+    `file_id` VARCHAR(50) COMMENT '图片文件ID',
     `size` VARCHAR(20) COMMENT '尺码',
     `memo` VARCHAR(500) COMMENT '备注',
     `user_id` BIGINT NOT NULL COMMENT '用户ID',

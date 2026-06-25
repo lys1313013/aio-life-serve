@@ -50,9 +50,9 @@ public class WardrobeItemReq {
     private BigDecimal price;
 
     /**
-     * 照片URLs
+     * 图片文件ID
      */
-    private List<String> fileIds;
+    private String fileId;
 
     /**
      * 尺码

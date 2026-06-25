@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS `sys_file` (
+CREATE TABLE IF NOT EXISTS `file` (
     `id` VARCHAR(32) NOT NULL COMMENT '主键UUID',
     `file_name` VARCHAR(255) NOT NULL COMMENT '文件原名',
     `file_size` BIGINT COMMENT '文件大小(字节)',
