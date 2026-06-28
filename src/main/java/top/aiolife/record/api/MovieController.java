@@ -59,6 +59,11 @@ public class MovieController {
         return ApiResponse.success();
     }
 
+    @GetMapping("/{id}")
+    public ApiResponse<MovieVO> getById(@PathVariable Long id) {
+        return ApiResponse.success(movieService.getVOById(id));
+    }
+
     @GetMapping("/parse-douban")
     public ApiResponse<MovieReq> parseDouban(@RequestParam String url) {
         return ApiResponse.success(movieService.parseDouban(url));

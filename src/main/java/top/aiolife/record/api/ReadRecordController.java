@@ -54,6 +54,11 @@ public class ReadRecordController {
         return ApiResponse.success();
     }
 
+    @GetMapping("/{id}")
+    public ApiResponse<ReadRecordVO> getById(@PathVariable Long id) {
+        return ApiResponse.success(readRecordService.getVOById(id));
+    }
+
     @GetMapping("/parse-douban")
     public ApiResponse<ReadRecordReq> parseDouban(@RequestParam String url) {
         return ApiResponse.success(readRecordService.parseDouban(url));

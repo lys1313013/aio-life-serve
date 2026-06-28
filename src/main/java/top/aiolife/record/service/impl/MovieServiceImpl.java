@@ -357,4 +357,18 @@ public class MovieServiceImpl extends ServiceImpl<IMovieMapper, MovieEntity> imp
             return vo;
         }).collect(Collectors.toList());
     }
+
+    @Override
+    public MovieVO getVOById(Long id) {
+        Long userId = StpUtil.getLoginIdAsLong();
+        MovieEntity entity = this.lambdaQuery()
+                .eq(MovieEntity::getId, id)
+                .eq(MovieEntity::getUserId, userId)
+                .one();
+        if (entity == null) return null;
+        MovieVO vo = new MovieVO();
+        BeanUtil.copyProperties(entity, vo);
+        vo.setId(String.valueOf(entity.getId()));
+        return vo;
+    }
 }

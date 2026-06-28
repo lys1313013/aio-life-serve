@@ -63,7 +63,9 @@ public class TimeRecordController {
                 TimeRecordEntity::getCategoryId,
                 TimeRecordEntity::getStartTime,
                 TimeRecordEntity::getEndTime,
-                TimeRecordEntity::getTitle);
+                TimeRecordEntity::getTitle,
+                TimeRecordEntity::getRelateId,
+                TimeRecordEntity::getRelateType);
         lambdaQueryWrapper.eq(TimeRecordEntity::getUserId, userId);
         TimeRecordEntity condition = query.getCondition();
         lambdaQueryWrapper.eq(TimeRecordEntity::getDate, condition.getDate());
@@ -176,7 +178,9 @@ public class TimeRecordController {
                 TimeRecordEntity::getDate,
                 TimeRecordEntity::getStartTime,
                 TimeRecordEntity::getEndTime,
-                TimeRecordEntity::getTitle);
+                TimeRecordEntity::getTitle,
+                TimeRecordEntity::getRelateId,
+                TimeRecordEntity::getRelateType);
         lambdaQueryWrapper.eq(TimeRecordEntity::getUserId, userId);
         TimeWeekQuery condition = query.getCondition();
         lambdaQueryWrapper.between(TimeRecordEntity::getDate, condition.getStartDate(), condition.getEndDate());

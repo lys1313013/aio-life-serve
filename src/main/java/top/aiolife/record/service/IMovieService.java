@@ -20,4 +20,6 @@ public interface IMovieService extends IService<MovieEntity> {
     MovieReq parseDouban(String url);
 
     java.util.List<MovieVO> listActive();
+
+    MovieVO getVOById(Long id);
 }

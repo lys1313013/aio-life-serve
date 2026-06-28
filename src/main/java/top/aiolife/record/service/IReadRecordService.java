@@ -19,4 +19,6 @@ public interface IReadRecordService extends IService<ReadRecordEntity> {
     ReadRecordReq parseDouban(String url);
 
     java.util.List<ReadRecordVO> listActive();
+
+    ReadRecordVO getVOById(Long id);
 }

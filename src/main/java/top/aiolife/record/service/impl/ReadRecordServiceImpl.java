@@ -216,4 +216,18 @@ public class ReadRecordServiceImpl extends ServiceImpl<ReadRecordMapper, ReadRec
             return vo;
         }).collect(java.util.stream.Collectors.toList());
     }
+
+    @Override
+    public ReadRecordVO getVOById(Long id) {
+        Long userId = StpUtil.getLoginIdAsLong();
+        ReadRecordEntity entity = this.lambdaQuery()
+                .eq(ReadRecordEntity::getId, id)
+                .eq(ReadRecordEntity::getUserId, userId)
+                .one();
+        if (entity == null) return null;
+        ReadRecordVO vo = new ReadRecordVO();
+        BeanUtil.copyProperties(entity, vo);
+        vo.setId(String.valueOf(entity.getId()));
+        return vo;
+    }
 }
