@@ -243,37 +243,45 @@ public class TimeRecordServiceImpl extends ServiceImpl<ITimeRecordMapper, TimeRe
 
     @Override
     public String recommendType(long userId, String date, int time, String previousCategoryId) {
-        // 0. 计算原逻辑目标日期
-        // 规则：周一参考上周五的数据，周六参考上周日的数据，其他情况参考前一天的数据
-        String targetDate = date;
         LocalDate localDate = LocalDate.parse(date);
         int dayOfWeek = localDate.getDayOfWeek().getValue();
+        boolean isWorkday = dayOfWeek <= 5;
+
+        // 0. 计算参考日期：周一参考上周五，周六参考上周日，其他参考前一天
+        String targetDate;
         if (dayOfWeek == 6) {
             targetDate = localDate.minusDays(6).toString();
         } else if (dayOfWeek == 1) {
             targetDate = localDate.minusDays(3).toString();
-        } else  {
+        } else {
             targetDate = localDate.minusDays(1).toString();
         }
 
-        // 1. 优先使用原有推荐逻辑：获取过去对应日期的同时间推荐
+        // 1. 查参考日期同一时间段是否有记录
         TimeRecordEntity originalRecommend = this.baseMapper.recommendType(userId, targetDate, time);
         String categoryId = originalRecommend != null ? originalRecommend.getCategoryId() : null;
 
-        // 2. 优化逻辑：如果原有逻辑生成的推荐分类，与“紧邻的上一条记录分类”相同，则进行干预，避免连续出现相同分类
-        if (categoryId != null && categoryId.equals(previousCategoryId)) {
-            boolean isWorkday = dayOfWeek <= 5;
+        // 2. 如果 Step 1 未命中，降级到时间段历史高频（不排除任何分类）
+        if (categoryId == null) {
+            categoryId = this.baseMapper.getMostFrequentCategoryAtTime(userId, time, null, isWorkday);
+        }
 
-            // 2.1 寻找次优推荐：尝试预测其后续行为
-            // 基于历史数据（区分工作日/休息日），查找历史上紧接在 previousCategoryId 之后最常发生的分类
+        // 3. 去重干预：如果推荐分类与上一条记录相同，尝试替换
+        if (categoryId != null && !categoryId.isEmpty() && categoryId.equals(previousCategoryId)) {
+            // 3.1 预测后续行为：历史上紧跟在 previousCategoryId 之后最常出现的分类
             String nextCategory = this.baseMapper.getMostFrequentNextCategory(userId, previousCategoryId, isWorkday);
             if (nextCategory != null && !nextCategory.isEmpty()) {
                 return nextCategory;
             }
 
-            // 2.2 寻找次优推荐：如果上述预测无结果，则退阶到“历史最高频”
-            // 统计历史上在当前 time 时间段发生过的所有分类，按频次降序，并强制排除掉 previousCategoryId，取最高频分类
-            return this.baseMapper.getMostFrequentCategoryAtTime(userId, time, previousCategoryId, isWorkday);
+            // 3.2 降级：该时间段历史最高频，排除 previousCategoryId
+            String fallbackCategory = this.baseMapper.getMostFrequentCategoryAtTime(userId, time, previousCategoryId, isWorkday);
+            if (fallbackCategory != null && !fallbackCategory.isEmpty()) {
+                return fallbackCategory;
+            }
+
+            // 3.3 实在没有其他分类可选，返回原推荐（允许连续相同）
+            return categoryId;
         }
 
         return categoryId;
