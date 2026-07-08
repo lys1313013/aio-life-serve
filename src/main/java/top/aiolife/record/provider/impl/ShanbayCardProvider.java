@@ -47,7 +47,7 @@ public class ShanbayCardProvider implements DashboardCardProvider {
 
     @Override
     public String getIcon() {
-        return "lucide:book-open";
+        return "mdi:translate";
     }
 
     @Override
