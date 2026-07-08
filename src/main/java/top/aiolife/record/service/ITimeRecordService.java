@@ -41,14 +41,6 @@ public interface ITimeRecordService extends IService<TimeRecordEntity> {
     void removeByDate(LocalDate date, long userId);
 
     /**
-     * 获取当天最后一条记录到现在的时间（分钟）
-     *
-     * @param userId 用户ID
-     * @return 时间差（分钟），如果没有记录则返回从当天 00:00 开始的时长
-     */
-    String getLastRecordTimeDiff(Long userId);
-
-    /**
      * 推荐分类
      *
      * @param userId             用户id
