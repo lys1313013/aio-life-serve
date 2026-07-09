@@ -21,9 +21,10 @@ public class MessageController {
     private final IMessageService messageService;
 
     @GetMapping("/list")
-    public ApiResponse<List<MessageEntity>> list() {
+    public ApiResponse<List<MessageEntity>> list(
+            @RequestParam(required = false) Boolean isRead) {
         long userId = StpUtil.getLoginIdAsLong();
-        List<MessageEntity> messages = messageService.listByUserId(userId);
+        List<MessageEntity> messages = messageService.listByUserId(userId, isRead);
         return ApiResponse.success(messages);
     }
 

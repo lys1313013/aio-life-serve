@@ -18,12 +18,22 @@ import java.util.List;
 public class MessageServiceImpl extends ServiceImpl<MessageMapper, MessageEntity> implements IMessageService {
 
     @Override
-    public List<MessageEntity> listByUserId(Long userId) {
-        return this.list(new LambdaQueryWrapper<MessageEntity>()
-                .and(wrapper -> wrapper.eq(MessageEntity::getReceiverId, userId)
-                        .or()
-                        .eq(MessageEntity::getSenderId, userId))
-                .orderByDesc(MessageEntity::getCreateTime));
+    public List<MessageEntity> listByUserId(Long userId, Boolean isRead) {
+        LambdaQueryWrapper<MessageEntity> wrapper = new LambdaQueryWrapper<>();
+        if (Boolean.FALSE.equals(isRead)) {
+            // 通知场景：只查当前用户作为接收者的未读消息
+            wrapper.eq(MessageEntity::getReceiverId, userId)
+                    .eq(MessageEntity::getIsRead, false);
+        } else {
+            wrapper.and(w -> w.eq(MessageEntity::getReceiverId, userId)
+                    .or()
+                    .eq(MessageEntity::getSenderId, userId));
+            if (isRead != null) {
+                wrapper.eq(MessageEntity::getIsRead, isRead);
+            }
+        }
+        wrapper.orderByDesc(MessageEntity::getCreateTime);
+        return this.list(wrapper);
     }
 
     @Override

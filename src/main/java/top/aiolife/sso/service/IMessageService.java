@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface IMessageService extends IService<MessageEntity> {
 
-    List<MessageEntity> listByUserId(Long userId);
+    List<MessageEntity> listByUserId(Long userId, Boolean isRead);
 
     void markAsRead(Long messageId, Long userId);
 
