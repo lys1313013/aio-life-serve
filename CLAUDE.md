@@ -9,15 +9,21 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## 技术栈
 
 - **Java 21** + **Spring Boot 3.3.10**
-- **MyBatis Plus 3.5.11** (数据库 ORM)
+- **MyBatis Plus 3.5.11** + **Druid 1.2.24** (ORM + 连接池)
 - **MySQL 8.x** (主数据库)
-- **Redis** (缓存、Session、Sa-Token 存储)
+- **Redis** (分布式缓存、Session、Sa-Token 存储)
+- **Caffeine** (本地内存缓存，配合 Spring Cache 作为二级缓存)
 - **Sa-Token 1.40.0** (认证授权，JWT 模式)
 - **MinIO** (对象存储)
 - **Neo4j** (关系图谱，可选模块)
 - **LangChain4j 1.12.2** + **MCP 0.14.0** (AI 能力)
 - **MapStruct 1.6.0** (对象映射)
+- **Hutool 5.8.36** (Java 工具库)
+- **fastjson2 2.0.57** (JSON 处理)
+- **jsoup 1.17.2** (HTML 解析，用于第三方数据同步)
 - **Lombok 1.18.38**
+- **Log4j2** (日志框架)
+- **Micrometer + Brave** (可观测性：Prometheus 指标 + 分布式链路追踪)
 - **Maven** (构建工具)
 
 ## 常用命令
@@ -37,12 +43,6 @@ mvn test -Dtest=TimeTrackerCategoryControllerIntegrationTest
 
 # 运行单个测试方法
 mvn test -Dtest=TimeTrackerCategoryControllerIntegrationTest#testList_获取分类列表
-
-# 启动开发环境（需要 MySQL、Redis、MinIO）
-# 可选：docker-compose 启动依赖服务
-docker-compose -f docker/docker-compose.yml up -d
-docker-compose -f docker/docker-compose-minio.yml up -d
-docker-compose -f docker/docker-compose-neo4j.yml up -d
 ```
 
 ## 端口与端点
