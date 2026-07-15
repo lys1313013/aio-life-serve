@@ -27,13 +27,7 @@ fi
 
 echo "开始执行 Maven 打包..."
 cd "$PROJECT_DIR"
-mvn clean
 mvn clean package -DskipTests
-
-if [[ $? -ne 0 ]]; then
-    echo "错误: Maven 打包失败，请检查代码或配置" >&2
-    exit 1
-fi
 
 # 查找 target 目录下的 JAR 文件
 echo "在 target/ 目录下查找 JAR 文件..."
@@ -45,12 +39,11 @@ if [[ ! -d "target" ]]; then
 fi
 
 # 查找 JAR 文件（排除原始 JAR，优先选择可执行 JAR）
-# 先尝试找包含 original 的排除，找普通的 JAR
-JAR_FILES=($(find "target" -maxdepth 1 -name "*.jar" -not -name "*original*.jar" 2>/dev/null))
+JAR_FILES=($(find "target" -maxdepth 1 -name "*.jar" -not -name "*original*.jar" 2>/dev/null || true))
 
 # 如果没找到，再找所有 JAR 文件
 if [[ ${#JAR_FILES[@]} -eq 0 ]]; then
-    JAR_FILES=($(find "target" -maxdepth 1 -name "*.jar" 2>/dev/null))
+    JAR_FILES=($(find "target" -maxdepth 1 -name "*.jar" 2>/dev/null || true))
 fi
 
 # 验证是否找到 JAR 文件
@@ -62,7 +55,6 @@ fi
 # 如果找到多个 JAR 文件，选择最新的一个（按修改时间）
 if [[ ${#JAR_FILES[@]} -gt 1 ]]; then
     echo "找到多个 JAR 文件，选择最新的一个："
-    # 按修改时间排序，取最新的
     LOCAL_JAR_PATH=$(ls -t "${JAR_FILES[@]}" | head -n 1)
 else
     LOCAL_JAR_PATH="${JAR_FILES[0]}"
@@ -86,27 +78,15 @@ sshpass -p "$PASSWORD" ssh -o StrictHostKeyChecking=no "$USERNAME@$SERVER_IP" \
 echo "上传 JAR 文件..."
 # 使用 rsync 显示进度条
 PROGRESS_FLAG="--progress"
-if rsync --help | grep -q -- "--info"; then
+if rsync --help 2>&1 | grep -q -- "--info"; then
     PROGRESS_FLAG="--info=progress2"
 fi
 
-RSYNC_CMD="sshpass -p '$PASSWORD' rsync -e 'ssh -o StrictHostKeyChecking=no' $PROGRESS_FLAG '$LOCAL_JAR_PATH' '$USERNAME@$SERVER_IP:/projects/service/$JAR_FILENAME'"
-eval $RSYNC_CMD
-
-# 检查上传是否成功
-if [[ $? -ne 0 ]]; then
-    echo "错误: 文件上传失败" >&2
-    exit 1
-fi
+sshpass -p "$PASSWORD" rsync -e "ssh -o StrictHostKeyChecking=no" $PROGRESS_FLAG "$LOCAL_JAR_PATH" "$USERNAME@$SERVER_IP:/projects/service/$JAR_FILENAME"
 
 # 执行远程 run.sh 脚本
 echo "执行远程 run.sh 脚本..."
 sshpass -p "$PASSWORD" ssh -o StrictHostKeyChecking=no "$USERNAME@$SERVER_IP" \
     "cd /projects/service && ./run.sh"
 
-# 检查脚本执行结果
-if [[ $? -eq 0 ]]; then
-    echo "部署和执行成功完成！"
-else
-    echo "警告: run.sh 脚本执行完成，但可能有错误" >&2
-fi
+echo "部署完成！"
