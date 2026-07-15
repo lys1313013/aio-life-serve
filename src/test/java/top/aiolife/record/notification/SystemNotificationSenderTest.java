@@ -52,7 +52,7 @@ class SystemNotificationSenderTest {
         systemNotificationSender.send(user, title, htmlContent, textContent);
 
         // Then - 验证数据库中是否插入了消息
-        List<MessageEntity> messages = messageService.listByUserId(100L);
+        List<MessageEntity> messages = messageService.listByUserId(100L, null);
         System.out.println("查询到的消息数量: " + messages.size());
         for (MessageEntity msg : messages) {
             System.out.println("消息: " + msg);
@@ -82,7 +82,7 @@ class SystemNotificationSenderTest {
         systemNotificationSender.send(user, title, htmlContent, textContent);
 
         // Then - 验证数据库中存储的是纯文本而非HTML
-        List<MessageEntity> messages = messageService.listByUserId(200L);
+        List<MessageEntity> messages = messageService.listByUserId(200L, null);
         System.out.println("send_VerifyHtmlContentIgnored - 查询到的消息数量: " + messages.size());
         assertEquals(1, messages.size(), "应该只有1条消息");
 
@@ -103,7 +103,7 @@ class SystemNotificationSenderTest {
         systemNotificationSender.send(user, "消息3", "<p>html3</p>", "文本3");
 
         // Then
-        List<MessageEntity> messages = messageService.listByUserId(300L);
+        List<MessageEntity> messages = messageService.listByUserId(300L, null);
         System.out.println("send_MultipleMessages - 查询到的消息数量: " + messages.size());
         assertEquals(3, messages.size(), "应该插入3条消息");
 
