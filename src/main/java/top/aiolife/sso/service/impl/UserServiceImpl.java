@@ -184,6 +184,7 @@ public class UserServiceImpl implements IUserService {
     public PageResp<UserVO> getUserList(CommonQuery query) {
         Page<UserEntity> page = new Page<>(query.getPage(), query.getPageSize());
         LambdaQueryWrapper<UserEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.orderByDesc(UserEntity::getCreateTime);
         userMapper.selectPage(page, wrapper);
 
         Map<Long, LocalDateTime> redisLastActiveMap = buildRedisLastActiveMap(page.getRecords());
