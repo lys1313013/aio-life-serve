@@ -2,6 +2,7 @@ package top.aiolife.feedback.api;
 
 import cn.dev33.satoken.annotation.SaCheckRole;
 import cn.dev33.satoken.stp.StpUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import top.aiolife.core.query.CommonQuery;
@@ -11,10 +12,13 @@ import top.aiolife.feedback.pojo.query.FeedbackAdminQuery;
 import top.aiolife.feedback.pojo.req.FeedbackBatchReq;
 import top.aiolife.feedback.pojo.req.FeedbackCommentCreateReq;
 import top.aiolife.feedback.pojo.req.FeedbackStatusUpdateReq;
+import top.aiolife.feedback.pojo.vo.AdminUserVO;
 import top.aiolife.feedback.pojo.vo.FeedbackCommentVO;
 import top.aiolife.feedback.pojo.vo.FeedbackDetailVO;
 import top.aiolife.feedback.pojo.vo.FeedbackVO;
 import top.aiolife.feedback.service.IFeedbackService;
+import top.aiolife.sso.mapper.UserMapper;
+import top.aiolife.sso.pojo.entity.UserEntity;
 
 /**
  * 反馈管理控制器（管理员）
@@ -29,6 +33,8 @@ import top.aiolife.feedback.service.IFeedbackService;
 public class FeedbackAdminController {
 
     private final IFeedbackService feedbackService;
+
+    private final UserMapper userMapper;
 
     /**
      * 全部反馈列表（分页 + 筛选）
@@ -74,5 +80,26 @@ public class FeedbackAdminController {
         long adminId = StpUtil.getLoginIdAsLong();
         feedbackService.adminBatch(adminId, req);
         return ApiResponse.success();
+    }
+
+    /**
+     * 管理员用户列表（用于配置通知接收人下拉）
+     */
+    @GetMapping("/admin-users")
+    public ApiResponse<java.util.List<AdminUserVO>> adminUsers() {
+        LambdaQueryWrapper<UserEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.like(UserEntity::getRole, "admin")
+                .eq(UserEntity::getIsDeleted, 0)
+                .orderByAsc(UserEntity::getId);
+        java.util.List<UserEntity> users = userMapper.selectList(wrapper);
+        java.util.List<AdminUserVO> result = new java.util.ArrayList<>();
+        for (UserEntity u : users) {
+            AdminUserVO vo = new AdminUserVO();
+            vo.setId(String.valueOf(u.getId()));
+            vo.setUsername(u.getUsername());
+            vo.setNickname(u.getNickname());
+            result.add(vo);
+        }
+        return ApiResponse.success(result);
     }
 }

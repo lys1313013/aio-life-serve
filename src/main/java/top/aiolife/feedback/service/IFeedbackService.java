@@ -1,6 +1,8 @@
 package top.aiolife.feedback.service;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import top.aiolife.core.query.CommonQuery;
+import top.aiolife.core.resq.PageResp;
+import top.aiolife.feedback.pojo.query.FeedbackAdminQuery;
 import top.aiolife.feedback.pojo.req.FeedbackBatchReq;
 import top.aiolife.feedback.pojo.req.FeedbackCommentCreateReq;
 import top.aiolife.feedback.pojo.req.FeedbackCreateReq;
@@ -22,21 +24,18 @@ public interface IFeedbackService {
      *
      * @param userId 当前用户 ID
      * @param req    创建请求
-     * @return 创建后的 VO
+     * @return 创建后的反馈 VO
      */
     FeedbackVO create(long userId, FeedbackCreateReq req);
 
     /**
      * 我的反馈列表（分页）
      *
-     * @param userId       当前用户 ID
-     * @param status       状态筛选（可空）
-     * @param feedbackType 类型筛选（可空）
-     * @param page         页码
-     * @param size         每页大小
+     * @param userId 当前用户 ID
+     * @param query  查询条件
      * @return 分页结果
      */
-    Page<FeedbackVO> listMy(long userId, String status, String feedbackType, int page, int size);
+    PageResp<FeedbackVO> listMy(long userId, CommonQuery<FeedbackAdminQuery> query);
 
     /**
      * 我的反馈详情（含评论时间线）
@@ -66,13 +65,12 @@ public interface IFeedbackService {
     void cancelMy(long userId, long feedbackId);
 
     /**
-     * 管理员：全部反馈列表（分页 + 多条件筛选）
+     * 管理员：全部反馈列表（分页 + 筛选）
      */
-    Page<FeedbackVO> listAdmin(String status, String feedbackType, Long userId, String keyword,
-                               String startTime, String endTime, int page, int size);
+    PageResp<FeedbackVO> listAdmin(CommonQuery<FeedbackAdminQuery> query);
 
     /**
-     * 管理员：反馈详情
+     * 管理员：反馈详情（含评论时间线）
      */
     FeedbackDetailVO getAdminDetail(long feedbackId);
 

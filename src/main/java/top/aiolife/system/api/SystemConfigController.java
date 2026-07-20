@@ -4,6 +4,7 @@ import cn.dev33.satoken.annotation.SaCheckRole;
 import cn.dev33.satoken.stp.StpUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import top.aiolife.core.constant.ResponseCodeConst;
 import top.aiolife.core.resq.ApiResponse;
 import top.aiolife.system.pojo.req.SystemConfigUpdateReq;
 import top.aiolife.system.pojo.vo.SystemConfigVO;
@@ -42,7 +43,7 @@ public class SystemConfigController {
     public ApiResponse<SystemConfigVO> getByKey(@PathVariable String key) {
         SystemConfigVO vo = systemConfigService.getByKey(key);
         if (vo == null) {
-            return ApiResponse.error("CONFIG_NOT_FOUND", "配置项不存在");
+            return ApiResponse.error(ResponseCodeConst.RSCODE_COMMON_FAIL, "配置项不存在");
         }
         return ApiResponse.success(vo);
     }
