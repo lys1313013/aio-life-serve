@@ -66,8 +66,11 @@ public class FileServiceImpl extends ServiceImpl<IFileMapper, FileEntity> implem
         if (CollectionUtils.isEmpty(fileIds)) {
             return;
         }
+        // 只允许绑定当前用户自己上传的文件
+        long userId = StpUtil.getLoginIdAsLong();
         LambdaUpdateWrapper<FileEntity> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.in(FileEntity::getId, fileIds)
+                .eq(FileEntity::getCreateUser, userId)
                 .set(FileEntity::getBizId, bizId)
                 .set(FileEntity::getBizType, bizType);
         this.update(updateWrapper);

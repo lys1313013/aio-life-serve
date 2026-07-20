@@ -44,9 +44,13 @@ public class WardrobeItemServiceImpl extends ServiceImpl<WardrobeItemMapper, War
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updateItem(WardrobeItemReq req) {
+        Long userId = StpUtil.getLoginIdAsLong();
+        WardrobeItemEntity existing = this.getById(req.getId());
+        if (existing == null || !userId.equals(existing.getUserId())) {
+            throw new RuntimeException("衣物不存在或无权限操作");
+        }
         WardrobeItemEntity entity = reqToEntity(req);
         entity.setId(req.getId());
-        Long userId = StpUtil.getLoginIdAsLong();
         entity.fillUpdateCommonField(userId);
         entity.setSeason(joinSeason(req.getSeason()));
         this.updateById(entity);

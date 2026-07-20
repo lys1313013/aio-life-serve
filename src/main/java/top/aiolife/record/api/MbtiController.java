@@ -81,9 +81,10 @@ public class MbtiController {
 
     @GetMapping("/result/{id}")
     public ApiResponse<Map<String, Object>> getById(@PathVariable Long id) {
+        long userId = StpUtil.getLoginIdAsLong();
         MbtiResultEntity result = mbtiResultService.getById(id);
-        if (result == null) {
-            return ApiResponse.error(ResponseCodeConst.RSCODE_COMMON_FAIL, "记录不存在");
+        if (result == null || result.getUserId() == null || result.getUserId() != userId) {
+            return ApiResponse.error(ResponseCodeConst.RSCODE_COMMON_FAIL, "记录不存在或无权限");
         }
 
         Map<String, Object> response = new HashMap<>();

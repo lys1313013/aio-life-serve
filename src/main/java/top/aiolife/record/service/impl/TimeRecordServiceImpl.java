@@ -118,7 +118,12 @@ public class TimeRecordServiceImpl extends ServiceImpl<ITimeRecordMapper, TimeRe
         List<ExerciseRecordReq> exerciseRecordReqs = timeRecordReq.getExercises();
 
         long userId = StpUtil.getLoginIdAsLong();
-        entity.setUserId(userId);
+        TimeRecordEntity existing = this.getById(entity.getId());
+        if (existing == null || existing.getUserId() == null || existing.getUserId() != userId) {
+            throw new RuntimeException("记录不存在或无权限");
+        }
+        // 防止请求方篡改记录归属
+        entity.setUserId(null);
         entity.setUpdateTime(LocalDateTime.now());
 
         // 限制时间最大值为 1439 (23:59)

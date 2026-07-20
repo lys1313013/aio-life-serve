@@ -53,12 +53,25 @@ class LLMKeyServiceImplTest {
 
     @Test
     void testUpdateLLMKey() {
+        when(llmKeyMapper.selectById("test-id")).thenReturn(testKey);
         when(llmKeyMapper.updateById(any(LLMKeyEntity.class))).thenReturn(1);
 
         llmKeyService.updateLLMKey(testKey);
 
         verify(llmKeyMapper, times(1)).updateById(any(LLMKeyEntity.class));
         assertNotNull(testKey.getUpdateTime());
+    }
+
+    @Test
+    void testUpdateLLMKeyWithoutPermission() {
+        LLMKeyEntity otherUserKey = new LLMKeyEntity();
+        otherUserKey.setId("test-id");
+        otherUserKey.setUserId(999L);
+        when(llmKeyMapper.selectById("test-id")).thenReturn(otherUserKey);
+
+        assertThrows(RuntimeException.class, () -> llmKeyService.updateLLMKey(testKey));
+
+        verify(llmKeyMapper, never()).updateById(any(LLMKeyEntity.class));
     }
 
     @Test

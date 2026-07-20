@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import top.aiolife.core.constant.ResponseCodeConst;
 import top.aiolife.core.resq.ApiResponse;
 import top.aiolife.record.mapper.IPasswordVaultMapper;
 import top.aiolife.record.pojo.entity.PasswordVaultEntity;
@@ -80,8 +81,14 @@ public class PasswordVaultController {
     @PutMapping("/{id}")
     public ApiResponse<Boolean> update(@PathVariable Long id, @RequestBody PasswordVaultEntity entity) {
         Long userId = StpUtil.getLoginIdAsLong();
+        PasswordVaultEntity existing = passwordVaultMapper.selectById(id);
+        if (existing == null || !userId.equals(existing.getUserId())) {
+            return ApiResponse.error(ResponseCodeConst.RSCODE_COMMON_FAIL, "记录不存在或无权限操作");
+        }
         entity.setId(id);
-        entity.setUserId(userId);
+        // 防止请求方篡改记录归属
+        entity.setUserId(null);
+        entity.setCreateUser(null);
         entity.setUpdateUser(userId);
         entity.setUpdateTime(LocalDateTime.now());
         passwordVaultMapper.updateById(entity);

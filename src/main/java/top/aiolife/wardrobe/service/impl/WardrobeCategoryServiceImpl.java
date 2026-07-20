@@ -39,9 +39,19 @@ public class WardrobeCategoryServiceImpl extends ServiceImpl<WardrobeCategoryMap
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updateCategory(CategoryReq req) {
+        Long userId = StpUtil.getLoginIdAsLong();
+        WardrobeCategoryEntity existing = this.getById(req.getId());
+        if (existing == null) {
+            throw new RuntimeException("分类不存在");
+        }
+        if (existing.getCategoryType() != null && existing.getCategoryType() == 0) {
+            throw new RuntimeException("系统预设分类不可修改");
+        }
+        if (!userId.equals(existing.getUserId())) {
+            throw new RuntimeException("无权修改此分类");
+        }
         WardrobeCategoryEntity entity = reqToEntity(req);
         entity.setId(req.getId());
-        Long userId = StpUtil.getLoginIdAsLong();
         entity.fillUpdateCommonField(userId);
         this.updateById(entity);
     }

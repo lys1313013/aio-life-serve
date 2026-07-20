@@ -42,13 +42,20 @@ public class LLMKeyServiceImpl implements LLMKeyService {
 
     @Override
     public void updateLLMKey(LLMKeyEntity llmKeyEntity) {
+        Long userId = llmKeyEntity.getUserId();
+        LLMKeyEntity existing = llmKeyMapper.selectById(llmKeyEntity.getId());
+        if (existing == null || !userId.equals(existing.getUserId())) {
+            throw new RuntimeException("LLM Key 不存在或无权限操作");
+        }
         try {
             llmKeyEntity.setUpdateTime(LocalDateTime.now());
+            // 防止请求方篡改记录归属
+            llmKeyEntity.setUserId(null);
 
             // 如果设置为默认，先将其他配置设为非默认
             if (llmKeyEntity.getIsDefault() != null && llmKeyEntity.getIsDefault() == 1) {
                 LambdaUpdateWrapper<LLMKeyEntity> updateWrapper = new LambdaUpdateWrapper<>();
-                updateWrapper.eq(LLMKeyEntity::getUserId, llmKeyEntity.getUserId())
+                updateWrapper.eq(LLMKeyEntity::getUserId, userId)
                         .set(LLMKeyEntity::getIsDefault, 0);
                 llmKeyMapper.update(null, updateWrapper);
             }
@@ -95,6 +102,10 @@ public class LLMKeyServiceImpl implements LLMKeyService {
 
     @Override
     public void setDefaultLLMKey(String id, Long userId) {
+        LLMKeyEntity existing = llmKeyMapper.selectById(id);
+        if (existing == null || !userId.equals(existing.getUserId())) {
+            throw new RuntimeException("LLM Key 不存在或无权限操作");
+        }
         try {
             // 先将所有配置设为非默认
             LambdaUpdateWrapper<LLMKeyEntity> updateWrapper = new LambdaUpdateWrapper<>();
