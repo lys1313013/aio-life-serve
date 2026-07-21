@@ -45,9 +45,14 @@ public class ReadRecordServiceImpl extends ServiceImpl<ReadRecordMapper, ReadRec
         }
         if (query.getStatus() != null) {
             wrapper.eq(ReadRecordEntity::getStatus, query.getStatus());
+        } else if (Boolean.TRUE.equals(query.getActiveOnly())) {
+            wrapper.in(ReadRecordEntity::getStatus, 0, 1);
         }
         if (StrUtil.isNotBlank(query.getTitle())) {
-            wrapper.like(ReadRecordEntity::getTitle, query.getTitle());
+            wrapper.and(condition -> condition
+                    .like(ReadRecordEntity::getTitle, query.getTitle())
+                    .or()
+                    .like(ReadRecordEntity::getAuthor, query.getTitle()));
         }
         wrapper.orderByAsc(ReadRecordEntity::getStatus)
                .orderByDesc(ReadRecordEntity::getFinishTime);

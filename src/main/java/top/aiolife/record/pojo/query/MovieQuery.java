@@ -7,6 +7,7 @@ public class MovieQuery {
     private String title;
     private Integer type;
     private Integer status;
+    private Boolean activeOnly;
     private Integer current;
     private Integer size;
 }

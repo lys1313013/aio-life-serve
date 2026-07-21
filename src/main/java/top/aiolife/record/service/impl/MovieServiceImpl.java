@@ -46,9 +46,14 @@ public class MovieServiceImpl extends ServiceImpl<IMovieMapper, MovieEntity> imp
         }
         if (query.getStatus() != null) {
             wrapper.eq(MovieEntity::getStatus, query.getStatus());
+        } else if (Boolean.TRUE.equals(query.getActiveOnly())) {
+            wrapper.in(MovieEntity::getStatus, 0, 1);
         }
         if (StrUtil.isNotBlank(query.getTitle())) {
-            wrapper.like(MovieEntity::getTitle, query.getTitle());
+            wrapper.and(condition -> condition
+                    .like(MovieEntity::getTitle, query.getTitle())
+                    .or()
+                    .like(MovieEntity::getDirector, query.getTitle()));
         }
         wrapper.orderByAsc(MovieEntity::getStatus)
                .orderByDesc(MovieEntity::getFinishTime);
