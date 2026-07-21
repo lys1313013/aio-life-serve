@@ -17,8 +17,9 @@ public interface IGithubService {
      *
      * @param username GitHub 用户名
      * @param token    GitHub Access Token（可空）
+     * @param page     页码，从 1 开始
      * @param perPage  每页数量
      * @return 提交列表
      */
-    List<GithubCommitVO> searchRecentCommits(String username, String token, int perPage);
+    List<GithubCommitVO> searchRecentCommits(String username, String token, int page, int perPage);
 }

@@ -25,9 +25,12 @@ import java.util.List;
 public class GithubServiceImpl implements IGithubService {
 
     @Override
-    public List<GithubCommitVO> searchRecentCommits(String username, String token, int perPage) {
+    public List<GithubCommitVO> searchRecentCommits(String username, String token, int page, int perPage) {
         if (username == null || username.isEmpty()) {
             return Collections.emptyList();
+        }
+        if (page <= 0) {
+            page = 1;
         }
         if (perPage <= 0) {
             perPage = 20;
@@ -40,6 +43,7 @@ public class GithubServiceImpl implements IGithubService {
                 + "?q=author:" + username
                 + "&sort=committer-date"
                 + "&order=desc"
+                + "&page=" + page
                 + "&per_page=" + perPage;
 
         HttpRequest request = HttpRequest.get(url)

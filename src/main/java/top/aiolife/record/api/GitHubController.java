@@ -36,6 +36,7 @@ public class GitHubController {
      */
     @GetMapping("/recent-commits")
     public ApiResponse<List<GithubCommitVO>> recentCommits(
+            @RequestParam(required = false, defaultValue = "1") Integer page,
             @RequestParam(required = false, defaultValue = "20") Integer perPage) {
         long userId = StpUtil.getLoginIdAsLong();
         UserBindEntity bind = userBindService.getBindByUserIdAndPlatform(userId, "github");
@@ -43,7 +44,7 @@ public class GitHubController {
             return ApiResponse.success(List.of());
         }
         List<GithubCommitVO> commits = githubService.searchRecentCommits(
-                bind.getPlatformUsername(), bind.getAccessToken(), perPage);
+                bind.getPlatformUsername(), bind.getAccessToken(), page, perPage);
         return ApiResponse.success(commits);
     }
 }
