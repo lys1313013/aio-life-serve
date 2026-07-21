@@ -16,19 +16,87 @@ jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    env:
+      AIO_LIFE_DB_URL: 127.0.0.1:3306
+      AIO_LIFE_DB_PASSWORD: test_password
+      AIO_LIFE_REDIS_HOST: 127.0.0.1
+      AIO_LIFE_REDIS_PORT: 6379
+      AIO_LIFE_NEO4J_ENABLED: 'false'
+      AIO_LIFE_SCHEDULING_ENABLED: 'false'
+      AIO_LIFE_CBTI_ENABLED: 'false'
+      SPRING_PROFILES_ACTIVE: test
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_DATABASE: aio-life
+          MYSQL_USER: aio-life
+          MYSQL_PASSWORD: test_password
+          MYSQL_ROOT_PASSWORD: root_password
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot_password"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd="redis-cli ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up JDK 21
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: '21'
           distribution: 'temurin'
           cache: 'maven'
 
+      - name: Initialize test database
+        env:
+          MYSQL_PWD: root_password
+        run: |
+          set -euo pipefail
+
+          mysql_args=(--host=127.0.0.1 --port=3306 --user=root --database=aio-life --default-character-set=utf8mb4)
+
+          mysql "${mysql_args[@]}" < sql/1_init_table/2026-03-11_create_table.sql
+          mysql "${mysql_args[@]}" < sql/1_init_table/2026-04-19_create_sys_menu.sql
+          mysql "${mysql_args[@]}" < sql/1_init_table/wardrobe.sql
+
+          while IFS= read -r sql_file; do
+            mysql "${mysql_args[@]}" < "$sql_file"
+          done < <(find sql/1_init_table -maxdepth 1 -type f -name '*.sql' \
+            ! -name '2026-03-11_create_table.sql' \
+            ! -name '2026-04-19_create_sys_menu.sql' \
+            ! -name 'wardrobe.sql' | sort)
+
+          while IFS= read -r sql_file; do
+            mysql "${mysql_args[@]}" < "$sql_file"
+          done < <(find sql/2_ini_data -maxdepth 1 -type f -name '*.sql' | sort)
+
       - name: Run tests
         run: mvn test -B
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: surefire-reports-${{ github.run_number }}
+          path: target/surefire-reports/
+          if-no-files-found: ignore
+          retention-days: 7
 
   build-and-push:
     name: Build & Push Docker Image
@@ -40,7 +108,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3

@@ -1,9 +1,11 @@
 package top.aiolife.record.mcp;
 
 import cn.dev33.satoken.stp.StpUtil;
+import cn.dev33.satoken.stp.StpLogic;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import top.aiolife.core.resq.ApiResponse;
 import top.aiolife.core.resq.PageResp;
@@ -43,9 +45,28 @@ class RecordMcpToolsTest {
     private boolean thoughtSaved = false;
     private TimeRecordReq savedTimeRecord = null;
     private TaskDetailEntity savedTaskDetail = null;
+    private StpLogic originalStpLogic;
 
     @BeforeEach
     void setUp() {
+        originalStpLogic = StpUtil.getStpLogic();
+        StpUtil.setStpLogic(new StpLogic("login") {
+            @Override
+            public long getLoginIdAsLong() {
+                return 1L;
+            }
+
+            @Override
+            public Object getLoginIdDefaultNull() {
+                return 1L;
+            }
+
+            @Override
+            public void checkLogin() {
+                // 单元测试固定为用户 1 已登录
+            }
+        });
+
         thoughtSaved = false;
         savedTimeRecord = null;
         savedTaskDetail = null;
@@ -165,10 +186,11 @@ class RecordMcpToolsTest {
                 null
         );
 
-        // Dummy SaToken
-        cn.dev33.satoken.SaManager.setSaTokenContext(new DummySaTokenContext());
-        // Wait, setting dummy context doesn't implement StpLogic fully.
-        // If StpUtil.getLoginIdAsLong() fails, we might need to mock or catch it.
+    }
+
+    @AfterEach
+    void tearDown() {
+        StpUtil.setStpLogic(originalStpLogic);
     }
 
     @Test
@@ -185,10 +207,6 @@ class RecordMcpToolsTest {
     @Test
     void testTimeRecordSave() {
         // 测试保存时间记录
-        // 模拟 Sa-Token 登录状态
-        cn.dev33.satoken.SaManager.setSaTokenDao(new cn.dev33.satoken.dao.SaTokenDaoDefaultImpl());
-        StpUtil.login(1L);
-
         TimeRecordSaveMcpReq req = new TimeRecordSaveMcpReq();
         req.setDate(LocalDate.now());
 
@@ -236,9 +254,6 @@ class RecordMcpToolsTest {
     @Test
     void testTaskDetailSave() {
         // 测试保存任务详情
-        cn.dev33.satoken.SaManager.setSaTokenDao(new cn.dev33.satoken.dao.SaTokenDaoDefaultImpl());
-        StpUtil.login(1L);
-
         TaskDetailSaveMcpReq req = new TaskDetailSaveMcpReq();
         req.setTaskId(1L);
         req.setContent("New Detail");

@@ -113,9 +113,11 @@ mybatis-plus:
 
 aio:
   life:
+    scheduling:
+      enabled: ${AIO_LIFE_SCHEDULING_ENABLED:true}
     # Neo4j 总开关：默认 false（关系图谱模块不加载）；需要时设 AIO_LIFE_NEO4J_ENABLED=true 启用 Neo4jConfig、PersonServiceImpl、RelationshipServiceImpl、RelationshipController
     neo4j:
-      enabled: ${AIO_LIFE_NEO4J_ENABLED:true}
+      enabled: ${AIO_LIFE_NEO4J_ENABLED:false}
     serve:
       base-url: ${AIO_LIFE_SERVE_BASE_URL:http://localhost:45678/api}
       leetcode-corn: 0 30 23 * * ?

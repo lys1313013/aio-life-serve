@@ -2,8 +2,10 @@ package top.aiolife.record.service.impl;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
+@Tag("external")
 public class DoubanMobileTest {
     @Test
     public void testHtml() throws Exception {

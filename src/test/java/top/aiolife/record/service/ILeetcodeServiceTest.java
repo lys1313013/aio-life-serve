@@ -1,6 +1,7 @@
 package top.aiolife.record.service;
 
 import top.aiolife.sso.pojo.entity.UserEntity;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -19,6 +20,7 @@ import org.springframework.boot.test.context.SpringBootTest;
  * @author Lys
  * @date 2026-01-11 12:25
  */
+@Tag("external")
 @SpringBootTest
 class ILeetcodeServiceTest {
 
