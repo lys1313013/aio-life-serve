@@ -83,8 +83,7 @@ public class SaTokenConfig implements WebMvcConfigurer {
                         "/actuator/**",
                         "/file/preview/**",
                         "/file/download/**",
-                        "/file/migrate/run",
-                        "/test-token");
+                        "/file/migrate/run");
 
         // 记录最后活跃时间（仅 Token 请求），需在 Sa-Token 校验通过后执行
         registry.addInterceptor(userLastActiveInterceptor)
