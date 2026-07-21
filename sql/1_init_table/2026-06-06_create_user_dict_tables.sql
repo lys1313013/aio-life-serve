@@ -1,6 +1,7 @@
 CREATE TABLE IF NOT EXISTS `user_dict_data` (
     `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '字典主键',
     `user_id` bigint(20) NOT NULL COMMENT '所属用户ID',
+    `template_id` bigint(20) DEFAULT NULL COMMENT '模板ID，指向被覆盖的公共字典ID',
     `dict_type` varchar(100) DEFAULT '' COMMENT '字典类型',
     `dict_sort` int(4) DEFAULT '0' COMMENT '字典排序',
     `dict_label` varchar(100) DEFAULT '' COMMENT '字典标签(分类名称)',
@@ -17,5 +18,6 @@ CREATE TABLE IF NOT EXISTS `user_dict_data` (
     `remark` varchar(500) DEFAULT NULL COMMENT '备注',
     `is_deleted` tinyint(1) NOT NULL DEFAULT '0' COMMENT '是否删除 0-未删除 1-已删除',
     PRIMARY KEY (`id`),
-    KEY `idx_user_dict_type` (`user_id`, `dict_type`)
+    KEY `idx_user_dict_type` (`user_id`, `dict_type`),
+    KEY `idx_user_dict_template` (`template_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户字典数据表';

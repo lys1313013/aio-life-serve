@@ -22,6 +22,8 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <sa-token.version>1.40.0</sa-token.version>
         <mcp.version>0.14.0</mcp.version>
+        <spring.profiles.active>test</spring.profiles.active>
+        <test.excludedGroups>external</test.excludedGroups>
     </properties>
 
     <dependencies>
@@ -56,6 +58,7 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
         </dependency>
 
         <dependency>
@@ -219,6 +222,19 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.2.5</version>
+                <configuration>
+                    <excludedGroups>${test.excludedGroups}</excludedGroups>
+                    <forkedProcessTimeoutInSeconds>900</forkedProcessTimeoutInSeconds>
+                    <systemPropertyVariables>
+                        <spring.profiles.active>${spring.profiles.active}</spring.profiles.active>
+                        <net.bytebuddy.experimental>true</net.bytebuddy.experimental>
+                    </systemPropertyVariables>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.13.0</version>
                 <configuration>
@@ -252,4 +268,13 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>external-tests</id>
+            <properties>
+                <test.excludedGroups></test.excludedGroups>
+            </properties>
+        </profile>
+    </profiles>
 </project>

@@ -1,6 +1,7 @@
 package top.aiolife.record.service.impl;
 
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -10,6 +11,7 @@ import top.aiolife.record.service.IMovieService;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @Slf4j
+@Tag("external")
 @SpringBootTest
 public class MovieServiceImplTest {
 

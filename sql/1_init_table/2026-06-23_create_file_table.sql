@@ -20,5 +20,5 @@ CREATE TABLE IF NOT EXISTS `file` (
 ALTER TABLE `device` DROP COLUMN `image`, ADD COLUMN `file_id` VARCHAR(32) COMMENT '图片文件ID(UUID)';
 ALTER TABLE `movie` DROP COLUMN `cover_img`, ADD COLUMN `file_id` VARCHAR(32) COMMENT '封面文件ID(UUID)';
 ALTER TABLE `read_record` DROP COLUMN `cover_img`, ADD COLUMN `file_id` VARCHAR(32) COMMENT '封面文件ID(UUID)';
-ALTER TABLE `wardrobe_item` DROP COLUMN `photo_urls`, ADD COLUMN `file_id` VARCHAR(32) COMMENT '图片文件ID(UUID)';
+ALTER TABLE `wardrobe_item` MODIFY COLUMN `file_id` VARCHAR(32) COMMENT '图片文件ID(UUID)';
 ALTER TABLE `honor_record` DROP COLUMN `attachments`, ADD COLUMN `file_id` VARCHAR(32) COMMENT '证书/奖牌图片文件ID(UUID)';
