@@ -4,13 +4,18 @@ import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import top.aiolife.config.MinioConfig;
 import top.aiolife.core.util.MinioUtil;
+import top.aiolife.record.enums.FileBizType;
 import top.aiolife.record.mapper.IFileMapper;
 import top.aiolife.record.pojo.entity.FileEntity;
 import top.aiolife.record.pojo.vo.FileVO;
@@ -18,8 +23,11 @@ import top.aiolife.record.service.IFileService;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class FileServiceImpl extends ServiceImpl<IFileMapper, FileEntity> implements IFileService {
 
@@ -33,31 +41,63 @@ public class FileServiceImpl extends ServiceImpl<IFileMapper, FileEntity> implem
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public FileEntity uploadAndSave(MultipartFile file, String bizType, String bucketName, String objectName, Integer isPublic) throws Exception {
-        // 上传到 MinIO
-        minioUtil.uploadFile(bucketName, file, objectName);
-        
-        // 组装并保存文件记录
-        FileEntity fileEntity = new FileEntity();
-        fileEntity.setFileName(objectName); // 因为 fileUrl 已经废弃，统一将 MinIO 的 objectName（或外部链接）存入 fileName
-        fileEntity.setFileSize(file.getSize());
-        fileEntity.setFileType(file.getContentType());
-        fileEntity.setBizType(bizType);
-        fileEntity.setIsPublic(isPublic != null ? isPublic : 0);
-        
-        // 计算哈希值可在此处进行，简单起见暂略或由前端传，如果需要可以读取流计算
-        fileEntity.setHashValue(""); 
-
-        // 设置通用字段
-        long userId = 0L;
-        if (StpUtil.isLogin()) {
-            userId = StpUtil.getLoginIdAsLong();
+    public FileVO upload(MultipartFile file, FileBizType bizType) {
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("文件不能为空");
         }
-        fileEntity.fillCreateCommonField(userId);
 
-        this.save(fileEntity);
-        
-        return fileEntity;
+        long userId = StpUtil.getLoginIdAsLong();
+        String bucketName = resolveBucketName();
+        String objectName = buildObjectName(userId, bizType, file.getOriginalFilename());
+
+        try {
+            minioUtil.uploadFile(bucketName, file, objectName);
+            registerRollbackCleanup(bucketName, objectName);
+
+            FileEntity fileEntity = new FileEntity();
+            fileEntity.setFileName(objectName);
+            fileEntity.setFileSize(file.getSize());
+            fileEntity.setFileType(file.getContentType());
+            fileEntity.setBizType(bizType.getBizType());
+            fileEntity.setIsPublic(bizType.getVisibility().getValue());
+            fileEntity.setHashValue("");
+            fileEntity.fillCreateCommonField(userId);
+
+            if (!this.save(fileEntity)) {
+                throw new IllegalStateException("文件记录保存失败");
+            }
+            return toVO(fileEntity);
+        } catch (Exception e) {
+            throw new IllegalStateException("上传失败: " + e.getMessage(), e);
+        }
+    }
+
+    private String resolveBucketName() {
+        return StringUtils.hasText(minioConfig.getBucketName()) ? minioConfig.getBucketName() : "aiolife";
+    }
+
+    private String buildObjectName(long userId, FileBizType bizType, String originalFilename) {
+        String extension = StringUtils.getFilenameExtension(originalFilename);
+        String suffix = StringUtils.hasText(extension) && extension.matches("[A-Za-z0-9]{1,10}")
+                ? "." + extension.toLowerCase(Locale.ROOT)
+                : "";
+        return userId + "/" + bizType.getDirectory() + "/" + UUID.randomUUID() + suffix;
+    }
+
+    private void registerRollbackCleanup(String bucketName, String objectName) {
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCompletion(int status) {
+                if (status != STATUS_ROLLED_BACK) {
+                    return;
+                }
+                try {
+                    minioUtil.removeObject(bucketName, objectName);
+                } catch (Exception cleanupException) {
+                    log.error("回滚后清理 MinIO 文件失败: bucket={}, objectName={}", bucketName, objectName, cleanupException);
+                }
+            }
+        });
     }
 
     @Override
@@ -98,7 +138,7 @@ public class FileServiceImpl extends ServiceImpl<IFileMapper, FileEntity> implem
         BeanUtils.copyProperties(entity, vo);
         vo.setId(entity.getId());
         // 构造文件预览 URL
-        String bucketName = minioConfig.getBucketName() != null ? minioConfig.getBucketName() : "aiolife";
+        String bucketName = resolveBucketName();
         vo.setFileUrl(minioUtil.getPreviewUrl(bucketName, entity.getFileName()));
         return vo;
     }

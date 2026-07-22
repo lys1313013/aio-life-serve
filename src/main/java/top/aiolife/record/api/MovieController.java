@@ -1,23 +1,14 @@
 package top.aiolife.record.api;
 
 import cn.dev33.satoken.annotation.SaCheckLogin;
-import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import top.aiolife.config.MinioConfig;
-import top.aiolife.core.constant.ResponseCodeConst;
 import top.aiolife.core.resq.ApiResponse;
-import top.aiolife.core.util.MinioUtil;
 import top.aiolife.record.pojo.query.MovieQuery;
 import top.aiolife.record.pojo.req.MovieReq;
 import top.aiolife.record.pojo.vo.MovieVO;
 import top.aiolife.record.service.IMovieService;
-import top.aiolife.record.pojo.entity.FileEntity;
-import top.aiolife.record.pojo.vo.FileVO;
-import top.aiolife.record.service.IFileService;
 
 /**
  * 影视记录控制器
@@ -31,10 +22,7 @@ import top.aiolife.record.service.IFileService;
 @SaCheckLogin
 public class MovieController {
 
-    private final MinioUtil minioUtil;
-    private final MinioConfig minioConfig;
     private final IMovieService movieService;
-    private final IFileService fileService;
 
     @PostMapping("/page")
     public ApiResponse<Page<MovieVO>> pageList(@RequestBody MovieQuery query) {
@@ -74,24 +62,4 @@ public class MovieController {
         return ApiResponse.success(movieService.listActive());
     }
 
-    /**
-     * 上传影视封面图
-     *
-     * @param file 封面图片文件
-     * @return 封面图的信息
-     */
-    @PostMapping("/upload-cover")
-    public ApiResponse<FileVO> uploadCover(@RequestParam("file") MultipartFile file) {
-        try {
-            String fileName = file.getOriginalFilename();
-            String extension = fileName != null && fileName.contains(".") ? fileName.substring(fileName.lastIndexOf('.')) : "";
-            String objectName = StpUtil.getLoginIdAsLong() + "/movie/" + java.util.UUID.randomUUID().toString() + extension;
-            String bucketName = StringUtils.hasText(minioConfig.getBucketName()) ? minioConfig.getBucketName() : "aiolife";
-            
-            FileEntity fileEntity = fileService.uploadAndSave(file, "movie", bucketName, objectName, 0);
-            return ApiResponse.success(fileService.toVO(fileEntity));
-        } catch (Exception e) {
-            return ApiResponse.error(ResponseCodeConst.RSCODE_COMMON_FAIL, "上传失败: " + e.getMessage());
-        }
-    }
 }

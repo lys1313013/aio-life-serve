@@ -7,10 +7,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+import top.aiolife.core.resq.ApiResponse;
 import top.aiolife.core.util.MinioUtil;
+import top.aiolife.record.enums.FileBizType;
 import top.aiolife.record.pojo.entity.FileEntity;
+import top.aiolife.record.pojo.vo.FileVO;
 import top.aiolife.record.service.IFileService;
 
 import java.io.InputStream;
@@ -30,6 +36,15 @@ public class SysFileController {
     private final IFileService fileService;
     private final MinioUtil minioUtil;
     private final top.aiolife.config.MinioConfig minioConfig;
+
+    /**
+     * 统一文件上传入口。
+     */
+    @PostMapping("/upload")
+    public ApiResponse<FileVO> upload(@RequestParam("file") MultipartFile file,
+                                      @RequestParam("bizType") String bizType) {
+        return ApiResponse.success(fileService.upload(file, FileBizType.fromBizType(bizType)));
+    }
 
     @GetMapping("/preview/{id}")
     public void preview(@PathVariable("id") String id, HttpServletResponse response) {

@@ -10,18 +10,9 @@ import top.aiolife.core.resq.PageResp;
 import top.aiolife.core.util.SysUtil;
 import top.aiolife.record.mapper.IDeviceMapper;
 import top.aiolife.record.pojo.entity.DeviceEntity;
-import top.aiolife.config.MinioConfig;
-import top.aiolife.core.constant.ResponseCodeConst;
-import top.aiolife.core.util.MinioUtil;
-import top.aiolife.record.pojo.entity.FileEntity;
-import top.aiolife.record.pojo.vo.FileVO;
-import top.aiolife.record.service.IFileService;
 import lombok.AllArgsConstructor;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * 类功能描述
@@ -34,8 +25,6 @@ import java.util.stream.Collectors;
 @RequestMapping("/device")
 public class DeviceController {
     private IDeviceMapper eleDeviceMapper;
-    private final MinioConfig minioConfig;
-    private final IFileService fileService;
 
     public IDeviceMapper getBaseMapper() {
         return eleDeviceMapper;
@@ -68,24 +57,6 @@ public class DeviceController {
         entity.setUserId(StpUtil.getLoginIdAsLong());
 
         return ApiResponse.success(getBaseMapper().insertOrUpdate(entity));
-    }
-
-    /**
-     * 上传设备图片
-     */
-    @PostMapping("/upload-image")
-    public ApiResponse<FileVO> uploadImage(@RequestParam("file") MultipartFile file) {
-        try {
-            String fileName = file.getOriginalFilename();
-            String extension = fileName != null && fileName.contains(".") ? fileName.substring(fileName.lastIndexOf('.')) : "";
-            String objectName = StpUtil.getLoginIdAsLong() + "/device/" + java.util.UUID.randomUUID().toString() + extension;
-            String bucketName = StringUtils.hasText(minioConfig.getBucketName()) ? minioConfig.getBucketName() : "aiolife";
-            
-            FileEntity fileEntity = fileService.uploadAndSave(file, "device", bucketName, objectName, 0);
-            return ApiResponse.success(fileService.toVO(fileEntity));
-        } catch (Exception e) {
-            return ApiResponse.error(ResponseCodeConst.RSCODE_COMMON_FAIL, "上传失败: " + e.getMessage());
-        }
     }
 
     /**

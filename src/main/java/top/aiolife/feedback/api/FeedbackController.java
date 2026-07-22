@@ -1,12 +1,8 @@
 package top.aiolife.feedback.api;
 
 import cn.dev33.satoken.stp.StpUtil;
-import jakarta.annotation.Resource;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import top.aiolife.config.MinioConfig;
 import top.aiolife.core.query.CommonQuery;
 import top.aiolife.core.resq.ApiResponse;
 import top.aiolife.core.resq.PageResp;
@@ -17,10 +13,6 @@ import top.aiolife.feedback.pojo.vo.FeedbackCommentVO;
 import top.aiolife.feedback.pojo.vo.FeedbackDetailVO;
 import top.aiolife.feedback.pojo.vo.FeedbackVO;
 import top.aiolife.feedback.service.IFeedbackService;
-import top.aiolife.record.pojo.vo.FileVO;
-import top.aiolife.record.service.IFileService;
-
-import java.util.UUID;
 
 /**
  * 用户反馈控制器（用户侧）
@@ -34,10 +26,6 @@ import java.util.UUID;
 public class FeedbackController {
 
     private final IFeedbackService feedbackService;
-    private final IFileService fileService;
-
-    @Resource
-    private MinioConfig minioConfig;
 
     /**
      * 提交反馈
@@ -86,22 +74,4 @@ public class FeedbackController {
         return ApiResponse.success();
     }
 
-    /**
-     * 上传图片附件
-     */
-    @PostMapping("/upload-attachment")
-    public ApiResponse<FileVO> uploadAttachment(@RequestParam("file") MultipartFile file,
-                                                @RequestParam(value = "bizType", defaultValue = "feedback") String bizType) {
-        try {
-            String fileName = file.getOriginalFilename();
-            String extension = StringUtils.isNotEmpty(fileName) && fileName.contains(".")
-                    ? fileName.substring(fileName.lastIndexOf('.')) : "";
-            String objectName = StpUtil.getLoginIdAsLong() + "/feedback/" + UUID.randomUUID() + extension;
-            String bucketName = StringUtils.isNotEmpty(minioConfig.getBucketName()) ? minioConfig.getBucketName() : "aiolife";
-            var entity = fileService.uploadAndSave(file, bizType, bucketName, objectName, 0);
-            return ApiResponse.success(fileService.toVO(entity));
-        } catch (Exception e) {
-            return ApiResponse.error("113000", "上传失败: " + e.getMessage());
-        }
-    }
 }

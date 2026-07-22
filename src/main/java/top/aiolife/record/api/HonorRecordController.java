@@ -12,16 +12,9 @@ import top.aiolife.record.pojo.req.CommonReq;
 import top.aiolife.record.service.IHonorRecordService;
 
 import java.time.LocalDateTime;
-import top.aiolife.record.pojo.vo.FileVO;
-import top.aiolife.record.pojo.entity.FileEntity;
 import top.aiolife.record.service.IFileService;
-import top.aiolife.config.MinioConfig;
-import org.springframework.util.StringUtils;
-import org.springframework.web.multipart.MultipartFile;
-import top.aiolife.core.constant.ResponseCodeConst;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * 荣誉记录控制器
@@ -37,7 +30,6 @@ public class HonorRecordController {
 
     private final IHonorRecordService honorRecordService;
     private final IFileService fileService;
-    private final MinioConfig minioConfig;
 
 
     @GetMapping
@@ -54,21 +46,6 @@ public class HonorRecordController {
             }
         }
         return ApiResponse.success(list);
-    }
-
-    @PostMapping("/upload-attachment")
-    public ApiResponse<FileVO> uploadAttachment(@RequestParam("file") MultipartFile file) {
-        try {
-            String fileName = file.getOriginalFilename();
-            String extension = fileName != null && fileName.contains(".") ? fileName.substring(fileName.lastIndexOf('.')) : "";
-            String objectName = StpUtil.getLoginIdAsLong() + "/honor/" + java.util.UUID.randomUUID().toString() + extension;
-            String bucketName = StringUtils.hasText(minioConfig.getBucketName()) ? minioConfig.getBucketName() : "aiolife";
-            
-            FileEntity fileEntity = fileService.uploadAndSave(file, "honor_record", bucketName, objectName, 0);
-            return ApiResponse.success(fileService.toVO(fileEntity));
-        } catch (Exception e) {
-            return ApiResponse.error(ResponseCodeConst.RSCODE_COMMON_FAIL, "上传失败: " + e.getMessage());
-        }
     }
 
     @GetMapping("/{id}")

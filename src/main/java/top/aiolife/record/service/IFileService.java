@@ -2,6 +2,7 @@ package top.aiolife.record.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.springframework.web.multipart.MultipartFile;
+import top.aiolife.record.enums.FileBizType;
 import top.aiolife.record.pojo.entity.FileEntity;
 import top.aiolife.record.pojo.vo.FileVO;
 
@@ -14,12 +15,9 @@ public interface IFileService extends IService<FileEntity> {
      *
      * @param file       文件对象
      * @param bizType    业务类型
-     * @param bucketName 桶名
-     * @param objectName 对象名
-     * @param isPublic   是否公开：0-否，1-是
-     * @return FileEntity
+     * @return 文件信息
      */
-    FileEntity uploadAndSave(MultipartFile file, String bizType, String bucketName, String objectName, Integer isPublic) throws Exception;
+    FileVO upload(MultipartFile file, FileBizType bizType);
 
     /**
      * 绑定业务记录 ID

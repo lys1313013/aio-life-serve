@@ -3,13 +3,8 @@ package top.aiolife.sso.api;
 import cn.dev33.satoken.stp.StpUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import top.aiolife.core.constant.ResponseCodeConst;
 import top.aiolife.core.resq.ApiResponse;
-import top.aiolife.record.pojo.entity.FileEntity;
-import top.aiolife.record.service.IFileService;
 import top.aiolife.sso.pojo.entity.UserEntity;
 import top.aiolife.sso.pojo.req.ChangePasswordReq;
 import top.aiolife.sso.pojo.req.LoginReq;
@@ -33,10 +28,6 @@ import java.util.Map;
 public class UserController {
 
     private final IUserService userService;
-    private final IFileService fileService;
-
-    @Value("${aio.life.server.base-url}")
-    private String serveBaseUrl;
 
     /**
      * 登录
@@ -133,26 +124,4 @@ public class UserController {
         return ApiResponse.success();
     }
 
-    /**
-     * 上传头像文件
-     */
-    @PostMapping("/users/avatar/upload")
-    public ApiResponse<String> uploadAvatar(@RequestParam("file") MultipartFile file) {
-        try {
-            String fileName = file.getOriginalFilename();
-            String extension = fileName != null && fileName.contains(".") ? fileName.substring(fileName.lastIndexOf('.')) : "";
-            String objectName = StpUtil.getLoginIdAsLong() + "/avatar/" + java.util.UUID.randomUUID().toString() + extension;
-            String bucketName = "aiolife";
-            
-            // 头像必须设置为公开可见 (isPublic = 1)
-            FileEntity fileEntity = fileService.uploadAndSave(file, "avatar", bucketName, objectName, 1);
-            
-            // 返回文件预览URL (前端也可以直接用这个URL)
-            String imageUrl = serveBaseUrl + "/file/preview/" + fileEntity.getId();
-                    
-            return ApiResponse.success(imageUrl);
-        } catch (Exception e) {
-            return ApiResponse.error(ResponseCodeConst.RSCODE_COMMON_FAIL, "上传失败: " + e.getMessage());
-        }
-    }
 }

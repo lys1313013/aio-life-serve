@@ -12,13 +12,6 @@ import top.aiolife.wardrobe.pojo.vo.WardrobeItemVO;
 import top.aiolife.wardrobe.pojo.vo.WardrobeStatsVO;
 import top.aiolife.wardrobe.service.IWardrobeCategoryService;
 import top.aiolife.wardrobe.service.IWardrobeItemService;
-import top.aiolife.config.MinioConfig;
-import top.aiolife.core.constant.ResponseCodeConst;
-import org.springframework.util.StringUtils;
-import org.springframework.web.multipart.MultipartFile;
-import top.aiolife.record.pojo.vo.FileVO;
-import top.aiolife.record.pojo.entity.FileEntity;
-import top.aiolife.record.service.IFileService;
 
 import java.util.List;
 
@@ -33,8 +26,6 @@ public class WardrobeController {
 
     private final IWardrobeItemService wardrobeItemService;
     private final IWardrobeCategoryService wardrobeCategoryService;
-    private final IFileService fileService;
-    private final MinioConfig minioConfig;
 
     // ==================== 衣物接口 ====================
 
@@ -98,28 +89,6 @@ public class WardrobeController {
         Long userId = StpUtil.getLoginIdAsLong();
         WardrobeStatsVO stats = wardrobeItemService.getStats(userId);
         return ApiResponse.success(stats);
-    }
-
-    /**
-     * 上传衣物照片
-     *
-     * @param file 照片文件
-     * @return 照片的预览链接
-     */
-    @PostMapping("/upload-photo")
-    public ApiResponse<FileVO> uploadPhoto(@RequestParam("file") MultipartFile file) {
-        try {
-            String fileName = file.getOriginalFilename();
-            String extension = fileName != null && fileName.contains(".") ? fileName.substring(fileName.lastIndexOf('.')) : "";
-            String objectName = StpUtil.getLoginIdAsLong() + "/wardrobe/" + java.util.UUID.randomUUID().toString() + extension;
-            
-            String bucketName = StringUtils.hasText(minioConfig.getBucketName()) ? minioConfig.getBucketName() : "aiolife";
-            
-            FileEntity fileEntity = fileService.uploadAndSave(file, "wardrobe_item", bucketName, objectName, 0);
-            return ApiResponse.success(fileService.toVO(fileEntity));
-        } catch (Exception e) {
-            return ApiResponse.error(ResponseCodeConst.RSCODE_COMMON_FAIL, "上传失败: " + e.getMessage());
-        }
     }
 
     // ==================== 分类接口 ====================
