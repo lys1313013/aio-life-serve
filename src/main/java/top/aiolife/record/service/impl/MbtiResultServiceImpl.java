@@ -25,10 +25,10 @@ import java.util.Objects;
 @Service
 public class MbtiResultServiceImpl extends ServiceImpl<IMbtiResultMapper, MbtiResultEntity> implements IMbtiResultService {
     
-    @Value("${aio.life.serve.mbti.api-key:}")
+    @Value("${aio.life.server.mbti.api-key:}")
     private String mbtiApiKey;
     
-    @Value("${aio.life.serve.mbti.base-url:https://api.devil.ai}")
+    @Value("${aio.life.server.mbti.base-url:https://api.devil.ai}")
     private String mbtiBaseUrl;
     
     private final RestTemplate restTemplate;

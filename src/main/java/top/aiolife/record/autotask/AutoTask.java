@@ -20,7 +20,7 @@ public class AutoTask {
     /**
      * 检查 leetcode是否打卡
      */
-    @Scheduled(cron = "${aio.life.serve.corn.leetcodeCheck:0 30 23 * * ?}")
+    @Scheduled(cron = "${aio.life.server.corn.leetcodeCheck:0 30 23 * * ?}")
     public void leetcodeCheck() {
         leetcodeService.check();
     }
@@ -29,7 +29,7 @@ public class AutoTask {
     /**
      * 邮件通知每日一题
      */
-    @Scheduled(cron = "${aio.life.serve.corn.notifyTodayQuestion:0 0 7 * * ?}")
+    @Scheduled(cron = "${aio.life.server.corn.notifyTodayQuestion:0 0 7 * * ?}")
     public void notifyTodayQuestion() {
         leetcodeService.notifyTodayQuestion();
     }

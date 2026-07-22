@@ -35,7 +35,7 @@ public class UserController {
     private final IUserService userService;
     private final IFileService fileService;
 
-    @Value("${aio.life.serve.base-url}")
+    @Value("${aio.life.server.base-url}")
     private String serveBaseUrl;
 
     /**

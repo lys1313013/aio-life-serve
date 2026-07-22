@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 @Data
-@ConfigurationProperties(prefix = "aio.life.serve.cbti")
+@ConfigurationProperties(prefix = "aio.life.server.cbti")
 public class CbtiConfig {
 
     private boolean enabled = true;

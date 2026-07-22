@@ -40,7 +40,7 @@ public class McpServerConfig {
     public McpSyncServer mcpSyncServer(WebMvcStreamableServerTransportProvider transportProvider,
                                        McpToolHandlers mcpToolHandlers) {
         return McpServer.sync(transportProvider)
-                .serverInfo("aio-life-serve-mcp", "1.0.0")
+                .serverInfo("aio-life-server-mcp", "1.0.0")
                 .capabilities(McpSchema.ServerCapabilities.builder()
                         .tools(true)
                         .build())

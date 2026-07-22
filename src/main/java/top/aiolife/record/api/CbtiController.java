@@ -37,10 +37,10 @@ public class CbtiController {
 
     private final CbtiConfig cbtiConfig;
 
-    @Value("${aio.life.serve.base-url}")
+    @Value("${aio.life.server.base-url}")
     private String serveBaseUrl;
 
-    @Value("${aio.life.serve.minio.bucket-name:aiolife}")
+    @Value("${aio.life.server.minio.bucket-name:aiolife}")
     private String minioBucketName;
 
     /**

@@ -1,4 +1,4 @@
-# AIO Life Serve - 人生管理系统
+# AIO Life Server - 人生管理系统
 
 > 记录、统计、分析人生的所有数据
 
@@ -13,7 +13,7 @@
 ### 相关链接
 
 - 🌐 **前端项目**：[aio-life-front](https://github.com/lys1313013/aio-life-front)
-- 🔧 **后端项目**：[aio-life-serve](https://github.com/lys1313013/aio-life-serve)（本仓库）
+- 🔧 **后端项目**：[aio-life-server](https://github.com/lys1313013/aio-life-server)（本仓库）
 
 ## 🛠 技术栈
 
@@ -61,7 +61,7 @@
 ## 📁 项目结构
 
 ```
-aio-life-serve/
+aio-life-server/
 ├── src/main/java/top/aiolife/
 │   ├── sso/              # 认证模块：登录、注册、验证码、API Key
 │   ├── record/           # 核心记录引擎：时迹、目标、待办、理财、荣誉等
@@ -96,8 +96,8 @@ aio-life-serve/
 #### 1. 克隆项目
 
 ```bash
-git clone https://github.com/lys1313013/aio-life-serve.git
-cd aio-life-serve
+git clone https://github.com/lys1313013/aio-life-server.git
+cd aio-life-server
 ```
 
 #### 2. 配置数据库
@@ -152,7 +152,7 @@ mvn spring-boot:run
 
 # 方式二：先编译再运行
 mvn clean package -DskipTests
-java -jar target/aio-life-serve-1.0.0.jar
+java -jar target/aio-life-server-1.0.0.jar
 ```
 
 服务启动后访问：`http://localhost:45678/api`
@@ -170,13 +170,13 @@ docker-compose -f docker/docker-compose-minio.yml up -d
 docker-compose -f docker/docker-compose-neo4j.yml up -d
 
 # 构建应用镜像
-docker build -t aio-life-serve:latest .
+docker build -t aio-life-server:latest .
 
 # 运行应用
 docker run -d \
   -p 45678:45678 \
   --env-file .env \
-  aio-life-serve:latest
+  aio-life-server:latest
 ```
 
 ## 🔧 开发指南

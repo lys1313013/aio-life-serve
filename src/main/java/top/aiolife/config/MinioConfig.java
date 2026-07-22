@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 @Data
-@ConfigurationProperties(prefix = "aio.life.serve.minio")
+@ConfigurationProperties(prefix = "aio.life.server.minio")
 public class MinioConfig {
 
     private String endpoint;

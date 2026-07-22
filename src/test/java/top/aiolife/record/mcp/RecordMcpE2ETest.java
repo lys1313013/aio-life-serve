@@ -204,7 +204,7 @@ public class RecordMcpE2ETest {
     void testMcpServerInitialization() {
         McpSchema.InitializeResult result = mcpClient.initialize();
         assertNotNull(result);
-        assertEquals("aio-life-serve-mcp", result.serverInfo().name());
+        assertEquals("aio-life-server-mcp", result.serverInfo().name());
 
         McpSchema.ListToolsResult toolsResult = mcpClient.listTools();
         assertNotNull(toolsResult);

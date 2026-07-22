@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 项目概述
 
-**AIO Life Serve** — All-in-One 人生管理系统的后端服务，记录、统计、分析人生的所有数据。
+**AIO Life Server** — All-in-One 人生管理系统的后端服务，记录、统计、分析人生的所有数据。
 
 ## 技术栈
 
@@ -210,14 +210,14 @@ SQL 脚本位于 `sql/` 目录：
 
 ```bash
 # 构建镜像
-docker build -t aio-life-serve:latest .
+docker build -t aio-life-server:latest .
 
 # 运行容器（需要配置环境变量）
 docker run -d \
   -p 45678:45678 \
   -e AIO_LIFE_DB_PASSWORD=your_password \
   -e AIO_LIFE_REDIS_HOST=redis_host \
-  aio-life-serve:latest
+  aio-life-server:latest
 ```
 
 ### 部署脚本
@@ -236,7 +236,7 @@ docker run -d \
 ## 注意事项
 
 1. **数据库连接池**：使用 Druid，已配置空闲连接检测，防止被 MySQL 踢掉
-2. **邮件验证码**：有频率限制（单 IP/单邮箱/全局），配置在 `aio.life.serve.auth.code.*`
+2. **邮件验证码**：有频率限制（单 IP/单邮箱/全局），配置在 `aio.life.server.auth.code.*`
 3. **定时任务**：`@EnableScheduling` 已启用，LeetCode 同步 cron 可配置
 4. **Neo4j 可选**：默认关闭，通过环境变量 `AIO_LIFE_NEO4J_ENABLED=true` 启用
 5. **MCP 端点**：`/api/mcp`，使用 `streamable-http` 传输协议，复用现有认证

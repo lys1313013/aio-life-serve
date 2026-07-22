@@ -24,7 +24,7 @@ public class MinioUtil {
     @Autowired
     private MinioConfig minioConfig;
 
-    @Value("${aio.life.serve.base-url}")
+    @Value("${aio.life.server.base-url}")
     private String serveBaseUrl;
 
     /**
