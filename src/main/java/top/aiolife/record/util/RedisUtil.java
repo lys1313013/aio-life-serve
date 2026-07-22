@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
@@ -84,6 +85,25 @@ public class RedisUtil {
      */
     public void set(String key, String value, long timeout, TimeUnit unit) {
         stringRedisTemplate.opsForValue().set(key, value, timeout, unit);
+    }
+
+    /**
+     * 仅在 key 不存在时写入。
+     */
+    public boolean setIfAbsent(String key, String value, long timeout, TimeUnit unit) {
+        return Boolean.TRUE.equals(stringRedisTemplate.opsForValue().setIfAbsent(key, value, timeout, unit));
+    }
+
+    /**
+     * 仅在锁值仍属于当前持有者时原子释放锁。
+     */
+    public boolean unlock(String key, String value) {
+        DefaultRedisScript<Long> script = new DefaultRedisScript<>(
+                "if redis.call('get', KEYS[1]) == ARGV[1] then "
+                        + "return redis.call('del', KEYS[1]) else return 0 end",
+                Long.class);
+        Long result = stringRedisTemplate.execute(script, List.of(key), value);
+        return Long.valueOf(1L).equals(result);
     }
 
     /**

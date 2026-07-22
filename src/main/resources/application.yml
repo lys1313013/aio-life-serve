@@ -141,3 +141,6 @@ aio:
         bucket-name: ${AIO_LIFE_CBTI_BUCKET_NAME:}
         object-prefix: ${AIO_LIFE_CBTI_OBJECT_PREFIX:images/cbti/characters/}
         characters-dir: ${AIO_LIFE_CBTI_CHARACTERS_DIR:src/main/resources/cbti/characters}
+      notification:
+        # 用于加密用户的飞书 App Secret 与通知重试载荷，长度不少于 16 位
+        credential-encryption-key: ${AIO_LIFE_NOTIFICATION_ENCRYPTION_KEY:aiolifeaiolifeaiolife}

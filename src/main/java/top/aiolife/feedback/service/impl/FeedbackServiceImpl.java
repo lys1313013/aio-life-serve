@@ -28,8 +28,10 @@ import top.aiolife.feedback.pojo.vo.FeedbackDetailVO;
 import top.aiolife.feedback.pojo.vo.FeedbackVO;
 import top.aiolife.feedback.service.IFeedbackService;
 import top.aiolife.record.notification.SystemNotificationSender;
+import top.aiolife.record.notification.NotificationRequest;
 import top.aiolife.record.pojo.vo.FileVO;
 import top.aiolife.record.service.IFileService;
+import top.aiolife.record.service.FeishuNotificationService;
 import top.aiolife.sso.mapper.UserMapper;
 import top.aiolife.sso.pojo.entity.UserEntity;
 import top.aiolife.system.service.ISystemConfigService;
@@ -64,6 +66,7 @@ public class FeedbackServiceImpl implements IFeedbackService {
     private final IFileService fileService;
     private final ISystemConfigService systemConfigService;
     private final SystemNotificationSender notificationSender;
+    private final FeishuNotificationService feishuNotificationService;
     private final UserMapper userMapper;
     private final ObjectMapper objectMapper;
 
@@ -88,7 +91,7 @@ public class FeedbackServiceImpl implements IFeedbackService {
         }
 
         // 通知管理员
-        notifyAdmins(userId, entity.getTitle());
+        notifyAdmins(userId, entity.getId(), "create:" + entity.getId(), entity.getTitle());
 
         return toVO(entity, userId);
     }
@@ -141,7 +144,7 @@ public class FeedbackServiceImpl implements IFeedbackService {
         }
 
         // 通知管理员
-        notifyAdmins(userId, feedback.getTitle());
+        notifyAdmins(userId, feedbackId, "comment:" + comment.getId(), feedback.getTitle());
 
         return toCommentVO(comment, userId);
     }
@@ -210,7 +213,7 @@ public class FeedbackServiceImpl implements IFeedbackService {
         }
 
         // 通知反馈人
-        notifyUser(feedback.getUserId(), feedback.getTitle());
+        notifyUser(feedback.getUserId(), feedbackId, "reply:" + comment.getId(), feedback.getTitle());
 
         return toCommentVO(comment, adminId);
     }
@@ -230,7 +233,8 @@ public class FeedbackServiceImpl implements IFeedbackService {
         feedback.setStatus(req.getStatus());
 
         // 通知反馈人
-        notifyUser(feedback.getUserId(), feedback.getTitle());
+        notifyUser(feedback.getUserId(), feedbackId,
+                "status:" + feedbackId + ":" + req.getStatus(), feedback.getTitle());
 
         return toVO(feedback, feedback.getUserId());
     }
@@ -257,7 +261,7 @@ public class FeedbackServiceImpl implements IFeedbackService {
     /**
      * 通知管理员：有新反馈 / 新评论
      */
-    private void notifyAdmins(long fromUserId, String feedbackTitle) {
+    private void notifyAdmins(long fromUserId, long feedbackId, String eventKey, String feedbackTitle) {
         try {
             String json = systemConfigService.getValueByKey(NOTIFY_ADMIN_IDS_KEY);
             if (!StringUtils.hasText(json)) {
@@ -281,6 +285,14 @@ public class FeedbackServiceImpl implements IFeedbackService {
                     UserEntity admin = userMapper.selectById(adminId);
                     if (admin != null && admin.getIsDeleted() == 0) {
                         notificationSender.send(admin, title, content, content);
+                        feishuNotificationService.sendIfEnabled(new NotificationRequest(
+                                adminId,
+                                "FEEDBACK_ADMIN",
+                                title,
+                                content,
+                                null,
+                                "feedback:" + feedbackId + ":" + eventKey + ":" + adminId
+                        ));
                     }
                 } catch (Exception e) {
                     log.warn("通知管理员 {} 失败", adminIdStr, e);
@@ -294,7 +306,7 @@ public class FeedbackServiceImpl implements IFeedbackService {
     /**
      * 通知反馈人：管理员已回复 / 状态已变更
      */
-    private void notifyUser(long userId, String feedbackTitle) {
+    private void notifyUser(long userId, long feedbackId, String eventKey, String feedbackTitle) {
         try {
             UserEntity user = userMapper.selectById(userId);
             if (user == null || user.getIsDeleted() != 0) {
@@ -303,6 +315,14 @@ public class FeedbackServiceImpl implements IFeedbackService {
             String title = "反馈回复通知：" + feedbackTitle;
             String content = "您的反馈「" + feedbackTitle + "」有了新的回复，请查看。";
             notificationSender.send(user, title, content, content);
+            feishuNotificationService.sendIfEnabled(new NotificationRequest(
+                    userId,
+                    "FEEDBACK_REPLY",
+                    title,
+                    content,
+                    null,
+                    "feedback:" + feedbackId + ":" + eventKey + ":" + userId
+            ));
         } catch (Exception e) {
             log.warn("通知用户 {} 失败", userId, e);
         }

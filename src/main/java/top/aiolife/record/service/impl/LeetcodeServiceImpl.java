@@ -18,6 +18,7 @@ import org.springframework.web.client.RestTemplate;
 import top.aiolife.core.util.DateUtil;
 import top.aiolife.record.client.LeetcodeClient;
 import top.aiolife.record.notification.AbstractNotificationSender;
+import top.aiolife.record.notification.NotificationRequest;
 import top.aiolife.record.pojo.entity.UserBindEntity;
 import top.aiolife.record.pojo.leetcode.QuestionDataResponse;
 import top.aiolife.record.pojo.leetcode.RecentACSubmissionsResponse;
@@ -25,6 +26,7 @@ import top.aiolife.record.pojo.leetcode.TodayRecordResponse;
 import top.aiolife.record.pojo.leetcode.UserCalendarResponse;
 import top.aiolife.record.pojo.vo.DashboardCardVO;
 import top.aiolife.record.service.ILeetcodeService;
+import top.aiolife.record.service.FeishuNotificationService;
 import top.aiolife.record.service.IUserBindService;
 import top.aiolife.record.util.RedisUtil;
 import top.aiolife.sso.mapper.UserMapper;
@@ -57,6 +59,8 @@ public class LeetcodeServiceImpl implements ILeetcodeService {
     private final RestTemplate restTemplate;
 
     private final List<AbstractNotificationSender> notificationSenders;
+
+    private final FeishuNotificationService feishuNotificationService;
 
     private final RedisUtil redisUtil;
 
@@ -183,6 +187,14 @@ public class LeetcodeServiceImpl implements ILeetcodeService {
                     for (AbstractNotificationSender sender : notificationSenders) {
                         sender.send(userEntity, title, content, content);
                     }
+                    feishuNotificationService.sendIfEnabled(new NotificationRequest(
+                            userEntity.getId(),
+                            "LEETCODE_REMINDER",
+                            title,
+                            content,
+                            todayUrl,
+                            "leetcode:reminder:" + LocalDate.now() + ":" + userEntity.getId()
+                    ));
                 } catch (Exception e) {
                     log.error("发送通知失败", e);
                 }
@@ -286,6 +298,14 @@ public class LeetcodeServiceImpl implements ILeetcodeService {
                 for (AbstractNotificationSender sender : notificationSenders) {
                     sender.send(user, title, htmlContent, textContent);
                 }
+                feishuNotificationService.sendIfEnabled(new NotificationRequest(
+                        user.getId(),
+                        "LEETCODE_DAILY",
+                        title,
+                        textContent,
+                        "https://leetcode.cn/problems/" + questionData.getData().getQuestion().getTitleSlug() + "/",
+                        "leetcode:daily:" + LocalDate.now() + ":" + user.getId()
+                ));
             }
         }
     }
